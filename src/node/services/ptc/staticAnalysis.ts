@@ -78,7 +78,7 @@ const UNAVAILABLE_PATTERNS: Array<{
     // require() - CommonJS import, not in QuickJS
     pattern: /(?<![.\w])require\s*\(/g,
     type: "forbidden_construct",
-    message: () => "require() is not available in the sandbox - use mux.* tools instead",
+    message: () => "require() is not available in the sandbox - useunix.* tools instead",
   },
 ];
 
@@ -146,7 +146,7 @@ async function validateSyntax(code: string): Promise<AnalysisError | null> {
     // giving unhelpful "expecting ';'". Detect this pattern and give a clearer message.
     if (message === "expecting ';'" && /\bawait\s+\w/.test(code)) {
       message =
-        "`await` is not supported - mux.* functions return results directly (no await needed)";
+        "`await` is not supported -unix.* functions return results directly (no await needed)";
     }
     const rawLine = typeof errorObj.lineNumber === "number" ? errorObj.lineNumber : undefined;
 

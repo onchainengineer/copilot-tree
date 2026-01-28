@@ -17,8 +17,8 @@ import type { Result } from "@/common/types/result";
  * PATH TERMINOLOGY & HIERARCHY
  *
  * srcBaseDir (base directory for all workspaces):
- *   - Where mux stores ALL workspace directories
- *   - Local: ~/.mux/src (tilde expanded to full path by LocalRuntime)
+ *   - Where unix stores ALL workspace directories
+ *   - Local: ~/.unix/src (tilde expanded to full path by LocalRuntime)
  *   - SSH: /home/user/workspace (tilde paths are allowed and are resolved before use)
  *
  * Workspace Path Computation:
@@ -31,11 +31,11 @@ import type { Result } from "@/common/types/result";
  *     Example: "feature-123" or "main"
  *
  * Full Example (Local):
- *   srcBaseDir:    ~/.mux/src (expanded to /home/user/.mux/src)
+ *   srcBaseDir:    ~/.unix/src (expanded to /home/user/.unix/src)
  *   projectPath:   /Users/me/git/my-project (local git repo)
  *   projectName:   my-project (extracted)
  *   workspaceName: feature-123
- *   → Workspace:   /home/user/.mux/src/my-project/feature-123
+ *   → Workspace:   /home/user/.unix/src/my-project/feature-123
  *
  * Full Example (SSH):
  *   srcBaseDir:    /home/user/workspace (absolute path required)
@@ -203,11 +203,11 @@ export interface WorkspaceInitParams {
   initLogger: InitLogger;
   /** Optional abort signal for cancellation */
   abortSignal?: AbortSignal;
-  /** Environment variables to inject (MUX_ vars + secrets) */
+  /** Environment variables to inject (UNIX_ vars + secrets) */
   env?: Record<string, string>;
 
   /**
-   * When true, skip running the project's .mux/init hook.
+   * When true, skip running the project's .unix/init hook.
    *
    * NOTE: This skips only hook execution, not runtime provisioning.
    */
@@ -387,11 +387,11 @@ export interface Runtime {
    *
    * @example
    * // LocalRuntime
-   * await runtime.resolvePath("~/mux")      // => "/home/user/mux"
+   * await runtime.resolvePath("~/unix")      // => "/home/user/unix"
    * await runtime.resolvePath("./relative")  // => "/current/dir/relative"
    *
    * // SSHRuntime
-   * await runtime.resolvePath("~/mux")      // => "/home/user/mux" (via SSH shell expansion)
+   * await runtime.resolvePath("~/unix")      // => "/home/user/unix" (via SSH shell expansion)
    */
   resolvePath(path: string): Promise<string>;
 
@@ -482,7 +482,7 @@ export interface Runtime {
   ): Promise<Result<void, string>>;
 
   /**
-   * Optional long-running setup that runs after mux persists workspace metadata.
+   * Optional long-running setup that runs after unix persists workspace metadata.
    * Used for provisioning steps that must happen before initWorkspace but after
    * the workspace is registered (e.g., creating Coder workspaces, pulling Docker images).
    *
@@ -584,12 +584,12 @@ export interface Runtime {
   tempDir(): Promise<string>;
 
   /**
-   * Get the mux home directory for this runtime.
-   * Used for storing plan files and other mux-specific data.
-   * - LocalRuntime/SSHRuntime: ~/.mux (tilde expanded by runtime)
-   * - DockerRuntime: /var/mux (world-readable, avoids /root permission issues)
+   * Get the unix home directory for this runtime.
+   * Used for storing plan files and other unix-specific data.
+   * - LocalRuntime/SSHRuntime: ~/.unix (tilde expanded by runtime)
+   * - DockerRuntime: /var/unix (world-readable, avoids /root permission issues)
    */
-  getMuxHome(): string;
+  getUnixHome(): string;
 }
 
 /**

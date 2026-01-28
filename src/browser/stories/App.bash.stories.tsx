@@ -193,7 +193,7 @@ export const OverflowNotice: AppStory = {
                     [
                       "[OUTPUT OVERFLOW - Total output exceeded display limit: 18432 bytes > 16384 bytes (at line 312)]",
                       "",
-                      "Full output (1250 lines) saved to /home/user/.mux/tmp/bash-1a2b3c4d.txt",
+                      "Full output (1250 lines) saved to /home/user/.unix/tmp/bash-1a2b3c4d.txt",
                       "",
                       "Use selective filtering tools (e.g. grep) to extract relevant information and continue your task",
                       "",

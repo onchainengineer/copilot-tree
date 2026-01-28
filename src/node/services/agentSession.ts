@@ -38,12 +38,12 @@ import type { Result } from "@/common/types/result";
 import { Ok, Err } from "@/common/types/result";
 import { enforceThinkingPolicy } from "@/common/utils/thinking/policy";
 import {
-  createMuxMessage,
+  createUnixMessage,
   prepareUserMessageForSend,
   type CompactionFollowUpRequest,
-  type MuxFrontendMetadata,
-  type MuxFilePart,
-  type MuxMessage,
+  type UnixFrontendMetadata,
+  type UnixFilePart,
+  type UnixMessage,
   type ReviewNoteDataForDisplay,
 } from "@/common/types/message";
 import { createRuntime } from "@/node/runtime/runtimeFactory";
@@ -82,7 +82,7 @@ interface CompactionRequestMetadata {
       text?: string;
       imageParts?: FilePart[];
       reviews?: ReviewNoteDataForDisplay[];
-      muxMetadata?: MuxFrontendMetadata;
+      unixMetadata?: UnixFrontendMetadata;
       model?: string;
       agentId?: string;
       mode?: "exec" | "plan"; // Legacy: older versions stored mode instead of agentId
@@ -430,7 +430,7 @@ export class AgentSession {
     let derivedProjectName: string;
 
     if (isUnderSrcBaseDir) {
-      // Standard worktree mode: workspace is under ~/.mux/src/project/branch
+      // Standard worktree mode: workspace is under ~/.unix/src/project/branch
       derivedProjectPath = path.dirname(normalizedWorkspacePath);
       workspaceName = PlatformPaths.basename(normalizedWorkspacePath);
       derivedProjectName =
@@ -474,15 +474,15 @@ export class AgentSession {
 
     // Edits are implemented as truncate+replace. If the frontend omits fileParts,
     // preserve the original message's attachments.
-    let preservedEditFileParts: MuxFilePart[] | undefined;
+    let preservedEditFileParts: UnixFilePart[] | undefined;
     if (options?.editMessageId && fileParts === undefined) {
       const historyResult = await this.historyService.getHistory(this.workspaceId);
       if (historyResult.success) {
-        const targetMessage: MuxMessage | undefined = historyResult.data.find(
+        const targetMessage: UnixMessage | undefined = historyResult.data.find(
           (msg) => msg.id === options.editMessageId
         );
         const fileParts = targetMessage?.parts.filter(
-          (part): part is MuxFilePart => part.type === "file"
+          (part): part is UnixFilePart => part.type === "file"
         );
         if (fileParts && fileParts.length > 0) {
           preservedEditFileParts = fileParts;
@@ -589,9 +589,9 @@ export class AgentSession {
 
     // toolPolicy is properly typed via Zod schema inference
     const typedToolPolicy = options?.toolPolicy;
-    // muxMetadata is z.any() in schema - cast to proper type
-    const typedMuxMetadata = options?.muxMetadata as MuxFrontendMetadata | undefined;
-    const isCompactionRequest = isCompactionRequestMetadata(typedMuxMetadata);
+    // unixMetadata is z.any() in schema - cast to proper type
+    const typedUnixMetadata = options?.unixMetadata as UnixFrontendMetadata | undefined;
+    const isCompactionRequest = isCompactionRequestMetadata(typedUnixMetadata);
 
     // Validate model BEFORE persisting message to prevent orphaned messages on invalid model
     if (!options?.model || options.model.trim().length === 0) {
@@ -650,14 +650,14 @@ export class AgentSession {
       });
     }
 
-    const userMessage = createMuxMessage(
+    const userMessage = createUnixMessage(
       messageId,
       "user",
       message,
       {
         timestamp: Date.now(),
         toolPolicy: typedToolPolicy,
-        muxMetadata: typedMuxMetadata, // Pass through frontend metadata as black-box
+        unixMetadata: typedUnixMetadata, // Pass through frontend metadata as black-box
       },
       additionalParts
     );
@@ -667,10 +667,10 @@ export class AgentSession {
     // so subsequent turns don't re-read (which would change the prompt prefix if files changed).
     // File changes after this point are surfaced via <system-file-update> diffs instead.
     const snapshotResult = await this.materializeFileAtMentionsSnapshot(trimmedMessage);
-    let skillSnapshotResult: { snapshotMessage: MuxMessage } | null = null;
+    let skillSnapshotResult: { snapshotMessage: UnixMessage } | null = null;
     try {
       skillSnapshotResult = await this.materializeAgentSkillSnapshot(
-        typedMuxMetadata,
+        typedUnixMetadata,
         options?.disableWorkspaceAgents
       );
     } catch (error) {
@@ -724,7 +724,7 @@ export class AgentSession {
       this.emitChatEvent({ ...skillSnapshotResult.snapshotMessage, type: "message" });
     }
 
-    // Add type: "message" for discriminated union (createMuxMessage doesn't add it)
+    // Add type: "message" for discriminated union (createUnixMessage doesn't add it)
     this.emitChatEvent({ ...userMessage, type: "message" });
 
     this.streamStarting = true;
@@ -743,8 +743,8 @@ export class AgentSession {
       // If this is a compaction request with follow-up content, queue it for auto-send after compaction
       // Use the type guard result to access followUpContent with proper typing
       // Supports both new `followUpContent` and legacy `continueMessage` for backwards compatibility
-      if (isCompactionRequest && typedMuxMetadata && options) {
-        const compactionMeta = typedMuxMetadata as CompactionRequestMetadata;
+      if (isCompactionRequest && typedUnixMetadata && options) {
+        const compactionMeta = typedUnixMetadata as CompactionRequestMetadata;
         const followUpContent = compactionMeta.parsed.followUpContent;
         const legacyContinueMessage = compactionMeta.parsed.continueMessage;
         // Prefer new field, fall back to legacy
@@ -763,7 +763,7 @@ export class AgentSession {
               fileParts: followUpFileParts,
               reviews: followUpContent?.reviews ?? legacyContinueMessage?.reviews,
             },
-            followUpContent?.muxMetadata ?? legacyContinueMessage?.muxMetadata
+            followUpContent?.unixMetadata ?? legacyContinueMessage?.unixMetadata
           );
 
           // Derive agentId: new field has it directly, legacy may use `mode` field.
@@ -782,8 +782,8 @@ export class AgentSession {
           // agentId determines tool policy via resolveToolPolicyForAgent in aiService
           const sanitizedOptions: Omit<
             SendMessageOptions,
-            "muxMetadata" | "mode" | "editMessageId" | "fileParts" | "maxOutputTokens"
-          > & { fileParts?: FilePart[]; muxMetadata?: MuxFrontendMetadata } = {
+            "unixMetadata" | "mode" | "editMessageId" | "fileParts" | "maxOutputTokens"
+          > & { fileParts?: FilePart[]; unixMetadata?: UnixFrontendMetadata } = {
             model: followUpModel,
             agentId: effectiveAgentId,
             thinkingLevel: options.thinkingLevel,
@@ -799,7 +799,7 @@ export class AgentSession {
 
           // Add metadata with reviews if present
           if (metadata) {
-            sanitizedOptions.muxMetadata = metadata;
+            sanitizedOptions.unixMetadata = metadata;
           }
 
           const dedupeKey = JSON.stringify({
@@ -986,7 +986,7 @@ export class AgentSession {
   }
 
   private resolveCompactionRequest(
-    history: MuxMessage[],
+    history: UnixMessage[],
     modelString: string,
     options?: SendMessageOptions
   ): { id: string; modelString: string; options?: SendMessageOptions } | undefined {
@@ -995,7 +995,7 @@ export class AgentSession {
       if (message.role !== "user") {
         continue;
       }
-      if (!isCompactionRequestMetadata(message.metadata?.muxMetadata)) {
+      if (!isCompactionRequestMetadata(message.metadata?.unixMetadata)) {
         return undefined;
       }
       return {
@@ -1672,7 +1672,7 @@ export class AgentSession {
    */
   private async materializeFileAtMentionsSnapshot(
     messageText: string
-  ): Promise<{ snapshotMessage: MuxMessage; materializedTokens: string[] } | null> {
+  ): Promise<{ snapshotMessage: UnixMessage; materializedTokens: string[] } | null> {
     // Guard for test mocks that may not implement getWorkspaceMetadata
     if (typeof this.aiService.getWorkspaceMetadata !== "function") {
       return null;
@@ -1718,7 +1718,7 @@ export class AgentSession {
     const blocks = materialized.map((m) => m.block).join("\n\n");
 
     const snapshotId = createFileSnapshotMessageId();
-    const snapshotMessage = createMuxMessage(snapshotId, "user", blocks, {
+    const snapshotMessage = createUnixMessage(snapshotId, "user", blocks, {
       timestamp: Date.now(),
       synthetic: true,
       fileAtMentionSnapshot: tokens,
@@ -1728,10 +1728,10 @@ export class AgentSession {
   }
 
   private async materializeAgentSkillSnapshot(
-    muxMetadata: MuxFrontendMetadata | undefined,
+    unixMetadata: UnixFrontendMetadata | undefined,
     disableWorkspaceAgents: boolean | undefined
-  ): Promise<{ snapshotMessage: MuxMessage } | null> {
-    if (!muxMetadata || muxMetadata.type !== "agent-skill") {
+  ): Promise<{ snapshotMessage: UnixMessage } | null> {
+    if (!unixMetadata || unixMetadata.type !== "agent-skill") {
       return null;
     }
 
@@ -1740,9 +1740,9 @@ export class AgentSession {
       return null;
     }
 
-    const parsedName = SkillNameSchema.safeParse(muxMetadata.skillName);
+    const parsedName = SkillNameSchema.safeParse(unixMetadata.skillName);
     if (!parsedName.success) {
-      throw new Error(`Invalid agent skill name: ${muxMetadata.skillName}`);
+      throw new Error(`Invalid agent skill name: ${unixMetadata.skillName}`);
     }
 
     const metadataResult = await this.aiService.getWorkspaceMetadata(this.workspaceId);
@@ -1797,7 +1797,7 @@ export class AgentSession {
     }
 
     const snapshotId = createAgentSkillSnapshotMessageId();
-    const snapshotMessage = createMuxMessage(snapshotId, "user", snapshotText, {
+    const snapshotMessage = createUnixMessage(snapshotId, "user", snapshotText, {
       timestamp: Date.now(),
       synthetic: true,
       agentSkillSnapshot: {

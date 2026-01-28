@@ -1,11 +1,11 @@
 /**
  * Signing Service
  *
- * Provides message signing for mux.md shares.
+ * Provides message signing for unix.md shares.
  *
  * - Loads unencrypted key files from disk via sshpk
  * - Can sign via SSH agent (SSH_AUTH_SOCK), including 1Password's SSH agent
- * - Produces mux.md-compatible SignatureEnvelopes (no private key bytes cross IPC)
+ * - Produces unix.md-compatible SignatureEnvelopes (no private key bytes cross IPC)
  * - Detects GitHub username via `gh auth status`
  */
 
@@ -17,13 +17,13 @@ import {
   computeFingerprint,
   createSignatureEnvelope,
   parsePublicKey,
-  type KeyType as MuxMdKeyType,
+  type KeyType as UnixMdKeyType,
   type SignatureEnvelope,
 } from "@coder/mux-md-client";
 import { createSshAgentSignatureEnvelope } from "@coder/mux-md-client/ssh-agent";
 import sshpk from "sshpk";
 import { OpenSSHAgent, type KnownPublicKeys, type ParsedKey, type PublicKeyEntry } from "ssh2";
-import { getMuxHome } from "@/common/constants/paths";
+import { getUnixHome } from "@/common/constants/paths";
 import { execAsync } from "@/node/utils/disposableExec";
 import { log } from "@/node/services/log";
 
@@ -69,7 +69,7 @@ type SigningKeySelection =
 interface AgentKeyCandidate {
   publicKeyOpenSSH: string;
   fingerprint: string;
-  muxKeyType: MuxMdKeyType;
+  muxKeyType: UnixMdKeyType;
 }
 
 const SUPPORTED_AGENT_KEY_TYPES = new Set([
@@ -79,7 +79,7 @@ const SUPPORTED_AGENT_KEY_TYPES = new Set([
   "ecdsa-sha2-nistp521",
 ]);
 
-const AGENT_KEY_TYPE_PRIORITY: Record<MuxMdKeyType, number> = {
+const AGENT_KEY_TYPE_PRIORITY: Record<UnixMdKeyType, number> = {
   ed25519: 0,
   "ecdsa-p256": 1,
   "ecdsa-p384": 2,
@@ -89,7 +89,7 @@ const AGENT_KEY_TYPE_PRIORITY: Record<MuxMdKeyType, number> = {
 /** Default paths to check for signing keys, in order of preference */
 export function getDefaultKeyPaths(): string[] {
   return [
-    join(getMuxHome(), "message_signing_key"), // Explicit mux key (any supported type, symlink-friendly)
+    join(getUnixHome(), "message_signing_key"), // Explicit unix key (any supported type, symlink-friendly)
     join(homedir(), ".ssh", "id_ed25519"), // SSH Ed25519
     join(homedir(), ".ssh", "id_ecdsa"), // SSH ECDSA
   ];
@@ -273,8 +273,8 @@ export class SigningService {
     selection: SigningKeySelection | null;
     error: string | null;
   }> {
-    const desiredPublicKeyRaw = process.env.MUX_SIGNING_PUBLIC_KEY?.trim();
-    const desiredFingerprint = process.env.MUX_SIGNING_KEY_FINGERPRINT?.trim();
+    const desiredPublicKeyRaw = process.env.UNIX_SIGNING_PUBLIC_KEY?.trim();
+    const desiredFingerprint = process.env.UNIX_SIGNING_KEY_FINGERPRINT?.trim();
     const hasOverride = Boolean(desiredPublicKeyRaw?.length) || Boolean(desiredFingerprint?.length);
 
     const sshAuthSock = process.env.SSH_AUTH_SOCK?.trim();
@@ -283,7 +283,7 @@ export class SigningService {
         return {
           selection: null,
           error:
-            "MUX_SIGNING_PUBLIC_KEY/MUX_SIGNING_KEY_FINGERPRINT is set but SSH_AUTH_SOCK is not set",
+            "UNIX_SIGNING_PUBLIC_KEY/UNIX_SIGNING_KEY_FINGERPRINT is set but SSH_AUTH_SOCK is not set",
         };
       }
       return { selection: null, error: null };
@@ -321,7 +321,7 @@ export class SigningService {
           return {
             selection: null,
             error:
-              "MUX_SIGNING_PUBLIC_KEY must be an OpenSSH public key string (e.g. 'ssh-ed25519 AAAA...')",
+              "UNIX_SIGNING_PUBLIC_KEY must be an OpenSSH public key string (e.g. 'ssh-ed25519 AAAA...')",
           };
         }
 
@@ -330,7 +330,7 @@ export class SigningService {
         } catch {
           return {
             selection: null,
-            error: "MUX_SIGNING_PUBLIC_KEY is not a supported SSH public key",
+            error: "UNIX_SIGNING_PUBLIC_KEY is not a supported SSH public key",
           };
         }
 
@@ -345,7 +345,7 @@ export class SigningService {
         return {
           selection: null,
           error:
-            "No SSH agent key matched MUX_SIGNING_PUBLIC_KEY/MUX_SIGNING_KEY_FINGERPRINT (check your SSH agent)",
+            "No SSH agent key matched UNIX_SIGNING_PUBLIC_KEY/UNIX_SIGNING_KEY_FINGERPRINT (check your SSH agent)",
         };
       }
 
@@ -437,7 +437,7 @@ export class SigningService {
         "Signing key requires a passphrase. Encrypted key files are skipped unless loaded in your SSH agent (SSH_AUTH_SOCK).";
     } else {
       this.keyLoadError =
-        "No signing key found. Create ~/.mux/message_signing_key or ensure your SSH agent is running (SSH_AUTH_SOCK).";
+        "No signing key found. Create ~/.unix/message_signing_key or ensure your SSH agent is running (SSH_AUTH_SOCK).";
     }
     log.info("[SigningService]", this.keyLoadError);
 
@@ -445,7 +445,7 @@ export class SigningService {
   }
 
   /**
-   * Extract raw private key bytes from sshpk key for use with mux-md-client.
+   * Extract raw private key bytes from sshpk key for use with unix-md-client.
    */
   private extractPrivateKeyBytes(privateKey: sshpk.PrivateKey): Uint8Array {
     // sshpk stores keys with a 'part' object lookup by key component name
@@ -549,9 +549,9 @@ export class SigningService {
   }
 
   /**
-   * Sign a mux.md share payload.
+   * Sign a unix.md share payload.
    *
-   * Returns a mux.md SignatureEnvelope that can be embedded during upload.
+   * Returns a unix.md SignatureEnvelope that can be embedded during upload.
    *
    * @throws Error if no signing key is available.
    */

@@ -186,7 +186,7 @@ describe("createCodeExecutionTool", () => {
       const tool = await createCodeExecutionTool(runtimeFactory, new ToolBridge(mockTools));
 
       const result = (await tool.execute!(
-        { code: "const x = 1;\nconst result = mux.bash({ scriptz: 'ls' });" }, // typo on line 2
+        { code: "const x = 1;\nconst result =unix.bash({ scriptz: 'ls' });" }, // typo on line 2
         mockToolCallOptions
       )) as PTCExecutionResult;
 
@@ -274,7 +274,7 @@ describe("createCodeExecutionTool", () => {
       const tool = await createCodeExecutionTool(runtimeFactory, new ToolBridge(mockTools));
 
       const result = (await tool.execute!(
-        { code: 'return mux.file_read({ filePath: "test.txt" })' },
+        { code: 'returnunix.file_read({ filePath: "test.txt" })' },
         mockToolCallOptions
       )) as PTCExecutionResult;
 
@@ -294,7 +294,7 @@ describe("createCodeExecutionTool", () => {
       const tool = await createCodeExecutionTool(runtimeFactory, new ToolBridge(mockTools));
 
       const result = (await tool.execute!(
-        { code: 'mux.file_read({ filePath: "a.txt" }); return "done"' },
+        { code: 'unix.file_read({ filePath: "a.txt" }); return "done"' },
         mockToolCallOptions
       )) as PTCExecutionResult;
 
@@ -317,7 +317,7 @@ describe("createCodeExecutionTool", () => {
       const tool = await createCodeExecutionTool(runtimeFactory, new ToolBridge(mockTools));
 
       const result = (await tool.execute!(
-        { code: "return mux.file_read({ wrongField: 123 })" },
+        { code: "returnunix.file_read({ wrongField: 123 })" },
         mockToolCallOptions
       )) as PTCExecutionResult;
 
@@ -337,7 +337,7 @@ describe("createCodeExecutionTool", () => {
       const tool = await createCodeExecutionTool(runtimeFactory, new ToolBridge(mockTools));
 
       const result = (await tool.execute!(
-        { code: "return mux.failing_tool({})" },
+        { code: "returnunix.failing_tool({})" },
         mockToolCallOptions
       )) as PTCExecutionResult;
 
@@ -365,9 +365,9 @@ describe("createCodeExecutionTool", () => {
       const result = (await tool.execute!(
         {
           code: `
-            mux.counter({});
-            mux.counter({}); // This one fails
-            mux.counter({}); // Never reached
+           unix.counter({});
+           unix.counter({}); // This one fails
+           unix.counter({}); // Never reached
             return "done";
           `,
         },
@@ -399,7 +399,7 @@ describe("createCodeExecutionTool", () => {
       );
 
       await tool.execute!(
-        { code: 'return mux.file_read({ filePath: "test.txt" })' },
+        { code: 'returnunix.file_read({ filePath: "test.txt" })' },
         mockToolCallOptions
       );
 
@@ -446,7 +446,7 @@ describe("createCodeExecutionTool", () => {
       abortController.abort();
 
       const result = (await tool.execute!(
-        { code: "return mux.slow_tool({})" },
+        { code: "returnunix.slow_tool({})" },
         { toolCallId: "test-1", messages: [], abortSignal: abortController.signal }
       )) as PTCExecutionResult;
 

@@ -121,7 +121,7 @@ describe("ProposePlanToolCall", () => {
   });
 
   test("does not claim plan is in chat when Start Here content is a placeholder", () => {
-    const planPath = "~/.mux/plans/demo/ws-123.md";
+    const planPath = "~/.unix/plans/demo/ws-123.md";
 
     render(
       <TooltipProvider>
@@ -145,7 +145,7 @@ describe("ProposePlanToolCall", () => {
     expect(startHereCalls[0]?.content).toContain("Read the plan file below");
   });
   test("keeps plan file on disk and includes plan path note in Start Here content", () => {
-    const planPath = "~/.mux/plans/demo/ws-123.md";
+    const planPath = "~/.unix/plans/demo/ws-123.md";
 
     render(
       <TooltipProvider>
@@ -176,7 +176,7 @@ describe("ProposePlanToolCall", () => {
 
   test("switches to exec and sends a message when clicking Implement", async () => {
     const workspaceId = "ws-123";
-    const planPath = "~/.mux/plans/demo/ws-123.md";
+    const planPath = "~/.unix/plans/demo/ws-123.md";
 
     // Start in plan mode.
     window.localStorage.setItem(getAgentIdKey(workspaceId), JSON.stringify("plan"));
@@ -243,7 +243,7 @@ describe("ProposePlanToolCall", () => {
 
   test("replaces chat history before implementing when setting enabled", async () => {
     const workspaceId = "ws-123";
-    const planPath = "~/.mux/plans/demo/ws-123.md";
+    const planPath = "~/.unix/plans/demo/ws-123.md";
 
     // Start in plan mode.
     window.localStorage.setItem(getAgentIdKey(workspaceId), JSON.stringify("plan"));

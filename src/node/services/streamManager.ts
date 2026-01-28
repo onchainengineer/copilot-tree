@@ -25,7 +25,7 @@ import type {
 } from "@/common/types/stream";
 
 import type { SendMessageError, StreamErrorType } from "@/common/types/errors";
-import type { MuxMetadata, MuxMessage } from "@/common/types/message";
+import type { UnixMetadata, UnixMessage } from "@/common/types/message";
 import type { NestedToolCall } from "@/common/orpc/schemas/message";
 import {
   coerceStreamErrorTypeForMessage,
@@ -155,7 +155,7 @@ interface WorkspaceStreamInfo {
   token: StreamToken;
   startTime: number;
   model: string;
-  initialMetadata?: Partial<MuxMetadata>;
+  initialMetadata?: Partial<UnixMetadata>;
   request: StreamRequestConfig;
   // Track last prepared step messages for safe retries after tool steps
   stepTracker: StepMessageTracker;
@@ -294,7 +294,7 @@ export class StreamManager extends EventEmitter {
     // Start new write and track the promise
     streamInfo.partialWritePromise = (async () => {
       try {
-        const partialMessage: MuxMessage = {
+        const partialMessage: UnixMessage = {
           id: streamInfo.messageId,
           role: "assistant",
           metadata: {
@@ -348,7 +348,7 @@ export class StreamManager extends EventEmitter {
 
   /**
    * Create a temporary directory for a stream token
-   * Use ~/.mux-tmp instead of system temp directory (e.g., /var/folders/...)
+   * Use ~/.unix-tmp instead of system temp directory (e.g., /var/folders/...)
    * because macOS user-scoped temp paths are extremely long, which leads to:
    * - Agent mistakes when copying/manipulating paths
    * - Harder to read in tool outputs
@@ -357,7 +357,7 @@ export class StreamManager extends EventEmitter {
    * Uses the Runtime abstraction so temp directories work for both local and SSH runtimes.
    */
   public async createTempDirForStream(streamToken: StreamToken, runtime: Runtime): Promise<string> {
-    const tempDir = `~/.mux-tmp/${streamToken}`;
+    const tempDir = `~/.unix-tmp/${streamToken}`;
 
     // Resolve ~ in the runtime's context.
     //
@@ -936,7 +936,7 @@ export class StreamManager extends EventEmitter {
     historySequence: number,
     messageId: string,
     tools?: Record<string, Tool>,
-    initialMetadata?: Partial<MuxMetadata>,
+    initialMetadata?: Partial<UnixMetadata>,
     providerOptions?: Record<string, unknown>,
     maxOutputTokens?: number,
     toolPolicy?: ToolPolicy,
@@ -1163,7 +1163,7 @@ export class StreamManager extends EventEmitter {
     // Console events are not streamed (appear in final result only)
   }
 
-  private getStreamMode(initialMetadata?: Partial<MuxMetadata>): "plan" | "exec" | undefined {
+  private getStreamMode(initialMetadata?: Partial<UnixMetadata>): "plan" | "exec" | undefined {
     const rawMode = initialMetadata?.mode;
     // Stats schema only accepts "plan" | "exec".
     return rawMode === "plan" || rawMode === "exec" ? rawMode : undefined;
@@ -1604,7 +1604,7 @@ export class StreamManager extends EventEmitter {
             // clears history while updateHistory is still running, causing old messages
             // to be written back after compaction completes.
             if (streamInfo.parts && streamInfo.parts.length > 0) {
-              const finalAssistantMessage: MuxMessage = {
+              const finalAssistantMessage: UnixMessage = {
                 id: streamInfo.messageId,
                 role: "assistant",
                 metadata: {
@@ -1766,7 +1766,7 @@ export class StreamManager extends EventEmitter {
     streamInfo: WorkspaceStreamInfo,
     payload: StreamErrorPayload & { errorType: StreamErrorType }
   ): Promise<void> {
-    const errorPartialMessage: MuxMessage = {
+    const errorPartialMessage: UnixMessage = {
       id: payload.messageId,
       role: "assistant",
       metadata: {
@@ -2144,7 +2144,7 @@ export class StreamManager extends EventEmitter {
     messageId: string,
     abortSignal?: AbortSignal,
     tools?: Record<string, Tool>,
-    initialMetadata?: Partial<MuxMetadata>,
+    initialMetadata?: Partial<UnixMetadata>,
     providerOptions?: Record<string, unknown>,
     maxOutputTokens?: number,
     toolPolicy?: ToolPolicy,

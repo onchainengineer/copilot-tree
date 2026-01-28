@@ -71,7 +71,7 @@ describeIntegration("Context exceeded compaction suggestion (UI)", () => {
 
         // Auto-compaction should trigger automatically when context_exceeded occurs
         // and a higher-context model suggestion is available.
-        // We assert on the rendered /compact command (from muxMetadata.rawCommand).
+        // We assert on the rendered /compact command (from unixMetadata.rawCommand).
         await waitFor(
           () => {
             if (!view.container.textContent?.includes(expectedCompactionCommand)) {
@@ -125,7 +125,7 @@ describeIntegration("Context exceeded compaction suggestion (UI)", () => {
         });
 
         // Auto-compaction should use the configured compaction model preference.
-        // We assert on the rendered /compact command (from muxMetadata.rawCommand).
+        // We assert on the rendered /compact command (from unixMetadata.rawCommand).
         await waitFor(
           () => {
             if (!view.container.textContent?.includes(expectedCompactionCommand)) {

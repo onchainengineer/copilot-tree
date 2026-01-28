@@ -1,5 +1,5 @@
 import { type Tool } from "ai";
-import { MUX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/muxChat";
+import { UNIX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/unixChat";
 import assert from "@/common/utils/assert";
 import { createFileReadTool } from "@/node/services/tools/file_read";
 import { createBashTool } from "@/node/services/tools/bash";
@@ -20,8 +20,8 @@ import { createTaskTerminateTool } from "@/node/services/tools/task_terminate";
 import { createTaskListTool } from "@/node/services/tools/task_list";
 import { createAgentSkillReadTool } from "@/node/services/tools/agent_skill_read";
 import { createAgentSkillReadFileTool } from "@/node/services/tools/agent_skill_read_file";
-import { createMuxGlobalAgentsReadTool } from "@/node/services/tools/mux_global_agents_read";
-import { createMuxGlobalAgentsWriteTool } from "@/node/services/tools/mux_global_agents_write";
+import { createUnixGlobalAgentsReadTool } from "@/node/services/tools/unix_global_agents_read";
+import { createUnixGlobalAgentsWriteTool } from "@/node/services/tools/unix_global_agents_write";
 import { createAgentReportTool } from "@/node/services/tools/agent_report";
 import { createSystem1KeepRangesTool } from "@/node/services/tools/system1_keep_ranges";
 import { wrapWithInitWait } from "@/node/services/tools/wrapWithInitWait";
@@ -50,7 +50,7 @@ export interface ToolConfiguration {
   runtime: Runtime;
   /** Environment secrets to inject (optional) */
   secrets?: Record<string, string>;
-  /** MUX_ environment variables (MUX_PROJECT_PATH, MUX_RUNTIME) - set from init hook env */
+  /** UNIX_ environment variables (UNIX_PROJECT_PATH, UNIX_RUNTIME) - set from init hook env */
   muxEnv?: Record<string, string>;
   /** Temporary directory for tool outputs in runtime's context (local or remote) */
   runtimeTempDir: string;
@@ -67,7 +67,7 @@ export interface ToolConfiguration {
    * Used for streaming bash stdout/stderr to the UI without sending it to the model.
    */
   emitChatEvent?: (event: WorkspaceChatMessage) => void;
-  /** Workspace session directory (e.g. ~/.mux/sessions/<workspaceId>) for persistent tool state */
+  /** Workspace session directory (e.g. ~/.unix/sessions/<workspaceId>) for persistent tool state */
   workspaceSessionDir?: string;
   /** Workspace ID for tracking background processes and plan storage */
   workspaceId?: string;
@@ -203,9 +203,9 @@ function wrapToolsWithModelOnlyNotifications(
  * Wrap tools with hook support.
  *
  * If any of these exist, each tool execution is wrapped:
- * - `.mux/tool_pre` (pre-hook)
- * - `.mux/tool_post` (post-hook)
- * - `.mux/tool_hook` (legacy pre+post)
+ * - `.unix/tool_pre` (pre-hook)
+ * - `.unix/tool_post` (post-hook)
+ * - `.unix/tool_hook` (legacy pre+post)
  */
 function wrapToolsWithHooks(
   tools: Record<string, Tool>,
@@ -300,8 +300,8 @@ export async function getToolsForModel(
   // Non-runtime tools execute immediately (no init wait needed)
   // Note: Tool availability is controlled by agent tool policy (allowlist), not mode checks here.
   const nonRuntimeTools: Record<string, Tool> = {
-    mux_global_agents_read: createMuxGlobalAgentsReadTool(config),
-    mux_global_agents_write: createMuxGlobalAgentsWriteTool(config),
+    unix_global_agents_read: createUnixGlobalAgentsReadTool(config),
+    unix_global_agents_write: createUnixGlobalAgentsWriteTool(config),
     ask_user_question: createAskUserQuestionTool(config),
     propose_plan: createProposePlanTool(config),
     ...(config.enableAgentReport ? { agent_report: createAgentReportTool(config) } : {}),
@@ -377,7 +377,7 @@ export async function getToolsForModel(
   const allowlistedToolNames = new Set(
     getAvailableTools(modelString, {
       enableAgentReport: config.enableAgentReport,
-      enableMuxGlobalAgentsTools: workspaceId === MUX_HELP_CHAT_WORKSPACE_ID,
+      enableUnixGlobalAgentsTools: workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID,
     })
   );
   for (const toolName of Object.keys(mcpTools ?? {})) {

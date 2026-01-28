@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Smoke test for mux npm package
+# Smoke test for unix npm package
 # Tests that the package can be installed and the server starts correctly
 
 set -euo pipefail
@@ -85,7 +85,7 @@ cd "$TEST_DIR"
 # Initialize a minimal package.json to avoid npm warnings
 cat >package.json <<EOF
 {
-  "name": "mux-smoke-test",
+  "name": "unix-smoke-test",
   "version": "1.0.0",
   "private": true
 }
@@ -101,25 +101,25 @@ fi
 log_info "✅ Package installed successfully"
 
 # Verify the binary is available
-if [[ ! -f "node_modules/.bin/mux" ]]; then
-  log_error "mux binary not found in node_modules/.bin/"
+if [[ ! -f "node_modules/.bin/unix" ]]; then
+  log_error "unix binary not found in node_modules/.bin/"
   exit 1
 fi
 
-log_info "✅ mux binary found"
+log_info "✅ unix binary found"
 
-# Test that mux api subcommand works (requires ESM bundle api.mjs)
-log_info "Testing mux api subcommand (ESM bundle)..."
-if ! node_modules/.bin/mux api --help >/dev/null 2>&1; then
-  log_error "mux api --help failed - ESM bundle (api.mjs) may be missing from package"
+# Test that unix api subcommand works (requires ESM bundle api.mjs)
+log_info "Testing unix api subcommand (ESM bundle)..."
+if ! node_modules/.bin/unix api --help >/dev/null 2>&1; then
+  log_error "unix api --help failed - ESM bundle (api.mjs) may be missing from package"
   exit 1
 fi
 
-log_info "✅ mux api subcommand works"
+log_info "✅ unix api subcommand works"
 
 # Start the server in background
-log_info "Starting mux server on $SERVER_HOST:$SERVER_PORT..."
-node_modules/.bin/mux server --host "$SERVER_HOST" --port "$SERVER_PORT" >server.log 2>&1 &
+log_info "Starting unix server on $SERVER_HOST:$SERVER_PORT..."
+node_modules/.bin/unix server --host "$SERVER_HOST" --port "$SERVER_PORT" >server.log 2>&1 &
 SERVER_PID=$!
 
 log_info "Server started with PID: $SERVER_PID"
@@ -195,8 +195,8 @@ touch "$PROJECT_DIR/README.md"
 git -C "$PROJECT_DIR" add .
 git -C "$PROJECT_DIR" commit -m "Initial commit" >/dev/null 2>&1
 
-# Run oRPC tests via Node.js using the installed mux package's dependencies
-# The mux package includes @orpc/client which we can use
+# Run oRPC tests via Node.js using the installed unix package's dependencies
+# The unix package includes @orpc/client which we can use
 node -e "
 const { RPCLink } = require('@orpc/client/fetch');
 const { createORPCClient } = require('@orpc/client');

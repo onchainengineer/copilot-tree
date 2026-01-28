@@ -1,6 +1,6 @@
 # VS Code Extension Build System
 # ==============================
-# Isolated build system for the mux VS Code/Cursor extension
+# Isolated build system for the unix VS Code/Cursor extension
 
 .PHONY: all build install clean test test-integration test-orpc help
 
@@ -24,22 +24,22 @@ node_modules/.installed: package.json
 ## Build extension package
 build: node_modules/.installed ## Build VS Code extension (.vsix)
 	@echo "Building VS Code extension with esbuild..."
-	@rm -rf out mux-0.1.0.vsix
+	@rm -rf out unix-0.1.0.vsix
 	@bun run compile
 	@npx @vscode/vsce package --no-dependencies
-	@echo "✓ Extension packaged: mux-0.1.0.vsix (bundle size: ~27 KB)"
+	@echo "✓ Extension packaged: unix-0.1.0.vsix (bundle size: ~27 KB)"
 
 ## Install extension locally
 install: build ## Build and install extension locally
 	@echo "Installing extension..."
 	@if command -v code >/dev/null 2>&1; then \
-		code --install-extension mux-0.1.0.vsix --force && \
+		code --install-extension unix-0.1.0.vsix --force && \
 		echo "✓ Extension installed in VS Code"; \
 	else \
 		echo "⚠ VS Code CLI (code) not found, skipping"; \
 	fi
 	@if command -v cursor >/dev/null 2>&1; then \
-		cursor --install-extension mux-0.1.0.vsix --force && \
+		cursor --install-extension unix-0.1.0.vsix --force && \
 		echo "✓ Extension installed in Cursor"; \
 	else \
 		echo "⚠ Cursor CLI (cursor) not found, skipping"; \
@@ -50,16 +50,16 @@ install: build ## Build and install extension locally
 test: node_modules/.installed ## Run extension unit tests
 	@bun test
 
-## Run extension integration tests (requires running mux server)
-test-integration: node_modules/.installed ## Run extension integration tests (requires mux server)
+## Run extension integration tests (requires running unix server)
+test-integration: node_modules/.installed ## Run extension integration tests (requires unix server)
 	@TEST_INTEGRATION=1 bun test
 
-## Run oRPC connection smoke test (requires running mux server)
-test-orpc: ## Connect to mux server and list workspaces via oRPC
+## Run oRPC connection smoke test (requires running unix server)
+test-orpc: ## Connect to unix server and list workspaces via oRPC
 	@TEST_INTEGRATION=1 bun test ./src/api/orpcConnection.integration.test.ts
 
 ## Clean build artifacts
 clean: ## Clean build artifacts
 	@echo "Cleaning extension build artifacts..."
-	@rm -rf out mux-0.1.0.vsix node_modules/.installed
+	@rm -rf out unix-0.1.0.vsix node_modules/.installed
 	@echo "✓ Clean complete"

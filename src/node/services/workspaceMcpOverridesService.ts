@@ -10,7 +10,7 @@ import { createRuntimeForWorkspace } from "@/node/runtime/runtimeHelpers";
 import { execBuffered, readFileString, writeFileString } from "@/node/utils/runtime/helpers";
 import { log } from "@/node/services/log";
 
-const MCP_OVERRIDES_DIR = ".mux";
+const MCP_OVERRIDES_DIR = ".unix";
 const MCP_OVERRIDES_JSONC = "mcp.local.jsonc";
 const MCP_OVERRIDES_JSON = "mcp.local.json";
 
@@ -23,7 +23,7 @@ function joinForRuntime(runtimeConfig: RuntimeConfig | undefined, ...parts: stri
   assert(parts.length > 0, "joinForRuntime requires at least one path segment");
 
   // Remote runtimes run inside a POSIX shell (SSH host, Docker container), even if the user is
-  // running mux on Windows. Use POSIX joins so we don't accidentally introduce backslashes.
+  // running unix on Windows. Use POSIX joins so we don't accidentally introduce backslashes.
   const usePosix = runtimeConfig?.type === "ssh" || runtimeConfig?.type === "docker";
   return usePosix ? path.posix.join(...parts) : path.join(...parts);
 }
@@ -137,7 +137,7 @@ export class WorkspaceMcpOverridesService {
     for (const [_projectPath, projectConfig] of config.projects) {
       const workspace = projectConfig.workspaces.find((w) => w.id === workspaceId);
       if (workspace) {
-        // NOTE: Legacy storage (PR #1180) wrote overrides into ~/.mux/config.json.
+        // NOTE: Legacy storage (PR #1180) wrote overrides into ~/.unix/config.json.
         // We keep reading it here only to migrate into the workspace-local file.
         return workspace.mcp;
       }
@@ -325,9 +325,9 @@ export class WorkspaceMcpOverridesService {
   }
 
   /**
-   * Read workspace MCP overrides from <workspace>/.mux/mcp.local.jsonc.
+   * Read workspace MCP overrides from <workspace>/.unix/mcp.local.jsonc.
    *
-   * If the file doesn't exist, we fall back to legacy overrides stored in ~/.mux/config.json
+   * If the file doesn't exist, we fall back to legacy overrides stored in ~/.unix/config.json
    * and migrate them into the workspace-local file.
    */
   async getOverridesForWorkspace(workspaceId: string): Promise<WorkspaceMCPOverrides> {
@@ -382,7 +382,7 @@ export class WorkspaceMcpOverridesService {
   }
 
   /**
-   * Persist workspace MCP overrides to <workspace>/.mux/mcp.local.jsonc.
+   * Persist workspace MCP overrides to <workspace>/.unix/mcp.local.jsonc.
    *
    * Empty overrides remove the workspace-local file.
    */

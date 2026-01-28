@@ -5,8 +5,8 @@ import { Err, Ok } from "@/common/types/result";
 import {
   buildAuthorizeUrl,
   buildExchangeBody,
-  MUX_GATEWAY_EXCHANGE_URL,
-} from "@/common/constants/muxGatewayOAuth";
+  UNIX_GATEWAY_EXCHANGE_URL,
+} from "@/common/constants/unixGatewayOAuth";
 import type { ProviderService } from "@/node/services/providerService";
 import type { WindowService } from "@/node/services/windowService";
 import { log } from "@/node/services/log";
@@ -46,7 +46,7 @@ function createDeferred<T>(): { promise: Promise<T>; resolve: (value: T) => void
   return { promise, resolve };
 }
 
-export class MuxGatewayOauthService {
+export class UnixGatewayOauthService {
   private readonly desktopFlows = new Map<string, DesktopFlow>();
   private readonly serverFlows = new Map<string, ServerFlow>();
 
@@ -128,7 +128,7 @@ export class MuxGatewayOauthService {
       settled: false,
     });
 
-    log.debug(`Mux Gateway OAuth desktop flow started (flowId=${flowId})`);
+    log.debug(`Unix Gateway OAuth desktop flow started (flowId=${flowId})`);
 
     return Ok({ flowId, authorizeUrl, redirectUri });
   }
@@ -169,7 +169,7 @@ export class MuxGatewayOauthService {
     const flow = this.desktopFlows.get(flowId);
     if (!flow) return;
 
-    log.debug(`Mux Gateway OAuth desktop flow cancelled (flowId=${flowId})`);
+    log.debug(`Unix Gateway OAuth desktop flow cancelled (flowId=${flowId})`);
     await this.finishDesktopFlow(flowId, Err("OAuth flow cancelled"));
   }
 
@@ -190,7 +190,7 @@ export class MuxGatewayOauthService {
       expiresAtMs: Date.now() + DEFAULT_SERVER_TIMEOUT_MS,
     });
 
-    log.debug(`Mux Gateway OAuth server flow started (state=${state})`);
+    log.debug(`Unix Gateway OAuth server flow started (state=${state})`);
 
     return { authorizeUrl, state };
   }
@@ -258,7 +258,7 @@ export class MuxGatewayOauthService {
       return;
     }
 
-    log.debug(`Mux Gateway OAuth callback received (flowId=${input.flowId})`);
+    log.debug(`Unix Gateway OAuth callback received (flowId=${input.flowId})`);
 
     const result = await this.handleCallbackAndExchange({
       state: input.flowId,
@@ -269,7 +269,7 @@ export class MuxGatewayOauthService {
 
     const title = result.success ? "Login complete" : "Login failed";
     const description = result.success
-      ? "You can return to Mux. You may now close this tab."
+      ? "You can return to Unix. You may now close this tab."
       : escapeHtml(result.error);
 
     const html = `<!doctype html>
@@ -286,7 +286,7 @@ export class MuxGatewayOauthService {
     <div class="page">
       <header class="site-header">
         <div class="container">
-          <div class="header-title">mux</div>
+          <div class="header-title">unix</div>
         </div>
       </header>
 
@@ -297,7 +297,7 @@ export class MuxGatewayOauthService {
             <p>${description}</p>
             ${
               result.success
-                ? '<p class="muted">Mux should now be in the foreground. You can close this tab.</p>'
+                ? '<p class="muted">Unix should now be in the foreground. You can close this tab.</p>'
                 : '<p class="muted">You can close this tab.</p>'
             }
           </div>
@@ -350,7 +350,7 @@ export class MuxGatewayOauthService {
       const message = input.errorDescription
         ? `${input.error}: ${input.errorDescription}`
         : input.error;
-      return Err(`Mux Gateway OAuth error: ${message}`);
+      return Err(`Unix Gateway OAuth error: ${message}`);
     }
 
     if (!input.code) {
@@ -363,7 +363,7 @@ export class MuxGatewayOauthService {
     }
 
     const persistResult = this.providerService.setConfig(
-      "mux-gateway",
+      "unix-gateway",
       ["couponCode"],
       tokenResult.data
     );
@@ -371,7 +371,7 @@ export class MuxGatewayOauthService {
       return Err(persistResult.error);
     }
 
-    log.debug(`Mux Gateway OAuth exchange completed (state=${input.state})`);
+    log.debug(`Unix Gateway OAuth exchange completed (state=${input.state})`);
 
     this.windowService?.focusMainWindow();
 
@@ -380,7 +380,7 @@ export class MuxGatewayOauthService {
 
   private async exchangeCodeForToken(code: string): Promise<Result<string, string>> {
     try {
-      const response = await fetch(MUX_GATEWAY_EXCHANGE_URL, {
+      const response = await fetch(UNIX_GATEWAY_EXCHANGE_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -390,20 +390,20 @@ export class MuxGatewayOauthService {
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => "");
-        const prefix = `Mux Gateway exchange failed (${response.status})`;
+        const prefix = `Unix Gateway exchange failed (${response.status})`;
         return Err(errorText ? `${prefix}: ${errorText}` : prefix);
       }
 
       const json = (await response.json()) as { access_token?: unknown };
       const token = typeof json.access_token === "string" ? json.access_token : null;
       if (!token) {
-        return Err("Mux Gateway exchange response missing access_token");
+        return Err("Unix Gateway exchange response missing access_token");
       }
 
       return Ok(token);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      return Err(`Mux Gateway exchange failed: ${message}`);
+      return Err(`Unix Gateway exchange failed: ${message}`);
     }
   }
 

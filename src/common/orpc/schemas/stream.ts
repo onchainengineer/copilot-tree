@@ -5,12 +5,12 @@ import { ChatUsageDisplaySchema } from "./chatStats";
 import { StreamErrorTypeSchema } from "./errors";
 import {
   FilePartSchema,
-  MuxMessageSchema,
-  MuxReasoningPartSchema,
-  MuxTextPartSchema,
-  MuxToolPartSchema,
+  UnixMessageSchema,
+  UnixReasoningPartSchema,
+  UnixTextPartSchema,
+  UnixToolPartSchema,
 } from "./message";
-import { MuxProviderOptionsSchema } from "./providerOptions";
+import { UnixProviderOptionsSchema } from "./providerOptions";
 import { RuntimeModeSchema } from "./runtime";
 
 // Chat Events
@@ -95,9 +95,9 @@ export const StreamDeltaEventSchema = z.object({
 });
 
 export const CompletedMessagePartSchema = z.discriminatedUnion("type", [
-  MuxReasoningPartSchema,
-  MuxTextPartSchema,
-  MuxToolPartSchema,
+  UnixReasoningPartSchema,
+  UnixTextPartSchema,
+  UnixToolPartSchema,
 ]);
 
 // Match LanguageModelV2Usage from @ai-sdk/provider exactly
@@ -149,7 +149,7 @@ export const StreamEndEventSchema = z.object({
       }),
     })
     .meta({
-      description: "Structured metadata from backend - directly mergeable with MuxMetadata",
+      description: "Structured metadata from backend - directly mergeable with UnixMetadata",
     }),
   parts: z.array(CompletedMessagePartSchema).meta({
     description: "Parts array preserves temporal ordering of reasoning, text, and tool calls",
@@ -336,9 +336,9 @@ export const WorkspaceInitEventSchema = z.discriminatedUnion("type", [
 ]);
 
 // Chat message wrapper with type discriminator for streaming events
-// MuxMessageSchema is used for persisted data (chat.jsonl) which doesn't have a type field.
+// UnixMessageSchema is used for persisted data (chat.jsonl) which doesn't have a type field.
 // This wrapper adds a type discriminator for real-time streaming events.
-export const ChatMuxMessageSchema = MuxMessageSchema.extend({
+export const ChatUnixMessageSchema = UnixMessageSchema.extend({
   type: z.literal("message"),
 });
 
@@ -372,7 +372,7 @@ export const RestoreToInputEventSchema = z.object({
 });
 
 // All streaming events now have a `type` field for O(1) discriminated union lookup.
-// MuxMessages (user/assistant chat messages) are emitted with type: "message"
+// UnixMessages (user/assistant chat messages) are emitted with type: "message"
 // when loading from history or sending new messages.
 export const WorkspaceChatMessageSchema = z.discriminatedUnion("type", [
   // Stream lifecycle events
@@ -406,7 +406,7 @@ export const WorkspaceChatMessageSchema = z.discriminatedUnion("type", [
   // Init events
   ...WorkspaceInitEventSchema.def.options,
   // Chat messages with type discriminator
-  ChatMuxMessageSchema,
+  ChatUnixMessageSchema,
 ]);
 
 // Update Status
@@ -458,8 +458,8 @@ export const SendMessageOptionsSchema = z.object({
   mode: AgentModeSchema.optional().catch(undefined).meta({
     description: "Legacy base mode (plan/exec/compact) for backend fallback",
   }),
-  providerOptions: MuxProviderOptionsSchema.optional(),
-  muxMetadata: z.any().optional(), // Black box
+  providerOptions: UnixProviderOptionsSchema.optional(),
+  unixMetadata: z.any().optional(), // Black box
   experiments: ExperimentsSchema.optional(),
   /**
    * When true, workspace-specific agent definitions are disabled.

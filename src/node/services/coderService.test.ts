@@ -959,20 +959,20 @@ describe("deleteWorkspace", () => {
     mockExec = null;
   });
 
-  it("refuses to delete workspace without mux- prefix", async () => {
+  it("refuses to delete workspace without unix- prefix", async () => {
     await service.deleteWorkspace("my-workspace");
 
     // Should not call execAsync at all
     expect(mockExec).not.toHaveBeenCalled();
   });
 
-  it("deletes workspace with mux- prefix", async () => {
+  it("deletes workspace with unix- prefix", async () => {
     mockExec?.mockReturnValue(createMockExecResult(Promise.resolve({ stdout: "", stderr: "" })));
 
-    await service.deleteWorkspace("mux-my-workspace");
+    await service.deleteWorkspace("unix-my-workspace");
 
     expect(mockExec).toHaveBeenCalledWith(expect.stringContaining("coder delete"));
-    expect(mockExec).toHaveBeenCalledWith(expect.stringContaining("mux-my-workspace"));
+    expect(mockExec).toHaveBeenCalledWith(expect.stringContaining("unix-my-workspace"));
   });
 });
 

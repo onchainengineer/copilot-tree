@@ -66,9 +66,9 @@ const SKILL_PACKAGE = {
     name: "react-effects",
     description: "Guidelines for when to use (and avoid) useEffect in React components",
     license: "MIT",
-    compatibility: "Mux desktop app",
+    compatibility: "Unix desktop app",
     metadata: {
-      owner: "mux",
+      owner: "unix",
       audience: "contributors",
     },
   },

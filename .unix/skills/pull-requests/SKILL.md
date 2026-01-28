@@ -12,12 +12,12 @@ Public work (issues/PRs/commits) must use 🤖 in the title and include this foo
 ```md
 ---
 
-_Generated with `mux` • Model: `<modelString>` • Thinking: `<thinkingLevel>` • Cost: `$<costs>`_
+_Generated with `unix` • Model: `<modelString>` • Thinking: `<thinkingLevel>` • Cost: `$<costs>`_
 
-<!-- mux-attribution: model=<modelString> thinking=<thinkingLevel> costs=<costs> -->
+<!-- unix-attribution: model=<modelString> thinking=<thinkingLevel> costs=<costs> -->
 ```
 
-Always check `$MUX_MODEL_STRING`, `$MUX_THINKING_LEVEL`, and `$MUX_COSTS_USD` via bash before creating or updating PRs—include them in the footer if set.
+Always check `$UNIX_MODEL_STRING`, `$UNIX_THINKING_LEVEL`, and `$UNIX_COSTS_USD` via bash before creating or updating PRs—include them in the footer if set.
 
 ## Lifecycle Rules
 

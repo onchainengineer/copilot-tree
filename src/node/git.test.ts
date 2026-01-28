@@ -18,7 +18,7 @@ describe("createWorktree", () => {
 
   beforeAll(async () => {
     // Create a temporary git repository for testing
-    tempGitRepo = await fs.mkdtemp(path.join(os.tmpdir(), "mux-git-test-"));
+    tempGitRepo = await fs.mkdtemp(path.join(os.tmpdir(), "unix-git-test-"));
     await execAsync(`git init`, { cwd: tempGitRepo });
     await execAsync(`git config user.email "test@example.com"`, { cwd: tempGitRepo });
     await execAsync(`git config user.name "Test User"`, { cwd: tempGitRepo });
@@ -109,7 +109,7 @@ describe("cleanStaleLock", () => {
   let tempDir: string;
 
   beforeAll(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-lock-test-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-lock-test-"));
     await fs.mkdir(path.join(tempDir, ".git"));
   });
 

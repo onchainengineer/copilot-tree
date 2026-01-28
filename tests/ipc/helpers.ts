@@ -34,7 +34,7 @@ import type { ToolPolicy } from "../../src/common/utils/tools/toolPolicy";
 import type { WorkspaceSendMessageOutput } from "@/common/orpc/schemas";
 import { WORKSPACE_DEFAULTS } from "@/constants/workspaceDefaults";
 import { HistoryService } from "../../src/node/services/historyService";
-import { createMuxMessage } from "../../src/common/types/message";
+import { createUnixMessage } from "../../src/common/types/message";
 
 const execAsync = promisify(exec);
 import { ORPCError } from "@orpc/client";
@@ -548,7 +548,7 @@ export async function createTempGitRepo(): Promise<string> {
   // eslint-disable-next-line local/no-unsafe-child-process
 
   // Use mkdtemp to avoid race conditions and ensure unique directory
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-repo-"));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-repo-"));
 
   // Use promisify(exec) for test setup - DisposableExec has issues in CI
   // TODO: Investigate why DisposableExec causes empty git output in CI
@@ -571,7 +571,7 @@ export async function createTempGitRepo(): Promise<string> {
  * Creates a bare clone to serve as origin, enabling ahead/behind detection.
  */
 export async function addFakeOrigin(repoPath: string): Promise<void> {
-  const bareDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-bare-"));
+  const bareDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-bare-"));
   await execAsync(`git clone --bare "${repoPath}" "${bareDir}"`);
   await execAsync(`git remote add origin "${bareDir}"`, { cwd: repoPath });
   // Set up tracking for main/master branch
@@ -657,7 +657,7 @@ export async function buildLargeHistory(
   for (let i = 0; i < messageCount; i++) {
     const isUser = i % 2 === 0;
     const role = isUser ? "user" : "assistant";
-    const message = createMuxMessage(`history-msg-${i}`, role, largeText, {});
+    const message = createUnixMessage(`history-msg-${i}`, role, largeText, {});
 
     const result = await historyService.appendToHistory(workspaceId, message);
     if (!result.success) {

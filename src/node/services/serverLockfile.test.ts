@@ -9,7 +9,7 @@ describe("ServerLockfile", () => {
   let lockfile: ServerLockfile;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-lock-test-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-lock-test-"));
     lockfile = new ServerLockfile(tempDir);
   });
 
@@ -128,11 +128,11 @@ describe("ServerLockfile", () => {
 
   test("acquire overwrites existing lockfile", async () => {
     await lockfile.acquire("http://localhost:11111", "first-token");
-    await lockfile.acquire("https://my.machine.local/mux", "second-token");
+    await lockfile.acquire("https://my.machine.local/unix", "second-token");
 
     const data = await lockfile.read();
     expect(data).not.toBeNull();
-    expect(data!.baseUrl).toBe("https://my.machine.local/mux");
+    expect(data!.baseUrl).toBe("https://my.machine.local/unix");
     expect(data!.token).toBe("second-token");
   });
 
@@ -169,10 +169,10 @@ describe("ServerLockfile", () => {
   });
 
   test("supports URLs with path prefixes", async () => {
-    await lockfile.acquire("https://my.machine.local/mux/", "path-token");
+    await lockfile.acquire("https://my.machine.local/unix/", "path-token");
 
     const data = await lockfile.read();
     expect(data).not.toBeNull();
-    expect(data!.baseUrl).toBe("https://my.machine.local/mux/");
+    expect(data!.baseUrl).toBe("https://my.machine.local/unix/");
   });
 });

@@ -240,7 +240,7 @@ export const AGENT_AI_DEFAULTS_KEY = "agentAiDefaults";
 export const VIM_ENABLED_KEY = "vimEnabled";
 
 /**
- * Preferred expiration for mux.md shares (global)
+ * Preferred expiration for unix.md shares (global)
  * Stores: "1h" | "24h" | "7d" | "30d" | "never"
  * Default: "7d"
  */

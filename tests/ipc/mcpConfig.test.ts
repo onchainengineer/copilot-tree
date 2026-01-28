@@ -164,7 +164,7 @@ describeIntegration("MCP project configuration", () => {
       });
 
       // Config file should be written
-      const configPath = path.join(repoPath, ".mux", "mcp.jsonc");
+      const configPath = path.join(repoPath, ".unix", "mcp.jsonc");
       const file = await fs.readFile(configPath, "utf-8");
       expect(JSON.parse(file)).toEqual({
         servers: { "chrome-devtools": CHROME_DEVTOOLS_MCP_NPX },

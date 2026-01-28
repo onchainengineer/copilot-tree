@@ -11,9 +11,9 @@ import * as net from "node:net";
 import * as os from "node:os";
 import { log } from "./log";
 
-// NOTE: Avoid "mux" here: it's an IANA-registered service name ("Multiplexing Protocol"),
+// NOTE: Avoid "unix" here: it's an IANA-registered service name ("Multiplexing Protocol"),
 // and some discovery tools will display/handle it specially.
-export const MUX_MDNS_SERVICE_TYPE = "mux-api";
+export const UNIX_MDNS_SERVICE_TYPE = "unix-api";
 
 type NetworkInterfaces = NodeJS.Dict<os.NetworkInterfaceInfo[]>;
 
@@ -56,7 +56,7 @@ function getNonInternalInterfaceNames(
 }
 type ServiceTxtRecord = Record<string, string>;
 
-export interface BuildMuxMdnsServiceOptions {
+export interface BuildUnixMdnsServiceOptions {
   bindHost: string;
   port: number;
   instanceName: string;
@@ -65,7 +65,7 @@ export interface BuildMuxMdnsServiceOptions {
   networkInterfaces?: NetworkInterfaces;
 }
 
-export function buildMuxMdnsServiceOptions(options: BuildMuxMdnsServiceOptions): ServiceOptions {
+export function buildUnixMdnsServiceOptions(options: BuildUnixMdnsServiceOptions): ServiceOptions {
   const bindHost = options.bindHost.trim();
   assert(bindHost, "bindHost is required");
 
@@ -80,7 +80,7 @@ export function buildMuxMdnsServiceOptions(options: BuildMuxMdnsServiceOptions):
   // DNS-SD service instance names are encoded as a single DNS label. Dots are legal characters
   // in a label, but they must be escaped in the DNS wire format. `@homebridge/ciao` does not
   // appear to escape dots, which results in *multi-label* instance names like:
-  //   mux-host.home._mux-api._tcp.local.
+  //   unix-host.home._mux-api._tcp.local.
   // Those don't show up via Apple's DNSServiceBrowse/DNSServiceResolve APIs (e.g. `dns-sd -B/-L`).
   //
   // To keep discovery tool/client behavior predictable, replace dots with hyphens.
@@ -105,7 +105,7 @@ export function buildMuxMdnsServiceOptions(options: BuildMuxMdnsServiceOptions):
 
   const serviceOptions: ServiceOptions = {
     name: instanceName,
-    type: MUX_MDNS_SERVICE_TYPE,
+    type: UNIX_MDNS_SERVICE_TYPE,
     protocol: Protocol.TCP,
     port: options.port,
     txt,
@@ -113,7 +113,7 @@ export function buildMuxMdnsServiceOptions(options: BuildMuxMdnsServiceOptions):
 
   const networkInterfaces = options.networkInterfaces ?? os.networkInterfaces();
 
-  // If mux is bound to IPv4 wildcard only, don't advertise IPv6 addresses.
+  // If unix is bound to IPv4 wildcard only, don't advertise IPv6 addresses.
   if (bindHost === "0.0.0.0") {
     serviceOptions.disabledIpv6 = true;
 
@@ -130,7 +130,7 @@ export function buildMuxMdnsServiceOptions(options: BuildMuxMdnsServiceOptions):
       serviceOptions.restrictedAddresses = interfaceNames;
     }
   } else if (net.isIP(bindHost)) {
-    // If mux is bound to a specific IP, only advertise that address (otherwise clients may
+    // If unix is bound to a specific IP, only advertise that address (otherwise clients may
     // discover an address that doesn't accept connections).
     serviceOptions.restrictedAddresses = [bindHost];
   }

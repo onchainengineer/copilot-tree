@@ -4,7 +4,7 @@ import { useAPI } from "./API";
 interface TelemetryEnabledContextValue {
   /**
    * Whether link sharing should be enabled.
-   * True unless user explicitly set MUX_DISABLE_TELEMETRY=1.
+   * True unless user explicitly set UNIX_DISABLE_TELEMETRY=1.
    * Null while loading.
    */
   linkSharingEnabled: boolean | null;
@@ -18,7 +18,7 @@ interface TelemetryEnabledProviderProps {
 
 /**
  * Provider that queries the backend once to determine if telemetry is enabled.
- * This is used to conditionally hide features that require network access to mux services.
+ * This is used to conditionally hide features that require network access to unix services.
  */
 export function TelemetryEnabledProvider({ children }: TelemetryEnabledProviderProps) {
   const { api } = useAPI();
@@ -59,7 +59,7 @@ export function TelemetryEnabledProvider({ children }: TelemetryEnabledProviderP
 /**
  * Hook to check if link sharing is enabled.
  * Returns null while loading, then true/false once known.
- * Link sharing is disabled only when user explicitly sets MUX_DISABLE_TELEMETRY=1.
+ * Link sharing is disabled only when user explicitly sets UNIX_DISABLE_TELEMETRY=1.
  */
 export function useLinkSharingEnabled(): boolean | null {
   const context = useContext(TelemetryEnabledContext);

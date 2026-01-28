@@ -562,8 +562,8 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
       "name-status"
     );
 
-    const numstatMarker = "__MUX_REVIEW_FILE_TREE_NUMSTAT__";
-    const nameStatusMarker = "__MUX_REVIEW_FILE_TREE_NAME_STATUS__";
+    const numstatMarker = "__UNIX_REVIEW_FILE_TREE_NUMSTAT__";
+    const nameStatusMarker = "__UNIX_REVIEW_FILE_TREE_NAME_STATUS__";
     const fileTreeCommand = [
       `echo ${shellQuote(numstatMarker)}`,
       numstatCommand,
@@ -1327,7 +1327,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
                 filteredHunks.map((hunk) => {
                   const isSelected = hunk.id === selectedHunkId;
                   const hunkIsRead = isRead(hunk.id);
-                  // Default to now for hunks without first-seen (e.g., old mux versions)
+                  // Default to now for hunks without first-seen (e.g., old unix versions)
                   const hunkFirstSeenAt = firstSeenMap[hunk.id] ?? Date.now();
 
                   return (

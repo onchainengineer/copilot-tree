@@ -3,7 +3,7 @@ import { describe, test, expect, beforeEach, afterEach, mock } from "bun:test";
 import { PartialService } from "./partialService";
 import type { HistoryService } from "./historyService";
 import { Config } from "@/node/config";
-import { createMuxMessage, type MuxMessage } from "@/common/types/message";
+import { createUnixMessage, type UnixMessage } from "@/common/types/message";
 import { Ok } from "@/common/types/result";
 import * as fs from "fs/promises";
 import * as path from "path";
@@ -40,7 +40,7 @@ describe("PartialService - Error Recovery", () => {
 
   test("commitToHistory should strip error metadata and commit parts from errored partial", async () => {
     const workspaceId = "test-workspace";
-    const erroredPartial: MuxMessage = {
+    const erroredPartial: UnixMessage = {
       id: "msg-1",
       role: "assistant",
       metadata: {
@@ -75,7 +75,7 @@ describe("PartialService - Error Recovery", () => {
     // Should have called appendToHistory with cleaned metadata (no error/errorType)
     const appendToHistory = mockHistoryService.appendToHistory as ReturnType<typeof mock>;
     expect(appendToHistory).toHaveBeenCalledTimes(1);
-    const appendedMessage = appendToHistory.mock.calls[0][1] as MuxMessage;
+    const appendedMessage = appendToHistory.mock.calls[0][1] as UnixMessage;
 
     expect(appendedMessage.id).toBe("msg-1");
     expect(appendedMessage.parts).toEqual(erroredPartial.parts);
@@ -90,7 +90,7 @@ describe("PartialService - Error Recovery", () => {
 
   test("commitToHistory should update existing placeholder when errored partial has more parts", async () => {
     const workspaceId = "test-workspace";
-    const erroredPartial: MuxMessage = {
+    const erroredPartial: UnixMessage = {
       id: "msg-1",
       role: "assistant",
       metadata: {
@@ -113,7 +113,7 @@ describe("PartialService - Error Recovery", () => {
       ],
     };
 
-    const existingPlaceholder: MuxMessage = {
+    const existingPlaceholder: UnixMessage = {
       id: "msg-1",
       role: "assistant",
       metadata: {
@@ -146,7 +146,7 @@ describe("PartialService - Error Recovery", () => {
     expect(updateHistory).toHaveBeenCalledTimes(1);
     expect(appendToHistory).not.toHaveBeenCalled();
 
-    const updatedMessage = updateHistory.mock.calls[0][1] as MuxMessage;
+    const updatedMessage = updateHistory.mock.calls[0][1] as UnixMessage;
 
     expect(updatedMessage.parts).toEqual(erroredPartial.parts);
     expect(updatedMessage.metadata?.error).toBeUndefined();
@@ -159,7 +159,7 @@ describe("PartialService - Error Recovery", () => {
 
   test("commitToHistory should skip tool-only incomplete partials", async () => {
     const workspaceId = "test-workspace";
-    const toolOnlyPartial: MuxMessage = {
+    const toolOnlyPartial: UnixMessage = {
       id: "msg-1",
       role: "assistant",
       metadata: {
@@ -198,7 +198,7 @@ describe("PartialService - Error Recovery", () => {
   });
   test("commitToHistory should skip empty errored partial", async () => {
     const workspaceId = "test-workspace";
-    const emptyErrorPartial: MuxMessage = {
+    const emptyErrorPartial: UnixMessage = {
       id: "msg-1",
       role: "assistant",
       metadata: {
@@ -243,7 +243,7 @@ describe("PartialService - Legacy compatibility", () => {
   let partialService: PartialService;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-partial-legacy-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-partial-legacy-"));
     config = new Config(tempDir);
     partialService = new PartialService(config, createMockHistoryService());
   });
@@ -252,20 +252,20 @@ describe("PartialService - Legacy compatibility", () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  test("readPartial upgrades legacy cmuxMetadata", async () => {
+  test("readPartial upgrades legacy cunixMetadata", async () => {
     const workspaceId = "legacy-ws";
     const workspaceDir = config.getSessionDir(workspaceId);
     await fs.mkdir(workspaceDir, { recursive: true });
 
-    const partialMessage = createMuxMessage("partial-1", "assistant", "legacy", {
+    const partialMessage = createUnixMessage("partial-1", "assistant", "legacy", {
       historySequence: 0,
     });
-    (partialMessage.metadata as Record<string, unknown>).cmuxMetadata = { type: "normal" };
+    (partialMessage.metadata as Record<string, unknown>).cunixMetadata = { type: "normal" };
 
     const partialPath = path.join(workspaceDir, "partial.json");
     await fs.writeFile(partialPath, JSON.stringify(partialMessage));
 
     const result = await partialService.readPartial(workspaceId);
-    expect(result?.metadata?.muxMetadata?.type).toBe("normal");
+    expect(result?.metadata?.unixMetadata?.type).toBe("normal");
   });
 });

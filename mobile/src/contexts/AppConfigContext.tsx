@@ -4,8 +4,8 @@ import * as SecureStore from "expo-secure-store";
 import Constants from "expo-constants";
 import { assert } from "@/common/utils/assert";
 
-const STORAGE_KEY_BASE_URL = "com.coder.mux.app-settings.baseUrl";
-const STORAGE_KEY_AUTH_TOKEN = "com.coder.mux.app-settings.authToken";
+const STORAGE_KEY_BASE_URL = "com.coder.unix.app-settings.baseUrl";
+const STORAGE_KEY_AUTH_TOKEN = "com.coder.unix.app-settings.authToken";
 const DEFAULT_BASE_URL = "http://localhost:3000";
 const URL_SCHEME_REGEX = /^[a-z][a-z0-9+.-]*:\/\//i;
 
@@ -29,7 +29,7 @@ function readExpoMuxExtra(): ExpoMuxExtra {
   if (!extra || typeof extra !== "object") {
     return {};
   }
-  const muxExtra = (extra as { mux?: unknown }).mux;
+  const muxExtra = (extra as { unix?: unknown }).unix;
   if (!muxExtra || typeof muxExtra !== "object" || Array.isArray(muxExtra)) {
     return {};
   }

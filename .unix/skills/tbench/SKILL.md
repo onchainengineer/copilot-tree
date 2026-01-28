@@ -1,11 +1,11 @@
 ---
 name: tbench
-description: Terminal-Bench integration for Mux agent benchmarking and failure analysis
+description: Terminal-Bench integration for Unix agent benchmarking and failure analysis
 ---
 
 # Terminal-Bench Integration
 
-This directory contains the mux agent adapter for [Terminal-Bench 2.0](https://tbench.ai/), using [Harbor](https://harborframework.com/) as the evaluation harness.
+This directory contains the unix agent adapter for [Terminal-Bench 2.0](https://tbench.ai/), using [Harbor](https://harborframework.com/) as the evaluation harness.
 
 ## Quick Start
 
@@ -85,7 +85,7 @@ TB_TIMEOUT=600 make benchmark-terminal TB_SAMPLE_SIZE=5
 
 ## Agent Configuration
 
-The mux agent supports the following kwargs (passed via `--agent-kwarg`):
+The unix agent supports the following kwargs (passed via `--agent-kwarg`):
 
 - `model_name`: Model to use (e.g., `anthropic/claude-sonnet-4-5`, `openai/gpt-5-codex`)
 - `thinking_level`: Thinking level (`off`, `low`, `medium`, `high`)
@@ -118,9 +118,9 @@ Results are saved to `runs/YYYY-MM-DD__HH-MM-SS/`:
 
 ## Querying Results from BigQuery
 
-Mux Terminal-Bench results are uploaded to BigQuery after CI runs. Query via `bq` CLI after authenticating with `gcloud auth login` and setting project to `mux-benchmarks`.
+Unix Terminal-Bench results are uploaded to BigQuery after CI runs. Query via `bq` CLI after authenticating with `gcloud auth login` and setting project to `unix-benchmarks`.
 
-**Table:** `mux-benchmarks.benchmarks.tbench_results`
+**Table:** `unix-benchmarks.benchmarks.tbench_results`
 
 **Schema:** `run_id` (STRING), `task_id` (STRING), `model_name` (STRING), `thinking_level` (STRING: off/low/medium/high), `mode` (STRING: plan/exec), `dataset` (STRING), `experiments` (STRING), `passed` (BOOL), `score` (FLOAT), `n_input_tokens` (INT), `n_output_tokens` (INT), `github_run_id` (INT), `github_sha` (STRING), `ingested_at` (TIMESTAMP).
 
@@ -130,7 +130,7 @@ See `.github/workflows/terminal-bench.yml` and `.github/workflows/nightly-termin
 
 ## Leaderboard Submission
 
-To submit mux results to the [Terminal-Bench 2.0 leaderboard](https://tbench.ai/leaderboard/terminal-bench/2.0):
+To submit unix results to the [Terminal-Bench 2.0 leaderboard](https://tbench.ai/leaderboard/terminal-bench/2.0):
 
 ### Step 1: Prepare Submission
 
@@ -148,7 +148,7 @@ python3 benchmarks/terminal_bench/prepare_leaderboard_submission.py --models ant
 This creates a properly structured submission folder at `leaderboard_submission/` containing:
 
 ```
-submissions/terminal-bench/2.0/Mux__<model>/
+submissions/terminal-bench/2.0/Unix__<model>/
   metadata.yaml       # Agent and model info
   <job-folder>/       # Results from the run
     config.json
@@ -176,29 +176,29 @@ hf upload alexgshaw/terminal-bench-2-leaderboard \
   ./leaderboard_submission/submissions submissions \
   --repo-type dataset \
   --create-pr \
-  --commit-message "Mux submission (YYYY-MM-DD)"
+  --commit-message "Unix submission (YYYY-MM-DD)"
 ```
 
 The PR will be automatically validated by the leaderboard bot. Once merged, results appear on the leaderboard.
 
 ## Files
 
-- `mux_agent.py`: Main agent adapter implementing Harbor's `BaseInstalledAgent` interface
-- `mux-run.sh`: Shell script that sets up environment and invokes mux CLI
-- `mux_payload.py`: Helper to package mux app for containerized execution
-- `mux_setup.sh.j2`: Jinja2 template for agent installation script
+- `unix_agent.py`: Main agent adapter implementing Harbor's `BaseInstalledAgent` interface
+- `unix-run.sh`: Shell script that sets up environment and invokes unix CLI
+- `unix_payload.py`: Helper to package unix app for containerized execution
+- `unix_setup.sh.j2`: Jinja2 template for agent installation script
 - `prepare_leaderboard_submission.py`: Script to prepare results for leaderboard submission
 - `analyze_failure_rates.py`: Analyze failure rates to find optimization opportunities
 - `download_run_logs.py`: Download and inspect raw agent logs from nightly runs
 
 ## Comparative Failure Analysis Workflow
 
-When investigating why Mux fails on a task more than other agents, consider this workflow:
+When investigating why Unix fails on a task more than other agents, consider this workflow:
 
 ### 1. Identify High-Priority Failures
 
 ```bash
-# Find tasks where Mux underperforms (high M/O ratio = Mux fails more than others)
+# Find tasks where Unix underperforms (high M/O ratio = Unix fails more than others)
 python benchmarks/terminal_bench/analyze_failure_rates.py --top 20
 ```
 
@@ -206,12 +206,12 @@ python benchmarks/terminal_bench/analyze_failure_rates.py --top 20
 
 ```bash
 # Authenticate and set project
-gcloud auth login && gcloud config set project mux-benchmarks
+gcloud auth login && gcloud config set project unix-benchmarks
 
 # Query pass/fail by model for specific task (strip __hash suffix mentally)
 bq query --use_legacy_sql=false '
 SELECT model_name, passed, COUNT(*) as runs
-FROM `mux-benchmarks.benchmarks.tbench_results`
+FROM `unix-benchmarks.benchmarks.tbench_results`
 WHERE REGEXP_REPLACE(task_id, r"__[a-zA-Z0-9]+$", "") = "TASK_NAME_HERE"
   AND github_workflow = "Nightly Terminal-Bench"
   AND passed IS NOT NULL
@@ -259,17 +259,17 @@ find .leaderboard_cache -path "*TASK_NAME*" -name "result.json" -exec sh -c '
 
 ## Analyzing Failure Rates
 
-To identify where Mux underperforms relative to other top agents, use the analysis script:
+To identify where Unix underperforms relative to other top agents, use the analysis script:
 
 ```bash
-# Run analysis (requires bq CLI for Mux results, git for leaderboard data)
+# Run analysis (requires bq CLI for Unix results, git for leaderboard data)
 python benchmarks/terminal_bench/analyze_failure_rates.py
 
 # Show more results
 python benchmarks/terminal_bench/analyze_failure_rates.py --top 50
 
-# Filter to specific Mux model
-python benchmarks/terminal_bench/analyze_failure_rates.py --mux-model sonnet
+# Filter to specific Unix model
+python benchmarks/terminal_bench/analyze_failure_rates.py --unix-model sonnet
 
 # Force refresh of cached data
 python benchmarks/terminal_bench/analyze_failure_rates.py --refresh
@@ -281,10 +281,10 @@ python benchmarks/terminal_bench/analyze_failure_rates.py --json > opportunities
 The script computes the **M/O ratio** for each task:
 
 ```
-M/O ratio = Mux failure rate / Average failure rate of top 10 agents
+M/O ratio = Unix failure rate / Average failure rate of top 10 agents
 ```
 
-Tasks with **high M/O ratio** are where Mux underperforms relative to competitors—these represent the best optimization opportunities.
+Tasks with **high M/O ratio** are where Unix underperforms relative to competitors—these represent the best optimization opportunities.
 
 Example output:
 
@@ -292,16 +292,16 @@ Example output:
 ================================================================================
 OPTIMIZATION OPPORTUNITIES (sorted by M/O ratio)
 ================================================================================
-Task ID                                   Mux Fail%  Avg Other%  M/O Ratio Agent
+Task ID                                   Unix Fail%  Avg Other%  M/O Ratio Agent
 --------------------------------------------------------------------------------
-some-difficult-task                         100.0%       10.0%       9.09 Mux__Claude-Sonnet-4.5
-another-task                                 80.0%       20.0%       3.64 Mux__Claude-Sonnet-4.5
+some-difficult-task                         100.0%       10.0%       9.09 Unix__Claude-Sonnet-4.5
+another-task                                 80.0%       20.0%       3.64 Unix__Claude-Sonnet-4.5
 ...
 
 ================================================================================
 SUMMARY
 ================================================================================
-Total tasks with Mux failures: 42
+Total tasks with Unix failures: 42
   High priority (M/O > 2.0):   12
   Medium priority (1.0 < M/O ≤ 2.0): 8
 ```

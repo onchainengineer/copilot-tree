@@ -38,18 +38,18 @@ import {
 
 import type { DebugLlmRequestSnapshot } from "@/common/types/debugLlmRequest";
 import type { BashOutputEvent } from "@/common/types/stream";
-import type { MuxMessage, MuxTextPart } from "@/common/types/message";
-import { createMuxMessage } from "@/common/types/message";
+import type { UnixMessage, UnixTextPart } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import type { Config, ProviderConfig } from "@/node/config";
 import { StreamManager } from "./streamManager";
 import type { InitStateManager } from "./initStateManager";
 import type { SendMessageError } from "@/common/types/errors";
 import { getToolsForModel } from "@/common/utils/tools/tools";
 import { createRuntime } from "@/node/runtime/runtimeFactory";
-import { getMuxEnv, getRuntimeType } from "@/node/runtime/initHook";
-import { MUX_HELP_CHAT_AGENT_ID, MUX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/muxChat";
+import { getUnixEnv, getRuntimeType } from "@/node/runtime/initHook";
+import { UNIX_HELP_CHAT_AGENT_ID, UNIX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/unixChat";
 import { secretsToRecord } from "@/common/types/secrets";
-import type { MuxProviderOptions } from "@/common/types/providerOptions";
+import type { UnixProviderOptions } from "@/common/types/providerOptions";
 import type { BackgroundProcessManager } from "@/node/services/backgroundProcessManager";
 import type { FileState, EditedFileAttachment } from "@/node/services/agentSession";
 import { log } from "./log";
@@ -105,7 +105,7 @@ import { EnvHttpProxyAgent, type Dispatcher } from "undici";
 import { hasStartHerePlanSummary } from "@/common/utils/messages/startHerePlanSummary";
 import { getPlanFilePath } from "@/common/utils/planStorage";
 import { getPlanFileHint, getPlanModeInstruction } from "@/common/utils/ui/modeUtils";
-import { MUX_APP_ATTRIBUTION_TITLE, MUX_APP_ATTRIBUTION_URL } from "@/constants/appAttribution";
+import { UNIX_APP_ATTRIBUTION_TITLE, UNIX_APP_ATTRIBUTION_URL } from "@/constants/appAttribution";
 import { readPlanFile } from "@/node/utils/runtime/helpers";
 import {
   readAgentDefinition,
@@ -344,11 +344,11 @@ export function buildAppAttributionHeaders(
   const existingLowercaseKeys = new Set(Object.keys(headers).map((key) => key.toLowerCase()));
 
   if (!existingLowercaseKeys.has("http-referer")) {
-    headers["HTTP-Referer"] = MUX_APP_ATTRIBUTION_URL;
+    headers["HTTP-Referer"] = UNIX_APP_ATTRIBUTION_URL;
   }
 
   if (!existingLowercaseKeys.has("x-title")) {
-    headers["X-Title"] = MUX_APP_ATTRIBUTION_TITLE;
+    headers["X-Title"] = UNIX_APP_ATTRIBUTION_TITLE;
   }
 
   return headers;
@@ -490,8 +490,8 @@ export class AIService extends EventEmitter {
     this.setupStreamEventForwarding();
     this.mockModeEnabled = false;
 
-    if (process.env.MUX_MOCK_AI === "1") {
-      log.info("AIService running in MUX_MOCK_AI mode");
+    if (process.env.UNIX_MOCK_AI === "1") {
+      log.info("AIService running in UNIX_MOCK_AI mode");
       this.enableMockMode();
     }
   }
@@ -649,7 +649,7 @@ export class AIService extends EventEmitter {
    */
   async createModel(
     modelString: string,
-    muxProviderOptions?: MuxProviderOptions
+    muxProviderOptions?: UnixProviderOptions
   ): Promise<Result<LanguageModel, SendMessageError>> {
     try {
       // Parse model string (format: "provider:model-id")
@@ -1089,7 +1089,7 @@ export class AIService extends EventEmitter {
    * @returns Promise that resolves when streaming completes or fails
    */
   async streamMessage(
-    messages: MuxMessage[],
+    messages: UnixMessage[],
     workspaceId: string,
     modelString: string,
     thinkingLevel?: ThinkingLevel,
@@ -1097,7 +1097,7 @@ export class AIService extends EventEmitter {
     abortSignal?: AbortSignal,
     additionalSystemInstructions?: string,
     maxOutputTokens?: number,
-    muxProviderOptions?: MuxProviderOptions,
+    muxProviderOptions?: UnixProviderOptions,
     agentId?: string,
     recordFileState?: (filePath: string, state: FileState) => void,
     changedFileAttachments?: EditedFileAttachment[],
@@ -1149,7 +1149,7 @@ export class AIService extends EventEmitter {
       await this.partialService.commitToHistory(workspaceId);
 
       // Mode (plan|exec|compact) is derived from the selected agent definition.
-      const effectiveMuxProviderOptions: MuxProviderOptions = muxProviderOptions ?? {};
+      const effectiveUnixProviderOptions: UnixProviderOptions = muxProviderOptions ?? {};
       const effectiveThinkingLevel: ThinkingLevel = thinkingLevel ?? "off";
 
       // For xAI models, swap between reasoning and non-reasoning variants based on thinking level
@@ -1158,7 +1158,7 @@ export class AIService extends EventEmitter {
       const [providerName] = parseModelString(modelString);
       const normalizedModelString = normalizeGatewayModel(modelString);
       const [normalizedProviderName, normalizedModelId] = parseModelString(normalizedModelString);
-      const isMuxGatewayModel = providerName === "mux-gateway";
+      const isUnixGatewayModel = providerName === "unix-gateway";
       if (normalizedProviderName === "xai" && normalizedModelId === "grok-4-1-fast") {
         // xAI Grok only supports full reasoning (no medium/low)
         // Map to appropriate variant based on thinking level
@@ -1166,7 +1166,7 @@ export class AIService extends EventEmitter {
           effectiveThinkingLevel !== "off"
             ? "grok-4-1-fast-reasoning"
             : "grok-4-1-fast-non-reasoning";
-        effectiveModelString = isMuxGatewayModel ? `mux-gateway:xai/${variant}` : `xai:${variant}`;
+        effectiveModelString = isUnixGatewayModel ? `unix-gateway:xai/${variant}` : `xai:${variant}`;
         log.debug("Mapping xAI Grok model to variant", {
           original: modelString,
           effective: effectiveModelString,
@@ -1175,7 +1175,7 @@ export class AIService extends EventEmitter {
       }
 
       // Create model instance with early API key validation
-      const modelResult = await this.createModel(effectiveModelString, effectiveMuxProviderOptions);
+      const modelResult = await this.createModel(effectiveModelString, effectiveUnixProviderOptions);
       if (!modelResult.success) {
         return Err(modelResult.error);
       }
@@ -1183,7 +1183,7 @@ export class AIService extends EventEmitter {
       // Dump original messages for debugging
       log.debug_obj(`${workspaceId}/1_original_messages.json`, messages);
 
-      // Normalize provider for provider-specific handling (Mux Gateway models should behave
+      // Normalize provider for provider-specific handling (Unix Gateway models should behave
       // like their underlying provider for message transforms and compliance checks).
       const providerForMessages = normalizedProviderName;
 
@@ -1298,8 +1298,8 @@ export class AIService extends EventEmitter {
       // - Child workspaces (tasks) use their persisted agentId/agentType.
       // - Main workspaces use the requested agentId (frontend), falling back to exec.
       const requestedAgentIdRaw =
-        workspaceId === MUX_HELP_CHAT_WORKSPACE_ID
-          ? MUX_HELP_CHAT_AGENT_ID
+        workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID
+          ? UNIX_HELP_CHAT_AGENT_ID
           : ((metadata.parentWorkspaceId ? (metadata.agentId ?? metadata.agentType) : undefined) ??
             (typeof agentId === "string" ? agentId : undefined) ??
             "exec");
@@ -1356,20 +1356,20 @@ export class AIService extends EventEmitter {
         disableTaskToolsForDepth: shouldDisableTaskToolsForDepth,
       });
 
-      // The Chat with Mux system workspace must remain sandboxed regardless of caller-supplied
+      // The Chat with Unix system workspace must remain sandboxed regardless of caller-supplied
       // toolPolicy (defense-in-depth).
       const systemWorkspaceToolPolicy: ToolPolicy | undefined =
-        workspaceId === MUX_HELP_CHAT_WORKSPACE_ID
+        workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID
           ? [
               { regex_match: ".*", action: "disable" },
 
-              // Allow docs lookup via built-in skills (e.g. mux-docs), while keeping
+              // Allow docs lookup via built-in skills (e.g. unix-docs), while keeping
               // filesystem/binary execution locked down.
               { regex_match: "agent_skill_read", action: "enable" },
               { regex_match: "agent_skill_read_file", action: "enable" },
 
-              { regex_match: "mux_global_agents_read", action: "enable" },
-              { regex_match: "mux_global_agents_write", action: "enable" },
+              { regex_match: "unix_global_agents_read", action: "enable" },
+              { regex_match: "unix_global_agents_write", action: "enable" },
               { regex_match: "ask_user_question", action: "enable" },
               { regex_match: "todo_read", action: "enable" },
               { regex_match: "todo_write", action: "enable" },
@@ -1403,7 +1403,7 @@ export class AIService extends EventEmitter {
       toolNamesForSentinel = Object.keys(earlyTools);
 
       // Fetch workspace MCP overrides (for filtering servers and tools)
-      // NOTE: Stored in <workspace>/.mux/mcp.local.jsonc (not ~/.mux/config.json).
+      // NOTE: Stored in <workspace>/.unix/mcp.local.jsonc (not ~/.unix/config.json).
       let mcpOverrides: WorkspaceMCPOverrides | undefined;
       try {
         mcpOverrides =
@@ -1419,15 +1419,15 @@ export class AIService extends EventEmitter {
       // Fetch MCP server config for system prompt (before building message)
       // Pass overrides to filter out disabled servers
       const mcpServers =
-        this.mcpServerManager && workspaceId !== MUX_HELP_CHAT_WORKSPACE_ID
+        this.mcpServerManager && workspaceId !== UNIX_HELP_CHAT_WORKSPACE_ID
           ? await this.mcpServerManager.listServers(metadata.projectPath, mcpOverrides)
           : undefined;
 
       // Construct plan mode instruction if in plan mode
       // This is done backend-side because we have access to the plan file path
       let effectiveAdditionalInstructions = additionalSystemInstructions;
-      const muxHome = runtime.getMuxHome();
-      const planFilePath = getPlanFilePath(metadata.name, metadata.projectName, muxHome);
+      const unixHome = runtime.getUnixHome();
+      const planFilePath = getPlanFilePath(metadata.name, metadata.projectName, unixHome);
 
       // Read plan file (handles legacy migration transparently)
       const planResult = await readPlanFile(
@@ -1577,8 +1577,8 @@ export class AIService extends EventEmitter {
       const messagesWithToolMediaExtracted =
         extractToolMediaAsUserMessages(messagesWithSanitizedPdf);
 
-      // Convert MuxMessage to ModelMessage format using Vercel AI SDK utility
-      // Type assertion needed because MuxMessage has custom tool parts for interrupted tools
+      // Convert UnixMessage to ModelMessage format using Vercel AI SDK utility
+      // Type assertion needed because UnixMessage has custom tool parts for interrupted tools
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
       const rawModelMessages = convertToModelMessages(messagesWithToolMediaExtracted as any, {
         // Drop unfinished tool calls (input-streaming/input-available) so downstream
@@ -1651,7 +1651,7 @@ export class AIService extends EventEmitter {
 
       // Load project secrets (system workspace never gets secrets injected)
       const projectSecrets =
-        workspaceId === MUX_HELP_CHAT_WORKSPACE_ID
+        workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID
           ? []
           : this.config.getProjectSecrets(metadata.projectPath);
 
@@ -1662,7 +1662,7 @@ export class AIService extends EventEmitter {
       let mcpStats: MCPWorkspaceStats | undefined;
       let mcpSetupDurationMs = 0;
 
-      if (this.mcpServerManager && workspaceId !== MUX_HELP_CHAT_WORKSPACE_ID) {
+      if (this.mcpServerManager && workspaceId !== UNIX_HELP_CHAT_WORKSPACE_ID) {
         const start = Date.now();
         try {
           const result = await this.mcpServerManager.getToolsForWorkspace({
@@ -1694,7 +1694,7 @@ export class AIService extends EventEmitter {
         agentSystemPrompt
       );
 
-      // Calculate cumulative session costs for MUX_COSTS_USD env var
+      // Calculate cumulative session costs for UNIX_COSTS_USD env var
       let sessionCostsUsd: number | undefined;
       if (this.sessionUsageService) {
         const sessionUsage = await this.sessionUsageService.getSessionUsage(workspaceId);
@@ -1711,7 +1711,7 @@ export class AIService extends EventEmitter {
           cwd: workspacePath,
           runtime,
           secrets: secretsToRecord(projectSecrets),
-          muxEnv: getMuxEnv(
+          muxEnv: getUnixEnv(
             metadata.projectPath,
             getRuntimeType(metadata.runtimeConfig),
             metadata.name,
@@ -1759,7 +1759,7 @@ export class AIService extends EventEmitter {
 
       // Apply tool policy FIRST - this must happen before PTC to ensure sandbox
       // respects allow/deny filters. The policy-filtered tools are passed to
-      // ToolBridge so the mux.* API only exposes policy-allowed tools.
+      // ToolBridge so the unix.* API only exposes policy-allowed tools.
       const policyFilteredTools = applyToolPolicy(allToolsWithExtra, effectiveToolPolicy);
 
       // Handle PTC experiments - add or replace tools with code_execution
@@ -1869,7 +1869,7 @@ export class AIService extends EventEmitter {
         return Ok(undefined);
       }
       const assistantMessageId = createAssistantMessageId();
-      const assistantMessage = createMuxMessage(assistantMessageId, "assistant", "", {
+      const assistantMessage = createUnixMessage(assistantMessageId, "assistant", "", {
         timestamp: Date.now(),
         model: modelString,
         systemMessageTokens,
@@ -1887,16 +1887,16 @@ export class AIService extends EventEmitter {
 
       const forceContextLimitError =
         modelString.startsWith("openai:") &&
-        effectiveMuxProviderOptions.openai?.forceContextLimitError === true;
+        effectiveUnixProviderOptions.openai?.forceContextLimitError === true;
       const simulateToolPolicyNoop =
         modelString.startsWith("openai:") &&
-        effectiveMuxProviderOptions.openai?.simulateToolPolicyNoop === true;
+        effectiveUnixProviderOptions.openai?.simulateToolPolicyNoop === true;
 
       if (forceContextLimitError) {
         const errorMessage =
           "Context length exceeded: the conversation is too long to send to this OpenAI model. Please shorten the history and try again.";
 
-        const errorPartialMessage: MuxMessage = {
+        const errorPartialMessage: UnixMessage = {
           id: assistantMessageId,
           role: "assistant",
           metadata: {
@@ -1939,7 +1939,7 @@ export class AIService extends EventEmitter {
       }
 
       if (simulateToolPolicyNoop) {
-        const noopMessage = createMuxMessage(assistantMessageId, "assistant", "", {
+        const noopMessage = createUnixMessage(assistantMessageId, "assistant", "", {
           timestamp: Date.now(),
           model: modelString,
           systemMessageTokens,
@@ -1966,7 +1966,7 @@ export class AIService extends EventEmitter {
         };
         this.emit("stream-start", streamStartEvent);
 
-        const textParts = parts.filter((part): part is MuxTextPart => part.type === "text");
+        const textParts = parts.filter((part): part is UnixTextPart => part.type === "text");
         if (textParts.length === 0) {
           throw new Error("simulateToolPolicyNoop requires at least one text part");
         }
@@ -1999,7 +1999,7 @@ export class AIService extends EventEmitter {
         };
         this.emit("stream-end", streamEndEvent);
 
-        const finalAssistantMessage: MuxMessage = {
+        const finalAssistantMessage: UnixMessage = {
           ...noopMessage,
           metadata: {
             ...noopMessage.metadata,
@@ -2023,14 +2023,14 @@ export class AIService extends EventEmitter {
         effectiveThinkingLevel,
         filteredMessages,
         (id) => this.streamManager.isResponseIdLost(id),
-        effectiveMuxProviderOptions,
+        effectiveUnixProviderOptions,
         workspaceId,
         truncationMode
       );
 
-      // Debug dump: Log the complete LLM request when MUX_DEBUG_LLM_REQUEST is set
+      // Debug dump: Log the complete LLM request when UNIX_DEBUG_LLM_REQUEST is set
       // This helps diagnose issues with system prompts, messages, tools, etc.
-      if (process.env.MUX_DEBUG_LLM_REQUEST === "1") {
+      if (process.env.UNIX_DEBUG_LLM_REQUEST === "1") {
         const llmRequest = {
           workspaceId,
           model: modelString,
@@ -2053,7 +2053,7 @@ export class AIService extends EventEmitter {
           toolPolicy: effectiveToolPolicy,
         };
         log.info(
-          `[MUX_DEBUG_LLM_REQUEST] Full LLM request:\n${JSON.stringify(llmRequest, null, 2)}`
+          `[UNIX_DEBUG_LLM_REQUEST] Full LLM request:\n${JSON.stringify(llmRequest, null, 2)}`
         );
       }
 
@@ -2170,7 +2170,7 @@ export class AIService extends EventEmitter {
 
                 const created = await this.createModel(
                   system1ModelString,
-                  effectiveMuxProviderOptions
+                  effectiveUnixProviderOptions
                 );
                 if (!created.success) {
                   cachedSystem1ModelFailed = true;
@@ -2312,7 +2312,7 @@ export class AIService extends EventEmitter {
                     effectiveSystem1ThinkingLevel,
                     undefined,
                     undefined,
-                    effectiveMuxProviderOptions,
+                    effectiveUnixProviderOptions,
                     workspaceId
                   ) as unknown as Record<string, unknown>;
 
@@ -2863,7 +2863,7 @@ export class AIService extends EventEmitter {
     await this.streamManager.replayStream(workspaceId);
   }
 
-  debugGetLastMockPrompt(workspaceId: string): Result<MuxMessage[] | null> {
+  debugGetLastMockPrompt(workspaceId: string): Result<UnixMessage[] | null> {
     if (typeof workspaceId !== "string" || workspaceId.trim().length === 0) {
       return Err("debugGetLastMockPrompt: workspaceId is required");
     }

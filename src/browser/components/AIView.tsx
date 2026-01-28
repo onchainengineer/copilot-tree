@@ -19,7 +19,7 @@ interface AIViewProps {
   onToggleLeftSidebarCollapsed: () => void;
   runtimeConfig?: RuntimeConfig;
   className?: string;
-  /** If set, workspace is incompatible (from newer mux version) and this error should be displayed */
+  /** If set, workspace is incompatible (from newer unix version) and this error should be displayed */
   incompatibleRuntime?: string;
   /** If 'creating', workspace is still being set up (git operations in progress) */
   status?: "creating";
@@ -27,7 +27,7 @@ interface AIViewProps {
 
 /**
  * Incompatible workspace error display.
- * Shown when a workspace was created with a newer version of mux.
+ * Shown when a workspace was created with a newer version ofunix.
  */
 const IncompatibleWorkspaceView: React.FC<{ message: string; className?: string }> = ({
   message,
@@ -43,7 +43,7 @@ const IncompatibleWorkspaceView: React.FC<{ message: string; className?: string 
       </h2>
       <p className="mb-4 text-[var(--color-text-secondary)]">{message}</p>
       <p className="text-sm text-[var(--color-text-tertiary)]">
-        You can delete this workspace and create a new one, or upgrade mux to use it.
+        You can delete this workspace and create a new one, or upgrade unix to use it.
       </p>
     </div>
   </div>

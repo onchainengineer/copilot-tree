@@ -29,7 +29,7 @@ import type {
 } from "./Runtime";
 import { RemoteRuntime, type SpawnResult } from "./RemoteRuntime";
 import { log } from "@/node/services/log";
-import { checkInitHookExists, getMuxEnv, runInitHookOnRuntime } from "./initHook";
+import { checkInitHookExists, getUnixEnv, runInitHookOnRuntime } from "./initHook";
 import { expandTildeForSSH as expandHookPath } from "./tildeExpansion";
 
 import { expandTildeForSSH, cdCommandForSSH } from "./tildeExpansion";
@@ -163,7 +163,7 @@ export class SSHRuntime extends RemoteRuntime {
       return this.resolvedBgOutputDir;
     }
 
-    let dir = this.config.bgOutputDir ?? "/tmp/mux-bashes";
+    let dir = this.config.bgOutputDir ?? "/tmp/unix-bashes";
 
     if (dir === "~" || dir.startsWith("~/")) {
       const result = await execBuffered(this, 'echo "$HOME"', { cwd: "/", timeout: 10 });
@@ -316,7 +316,7 @@ export class SSHRuntime extends RemoteRuntime {
     abortSignal?: AbortSignal
   ): Promise<void> {
     const timestamp = Date.now();
-    const remoteBundlePath = `~/.mux-bundle-${timestamp}.bundle`;
+    const remoteBundlePath = `~/.unix-bundle-${timestamp}.bundle`;
 
     await syncProjectViaGitBundle({
       projectPath,
@@ -600,17 +600,17 @@ export class SSHRuntime extends RemoteRuntime {
         await this.fastForwardToOrigin(workspacePath, trunkBranch, initLogger, abortSignal);
       }
 
-      // 5. Run .mux/init hook if it exists
+      // 5. Run .unix/init hook if it exists
       // Note: runInitHookOnRuntime calls logComplete() internally
       if (skipInitHook) {
-        initLogger.logStep("Skipping .mux/init hook (disabled for this task)");
+        initLogger.logStep("Skipping .unix/init hook (disabled for this task)");
         initLogger.logComplete(0);
       } else {
         const hookExists = await checkInitHookExists(projectPath);
         if (hookExists) {
-          const muxEnv = { ...env, ...getMuxEnv(projectPath, "ssh", branchName) };
+          const muxEnv = { ...env, ...getUnixEnv(projectPath, "ssh", branchName) };
           // Expand tilde in hook path (quoted paths don't auto-expand on remote)
-          const hookPath = expandHookPath(`${workspacePath}/.mux/init`);
+          const hookPath = expandHookPath(`${workspacePath}/.unix/init`);
           await runInitHookOnRuntime(
             this,
             hookPath,

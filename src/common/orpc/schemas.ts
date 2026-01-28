@@ -73,7 +73,7 @@ export { BashToolResultSchema, FileTreeNodeSchema } from "./schemas/tools";
 export { SecretSchema } from "./schemas/secrets";
 
 // Provider options schemas
-export { MuxProviderOptionsSchema } from "./schemas/providerOptions";
+export { UnixProviderOptionsSchema } from "./schemas/providerOptions";
 
 // MCP schemas
 export {
@@ -110,18 +110,18 @@ export {
   DynamicToolPartPendingSchema,
   DynamicToolPartSchema,
   FilePartSchema,
-  MuxFilePartSchema,
-  MuxMessageSchema,
-  MuxReasoningPartSchema,
-  MuxTextPartSchema,
-  MuxToolPartSchema,
+  UnixFilePartSchema,
+  UnixMessageSchema,
+  UnixReasoningPartSchema,
+  UnixTextPartSchema,
+  UnixToolPartSchema,
 } from "./schemas/message";
-export type { FilePart, MuxFilePart } from "./schemas/message";
+export type { FilePart, UnixFilePart } from "./schemas/message";
 
 // Stream event schemas
 export {
   CaughtUpMessageSchema,
-  ChatMuxMessageSchema,
+  ChatUnixMessageSchema,
   CompletedMessagePartSchema,
   DeleteMessageSchema,
   ErrorEventSchema,

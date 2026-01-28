@@ -15,7 +15,7 @@ PR_NUMBER="$1"
 # Query for unresolved review threads
 UNRESOLVED=$(gh api graphql -f query="
 {
-  repository(owner: \"devos\", name: \"mux\") {
+  repository(owner: \"devos\", name: \"unix\") {
     pullRequest(number: $PR_NUMBER) {
       reviewThreads(first: 100) {
         nodes {

@@ -22,12 +22,12 @@ export interface Tokenizer {
 const APPROX_ENCODING = "approx-4";
 
 function shouldUseApproxTokenizer(): boolean {
-  // MUX_FORCE_REAL_TOKENIZER=1 overrides approx mode (for tests that need real tokenization)
-  // MUX_APPROX_TOKENIZER=1 enables fast approximate mode (default in Jest)
-  if (process.env.MUX_FORCE_REAL_TOKENIZER === "1") {
+  // UNIX_FORCE_REAL_TOKENIZER=1 overrides approx mode (for tests that need real tokenization)
+  // UNIX_APPROX_TOKENIZER=1 enables fast approximate mode (default in Jest)
+  if (process.env.UNIX_FORCE_REAL_TOKENIZER === "1") {
     return false;
   }
-  return process.env.MUX_APPROX_TOKENIZER === "1";
+  return process.env.UNIX_APPROX_TOKENIZER === "1";
 }
 
 function approximateCount(text: string): number {

@@ -73,7 +73,7 @@ function hashToolDefinitions(tools: Record<string, Tool>): string {
 }
 
 /**
- * Get cached mux types or generate new ones if tool definitions changed.
+ * Get cached unix types or generate new ones if tool definitions changed.
  */
 export async function getCachedMuxTypes(tools: Record<string, Tool>): Promise<string> {
   const hash = hashToolDefinitions(tools);
@@ -188,7 +188,7 @@ async function getResultTypeString(toolName: string): Promise<string | null> {
  * @returns `.d.ts` content as a string
  */
 export async function generateMuxTypes(tools: Record<string, Tool>): Promise<string> {
-  const lines: string[] = ["declare namespace mux {"];
+  const lines: string[] = ["declare namespace unix {"];
   let mcpToolsPresent = false;
 
   // Sort tool names for deterministic output

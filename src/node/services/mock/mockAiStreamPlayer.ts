@@ -1,6 +1,6 @@
 import assert from "@/common/utils/assert";
-import type { MuxMessage } from "@/common/types/message";
-import { createMuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import type { HistoryService } from "@/node/services/historyService";
 import type { Result } from "@/common/types/result";
 import { Ok, Err } from "@/common/types/result";
@@ -128,22 +128,22 @@ export class MockAiStreamPlayer {
   private readonly streamStartGates = new Map<string, StreamStartGate>();
   private readonly releasedStreamStartGates = new Set<string>();
   private readonly router = new MockAiRouter();
-  private readonly lastPromptByWorkspace = new Map<string, MuxMessage[]>();
+  private readonly lastPromptByWorkspace = new Map<string, UnixMessage[]>();
   private readonly activeStreams = new Map<string, ActiveStream>();
   private nextMockMessageId = 0;
 
   constructor(private readonly deps: MockPlayerDeps) {}
 
-  debugGetLastPrompt(workspaceId: string): MuxMessage[] | null {
+  debugGetLastPrompt(workspaceId: string): UnixMessage[] | null {
     return this.lastPromptByWorkspace.get(workspaceId) ?? null;
   }
 
-  private recordLastPrompt(workspaceId: string, messages: MuxMessage[]): void {
+  private recordLastPrompt(workspaceId: string, messages: UnixMessage[]): void {
     try {
       const cloned =
         typeof structuredClone === "function"
           ? structuredClone(messages)
-          : (JSON.parse(JSON.stringify(messages)) as MuxMessage[]);
+          : (JSON.parse(JSON.stringify(messages)) as UnixMessage[]);
       this.lastPromptByWorkspace.set(workspaceId, cloned);
     } catch {
       this.lastPromptByWorkspace.set(workspaceId, messages);
@@ -229,7 +229,7 @@ export class MockAiStreamPlayer {
   }
 
   async play(
-    messages: MuxMessage[],
+    messages: UnixMessage[],
     workspaceId: string,
     options?: {
       model?: string;
@@ -309,7 +309,7 @@ export class MockAiStreamPlayer {
 
     let historySequence = this.computeNextHistorySequence(messages);
 
-    const assistantMessage = createMuxMessage(messageId, "assistant", "", {
+    const assistantMessage = createUnixMessage(messageId, "assistant", "", {
       timestamp: Date.now(),
       model: streamStart.model,
     });
@@ -546,7 +546,7 @@ export class MockAiStreamPlayer {
         if (historyResult.success) {
           const existingMessage = historyResult.data.find((msg) => msg.id === messageId);
           if (existingMessage?.metadata?.historySequence !== undefined) {
-            const completedMessage: MuxMessage = {
+            const completedMessage: UnixMessage = {
               id: messageId,
               role: "assistant",
               parts: event.parts,
@@ -593,14 +593,14 @@ export class MockAiStreamPlayer {
     this.activeStreams.delete(workspaceId);
   }
 
-  private extractText(message: MuxMessage): string {
+  private extractText(message: UnixMessage): string {
     return message.parts
       .filter((part) => "text" in part)
       .map((part) => (part as { text: string }).text)
       .join("");
   }
 
-  private computeNextHistorySequence(messages: MuxMessage[]): number {
+  private computeNextHistorySequence(messages: UnixMessage[]): number {
     let maxSequence = 0;
     for (const message of messages) {
       const seq = message.metadata?.historySequence;

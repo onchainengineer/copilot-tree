@@ -12,7 +12,7 @@ import type { BackgroundProcessManager } from "@/node/services/backgroundProcess
 import type { Config } from "@/node/config";
 
 import type { FrontendWorkspaceMetadata } from "@/common/types/workspace";
-import { createMuxMessage, type MuxMessage } from "@/common/types/message";
+import { createUnixMessage, type UnixMessage } from "@/common/types/message";
 import type { SendMessageError } from "@/common/types/errors";
 import type { Result } from "@/common/types/result";
 import { Ok } from "@/common/types/result";
@@ -21,8 +21,8 @@ import { AgentSession } from "./agentSession";
 
 describe("AgentSession.sendMessage (agent skill snapshots)", () => {
   async function createTestWorkspaceWithSkill(args: { skillName: string; skillBody: string }) {
-    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mux-agent-skill-"));
-    const skillDir = path.join(tmp, ".mux", "skills", args.skillName);
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "unix-agent-skill-"));
+    const skillDir = path.join(tmp, ".unix", "skills", args.skillName);
     await fs.mkdir(skillDir, { recursive: true });
 
     const skillMarkdown = `---\nname: ${args.skillName}\ndescription: Test skill\n---\n\n${args.skillBody}\n`;
@@ -44,10 +44,10 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
       getSessionDir: (_workspaceId: string) => "/tmp",
     } as unknown as Config;
 
-    const messages: MuxMessage[] = [];
+    const messages: UnixMessage[] = [];
     let nextSeq = 0;
 
-    const appendToHistory = mock((_workspaceId: string, message: MuxMessage) => {
+    const appendToHistory = mock((_workspaceId: string, message: UnixMessage) => {
       message.metadata = { ...(message.metadata ?? {}), historySequence: nextSeq++ };
       messages.push(message);
       return Promise.resolve(Ok(undefined));
@@ -59,7 +59,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
         void _messageId;
         return Promise.resolve(Ok(undefined));
       }),
-      getHistory: mock((_workspaceId: string): Promise<Result<MuxMessage[], string>> => {
+      getHistory: mock((_workspaceId: string): Promise<Result<UnixMessage[], string>> => {
         return Promise.resolve(Ok([...messages]));
       }),
     } as unknown as HistoryService;
@@ -79,7 +79,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
       runtimeConfig: { type: "local" },
     } as unknown as FrontendWorkspaceMetadata;
 
-    const streamMessage = mock((_messages: MuxMessage[]) => {
+    const streamMessage = mock((_messages: UnixMessage[]) => {
       return Promise.resolve(Ok(undefined));
     });
 
@@ -114,7 +114,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
     const result = await session.sendMessage("do X", {
       model: "anthropic:claude-3-5-sonnet-latest",
       agentId: "exec",
-      muxMetadata: {
+      unixMetadata: {
         type: "agent-skill",
         rawCommand: "/test-skill do X",
         skillName: "test-skill",
@@ -150,17 +150,17 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
       skillBody: "Project override for init skill.",
     });
 
-    const srcBaseDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-agent-skill-src-"));
+    const srcBaseDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-agent-skill-src-"));
 
     const config = {
       srcDir: "/tmp",
       getSessionDir: (_workspaceId: string) => "/tmp",
     } as unknown as Config;
 
-    const messages: MuxMessage[] = [];
+    const messages: UnixMessage[] = [];
     let nextSeq = 0;
 
-    const appendToHistory = mock((_workspaceId: string, message: MuxMessage) => {
+    const appendToHistory = mock((_workspaceId: string, message: UnixMessage) => {
       message.metadata = { ...(message.metadata ?? {}), historySequence: nextSeq++ };
       messages.push(message);
       return Promise.resolve(Ok(undefined));
@@ -172,7 +172,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
         void _messageId;
         return Promise.resolve(Ok(undefined));
       }),
-      getHistory: mock((_workspaceId: string): Promise<Result<MuxMessage[], string>> => {
+      getHistory: mock((_workspaceId: string): Promise<Result<UnixMessage[], string>> => {
         return Promise.resolve(Ok([...messages]));
       }),
     } as unknown as HistoryService;
@@ -192,7 +192,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
       runtimeConfig: { type: "worktree", srcBaseDir },
     } as unknown as FrontendWorkspaceMetadata;
 
-    const streamMessage = mock((_messages: MuxMessage[]) => {
+    const streamMessage = mock((_messages: UnixMessage[]) => {
       return Promise.resolve(Ok(undefined));
     });
 
@@ -228,7 +228,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
       model: "anthropic:claude-3-5-sonnet-latest",
       agentId: "exec",
       disableWorkspaceAgents: true,
-      muxMetadata: {
+      unixMetadata: {
         type: "agent-skill",
         rawCommand: "/init",
         skillName: "init",
@@ -258,10 +258,10 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
       getSessionDir: (_workspaceId: string) => "/tmp",
     } as unknown as Config;
 
-    const messages: MuxMessage[] = [];
+    const messages: UnixMessage[] = [];
     let nextSeq = 0;
 
-    const appendToHistory = mock((_workspaceId: string, message: MuxMessage) => {
+    const appendToHistory = mock((_workspaceId: string, message: UnixMessage) => {
       message.metadata = { ...(message.metadata ?? {}), historySequence: nextSeq++ };
       messages.push(message);
       return Promise.resolve(Ok(undefined));
@@ -273,7 +273,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
         void _messageId;
         return Promise.resolve(Ok(undefined));
       }),
-      getHistory: mock((_workspaceId: string): Promise<Result<MuxMessage[], string>> => {
+      getHistory: mock((_workspaceId: string): Promise<Result<UnixMessage[], string>> => {
         return Promise.resolve(Ok([...messages]));
       }),
     } as unknown as HistoryService;
@@ -293,7 +293,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
       runtimeConfig: { type: "local" },
     } as unknown as FrontendWorkspaceMetadata;
 
-    const streamMessage = mock((_messages: MuxMessage[]) => {
+    const streamMessage = mock((_messages: UnixMessage[]) => {
       return Promise.resolve(Ok(undefined));
     });
 
@@ -328,7 +328,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
     const baseOptions = {
       model: "anthropic:claude-3-5-sonnet-latest",
       agentId: "exec",
-      muxMetadata: {
+      unixMetadata: {
         type: "agent-skill",
         rawCommand: "/test-skill do X",
         skillName: "test-skill",
@@ -342,8 +342,8 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
 
     const second = await session.sendMessage("do Y", {
       ...baseOptions,
-      muxMetadata: {
-        ...baseOptions.muxMetadata,
+      unixMetadata: {
+        ...baseOptions.unixMetadata,
         rawCommand: "/test-skill do Y",
       },
     });
@@ -370,13 +370,13 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
     const skillSnapshotId = "agent-skill-snapshot-0";
     const userMessageId = "user-0";
 
-    const historyMessages: MuxMessage[] = [
-      createMuxMessage(fileSnapshotId, "user", "<file>...</file>", {
+    const historyMessages: UnixMessage[] = [
+      createUnixMessage(fileSnapshotId, "user", "<file>...</file>", {
         historySequence: 0,
         synthetic: true,
         fileAtMentionSnapshot: ["@file:foo.txt"],
       }),
-      createMuxMessage(skillSnapshotId, "user", "<agent-skill>...</agent-skill>", {
+      createUnixMessage(skillSnapshotId, "user", "<agent-skill>...</agent-skill>", {
         historySequence: 1,
         synthetic: true,
         agentSkillSnapshot: {
@@ -385,9 +385,9 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
           sha256: "abc",
         },
       }),
-      createMuxMessage(userMessageId, "user", "do X", {
+      createUnixMessage(userMessageId, "user", "do X", {
         historySequence: 2,
-        muxMetadata: {
+        unixMetadata: {
           type: "agent-skill",
           rawCommand: "/test-skill do X",
           skillName: "test-skill",
@@ -404,10 +404,10 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
 
     const historyService = {
       truncateAfterMessage,
-      appendToHistory: mock((_workspaceId: string, _message: MuxMessage) => {
+      appendToHistory: mock((_workspaceId: string, _message: UnixMessage) => {
         return Promise.resolve(Ok(undefined));
       }),
-      getHistory: mock((_workspaceId: string): Promise<Result<MuxMessage[], string>> => {
+      getHistory: mock((_workspaceId: string): Promise<Result<UnixMessage[], string>> => {
         return Promise.resolve(Ok([...historyMessages]));
       }),
     } as unknown as HistoryService;
@@ -420,7 +420,7 @@ describe("AgentSession.sendMessage (agent skill snapshots)", () => {
     const aiService = Object.assign(aiEmitter, {
       isStreaming: mock((_workspaceId: string) => false),
       stopStream: mock((_workspaceId: string) => Promise.resolve(Ok(undefined))),
-      streamMessage: mock((_messages: MuxMessage[]) =>
+      streamMessage: mock((_messages: UnixMessage[]) =>
         Promise.resolve(Ok(undefined))
       ) as unknown as (
         ...args: Parameters<AIService["streamMessage"]>

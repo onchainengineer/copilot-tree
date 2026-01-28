@@ -9,7 +9,7 @@ const describeIntegration = shouldRunIntegrationTests() ? describe : describe.sk
 describeIntegration("ProjectService IPC Handlers", () => {
   test.concurrent("should list projects including the created one", async () => {
     const env = await createTestEnvironment();
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-service-test-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-service-test-"));
     const projectPath = path.join(tempDir, "test-project");
 
     // Setup a valid project
@@ -30,7 +30,7 @@ describeIntegration("ProjectService IPC Handlers", () => {
 
   test.concurrent("should list branches for a valid project", async () => {
     const env = await createTestEnvironment();
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-service-test-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-service-test-"));
     const projectPath = path.join(tempDir, "test-project");
 
     // Setup a valid project
@@ -52,7 +52,7 @@ describeIntegration("ProjectService IPC Handlers", () => {
     // Create another branch
     await execAsync("git checkout -b feature-branch", { cwd: projectPath });
 
-    // Project must be created in Mux to list branches via IPC?
+    // Project must be created in Unix to list branches via IPC?
     // The IPC PROJECT_LIST_BRANCHES takes a path, it doesn't strictly require the project to be in config,
     // but usually we operate on known projects. The implementation validates path.
 
@@ -69,7 +69,7 @@ describeIntegration("ProjectService IPC Handlers", () => {
 
   test.concurrent("should handle secrets operations", async () => {
     const env = await createTestEnvironment();
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-service-test-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-service-test-"));
     const projectPath = path.join(tempDir, "test-project");
 
     await fs.mkdir(projectPath, { recursive: true });
@@ -97,7 +97,7 @@ describeIntegration("ProjectService IPC Handlers", () => {
 
   test.concurrent("should remove a project", async () => {
     const env = await createTestEnvironment();
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-service-test-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-service-test-"));
     const projectPath = path.join(tempDir, "test-project");
 
     await fs.mkdir(projectPath, { recursive: true });

@@ -12,8 +12,8 @@ import {
   stripScopedInstructionSections,
 } from "@/node/utils/main/markdown";
 import type { Runtime } from "@/node/runtime/Runtime";
-import { MUX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/muxChat";
-import { getMuxHome } from "@/common/constants/paths";
+import { UNIX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/unixChat";
+import { getUnixHome } from "@/common/constants/paths";
 import { discoverAgentSkills } from "@/node/services/agentSkills/agentSkillsService";
 import { log } from "@/node/services/log";
 import { getAvailableTools } from "@/common/utils/tools/toolDefinitions";
@@ -41,7 +41,7 @@ function buildTaggedSection(
 
 // #region SYSTEM_PROMPT_DOCS
 // The PRELUDE is intentionally minimal to not conflict with the user's instructions.
-// mux is designed to be model agnostic, and models have shown large inconsistency in how they
+// unix is designed to be model agnostic, and models have shown large inconsistency in how they
 // follow instructions.
 const PRELUDE = ` 
 <prelude>
@@ -126,7 +126,7 @@ function buildEnvironmentContext(workspacePath: string, runtimeType: RuntimeMode
       assertNever(runtimeType, `Unknown runtime type: ${String(runtimeType)}`);
   }
 
-  // Remote runtimes: clarify that MUX_PROJECT_PATH is the user's local path
+  // Remote runtimes: clarify that UNIX_PROJECT_PATH is the user's local path
   const isRemote =
     runtimeType === RUNTIME_MODE.SSH ||
     runtimeType === RUNTIME_MODE.DOCKER ||
@@ -134,7 +134,7 @@ function buildEnvironmentContext(workspacePath: string, runtimeType: RuntimeMode
   if (isRemote) {
     lines = [
       ...lines,
-      "- $MUX_PROJECT_PATH refers to the user's local machine, not this environment",
+      "- $UNIX_PROJECT_PATH refers to the user's local machine, not this environment",
     ];
   }
 
@@ -195,7 +195,7 @@ function buildMCPContext(mcpServers: MCPServerMap): string {
 
   return `
 <mcp>
-MCP (Model Context Protocol) servers provide additional tools. Configured in user's local project's .mux/mcp.jsonc:
+MCP (Model Context Protocol) servers provide additional tools. Configured in user's local project's .unix/mcp.jsonc:
 
 ${serverList}
 
@@ -206,11 +206,11 @@ Use /mcp add|edit|remove or Settings → Projects to manage servers.
 // #endregion SYSTEM_PROMPT_DOCS
 
 /**
- * Get the system directory where global mux configuration lives.
- * Users can place global AGENTS.md and .mux/PLAN.md files here.
+ * Get the system directory where global unix configuration lives.
+ * Users can place global AGENTS.md and .unix/PLAN.md files here.
  */
 function getSystemDirectory(): string {
-  return getMuxHome();
+  return getUnixHome();
 }
 
 /**
@@ -235,7 +235,7 @@ function searchInstructionSources<T>(
  * Extract tool-specific instructions from instruction sources.
  * Searches agent instructions first, then context (workspace/project), then global.
  *
- * @param globalInstructions Global instructions from ~/.mux/AGENTS.md
+ * @param globalInstructions Global instructions from ~/.unix/AGENTS.md
  * @param contextInstructions Context instructions from workspace/project AGENTS.md
  * @param modelString Active model identifier to determine available tools
  * @param options.enableAgentReport Whether to include agent_report in available tools
@@ -248,7 +248,7 @@ export function extractToolInstructions(
   modelString: string,
   options?: {
     enableAgentReport?: boolean;
-    enableMuxGlobalAgentsTools?: boolean;
+    enableUnixGlobalAgentsTools?: boolean;
     agentInstructions?: string;
   }
 ): Record<string, string> {
@@ -296,7 +296,7 @@ export async function readToolInstructions(
 
   return extractToolInstructions(globalInstructions, contextInstructions, modelString, {
     enableAgentReport: Boolean(metadata.parentWorkspaceId),
-    enableMuxGlobalAgentsTools: metadata.id === MUX_HELP_CHAT_WORKSPACE_ID,
+    enableUnixGlobalAgentsTools: metadata.id === UNIX_HELP_CHAT_WORKSPACE_ID,
     agentInstructions,
   });
 }
@@ -327,7 +327,7 @@ async function readInstructionSources(
  * Builds a system message for the AI model by combining instruction sources.
  *
  * Instruction layers:
- * 1. Global: ~/.mux/AGENTS.md (always included)
+ * 1. Global: ~/.unix/AGENTS.md (always included)
  * 2. Context: workspace/AGENTS.md OR project/AGENTS.md (workspace takes precedence)
  * 3. Model: Extracts "Model: <regex>" section from context then global (if modelString provided)
  *

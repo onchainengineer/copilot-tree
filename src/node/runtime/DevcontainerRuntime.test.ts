@@ -10,7 +10,7 @@ interface RuntimeState {
 
 function createRuntime(state: RuntimeState): DevcontainerRuntime {
   const runtime = new DevcontainerRuntime({
-    srcBaseDir: "/tmp/mux",
+    srcBaseDir: "/tmp/unix",
     configPath: ".devcontainer/devcontainer.json",
   });
   const internal = runtime as unknown as RuntimeState;
@@ -35,7 +35,7 @@ describe("DevcontainerRuntime.resolvePath", () => {
 
   it("resolves ~/path to cached remoteHomeDir", async () => {
     const runtime = createRuntime({ remoteHomeDir: "/opt/user" });
-    expect(await runtime.resolvePath("~/.mux")).toBe("/opt/user/.mux");
+    expect(await runtime.resolvePath("~/.unix")).toBe("/opt/user/.unix");
   });
 
   it("falls back to /home/<user> without cached home", async () => {
@@ -73,7 +73,7 @@ describe("DevcontainerRuntime.quoteForContainer", () => {
 
   it("uses $HOME expansion for tilde paths", () => {
     const runtime = createRuntime({});
-    expect(quoteForContainer(runtime, "~/.mux")).toBe('"$HOME/.mux"');
+    expect(quoteForContainer(runtime, "~/.unix")).toBe('"$HOME/.unix"');
   });
 });
 
@@ -129,7 +129,7 @@ describe("DevcontainerRuntime.resolveHostPathForMounted", () => {
 
   it("accepts Windows host paths under the workspace root", () => {
     const runtime = createRuntime({ currentWorkspacePath: "C:\\ws\\proj" });
-    const filePath = "C:\\ws\\proj\\.mux\\mcp.local.jsonc";
+    const filePath = "C:\\ws\\proj\\.unix\\mcp.local.jsonc";
     expect(resolveHostPathForMounted(runtime, filePath)).toBe(filePath);
   });
 });
@@ -143,9 +143,9 @@ describe("DevcontainerRuntime.mapHostPathToContainer", () => {
   it("maps host workspace root to container workspace", () => {
     const runtime = createRuntime({
       remoteWorkspaceFolder: "/workspaces/project",
-      currentWorkspacePath: "/home/user/mux/project/branch",
+      currentWorkspacePath: "/home/user/unix/project/branch",
     });
-    expect(mapHostPathToContainer(runtime, "/home/user/mux/project/branch")).toBe(
+    expect(mapHostPathToContainer(runtime, "/home/user/unix/project/branch")).toBe(
       "/workspaces/project"
     );
   });
@@ -153,9 +153,9 @@ describe("DevcontainerRuntime.mapHostPathToContainer", () => {
   it("maps host subpath to container subpath", () => {
     const runtime = createRuntime({
       remoteWorkspaceFolder: "/workspaces/project",
-      currentWorkspacePath: "/home/user/mux/project/branch",
+      currentWorkspacePath: "/home/user/unix/project/branch",
     });
-    expect(mapHostPathToContainer(runtime, "/home/user/mux/project/branch/src/file.ts")).toBe(
+    expect(mapHostPathToContainer(runtime, "/home/user/unix/project/branch/src/file.ts")).toBe(
       "/workspaces/project/src/file.ts"
     );
   });
@@ -163,18 +163,18 @@ describe("DevcontainerRuntime.mapHostPathToContainer", () => {
   it("normalizes Windows backslashes to forward slashes", () => {
     const runtime = createRuntime({
       remoteWorkspaceFolder: "/workspaces/project",
-      currentWorkspacePath: "C:\\Users\\dev\\mux\\project\\branch",
+      currentWorkspacePath: "C:\\Users\\dev\\unix\\project\\branch",
     });
     // Windows-style path with backslashes should map correctly
     expect(
-      mapHostPathToContainer(runtime, "C:\\Users\\dev\\mux\\project\\branch\\src\\file.ts")
+      mapHostPathToContainer(runtime, "C:\\Users\\dev\\unix\\project\\branch\\src\\file.ts")
     ).toBe("/workspaces/project/src/file.ts");
   });
 
   it("returns null for paths outside workspace", () => {
     const runtime = createRuntime({
       remoteWorkspaceFolder: "/workspaces/project",
-      currentWorkspacePath: "/home/user/mux/project/branch",
+      currentWorkspacePath: "/home/user/unix/project/branch",
     });
     expect(mapHostPathToContainer(runtime, "/tmp/other")).toBeNull();
   });

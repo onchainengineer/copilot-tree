@@ -7,7 +7,7 @@ import * as os from "os";
 import * as path from "path";
 
 import type { EventEmitter } from "events";
-import { createMuxMessage, type MuxMessage } from "@/common/types/message";
+import { createUnixMessage, type UnixMessage } from "@/common/types/message";
 import type { StreamEndEvent } from "@/common/types/stream";
 import type { TelemetryService } from "./telemetryService";
 import type { TelemetryEventPayload } from "@/common/telemetry/payload";
@@ -25,7 +25,7 @@ interface ChatEventData {
 }
 
 const createMockHistoryService = () => {
-  let getHistoryResult: Result<MuxMessage[], string> = Ok([]);
+  let getHistoryResult: Result<UnixMessage[], string> = Ok([]);
   let clearHistoryResult: Result<number[], string> = Ok([]);
   let appendToHistoryResult: Result<void, string> = Ok(undefined);
 
@@ -42,7 +42,7 @@ const createMockHistoryService = () => {
     updateHistory,
     truncateAfterMessage,
     // Allow setting mock return values
-    mockGetHistory: (result: Result<MuxMessage[], string>) => {
+    mockGetHistory: (result: Result<UnixMessage[], string>) => {
       getHistoryResult = result;
     },
     mockClearHistory: (result: Result<number[], string>) => {
@@ -85,10 +85,10 @@ const createMockEmitter = (): { emitter: EventEmitter; events: EmittedEvent[] } 
   return { emitter: emitter as EventEmitter, events };
 };
 
-const createCompactionRequest = (id = "req-1"): MuxMessage =>
-  createMuxMessage(id, "user", "Please summarize the conversation", {
+const createCompactionRequest = (id = "req-1"): UnixMessage =>
+  createUnixMessage(id, "user", "Please summarize the conversation", {
     historySequence: 0,
-    muxMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
+    unixMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
   });
 
 const createStreamEndEvent = (
@@ -110,7 +110,7 @@ const createStreamEndEvent = (
 // DRY helper to set up successful compaction scenario
 const setupSuccessfulCompaction = (
   mockHistoryService: ReturnType<typeof createMockHistoryService>,
-  messages: MuxMessage[] = [createCompactionRequest()],
+  messages: UnixMessage[] = [createCompactionRequest()],
   clearedSequences?: number[]
 ) => {
   mockHistoryService.mockGetHistory(Ok(messages));
@@ -139,7 +139,7 @@ describe("CompactionHandler", () => {
     });
     telemetryService = { capture: telemetryCapture } as unknown as TelemetryService;
 
-    sessionDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-compaction-handler-"));
+    sessionDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-compaction-handler-"));
 
     mockHistoryService = createMockHistoryService();
     mockPartialService = createMockPartialService();
@@ -156,9 +156,9 @@ describe("CompactionHandler", () => {
 
   describe("handleCompletion() - Normal Compaction Flow", () => {
     it("should return false when no compaction request found", async () => {
-      const normalMsg = createMuxMessage("msg1", "user", "Hello", {
+      const normalMsg = createUnixMessage("msg1", "user", "Hello", {
         historySequence: 0,
-        muxMetadata: { type: "normal" },
+        unixMetadata: { type: "normal" },
       });
       mockHistoryService.mockGetHistory(Ok([normalMsg]));
 
@@ -212,7 +212,7 @@ describe("CompactionHandler", () => {
     it("persists pending diffs to disk and reloads them on restart", async () => {
       const compactionReq = createCompactionRequest();
 
-      const fileEditMessage: MuxMessage = {
+      const fileEditMessage: UnixMessage = {
         id: "assistant-edit",
         role: "assistant",
         parts: [
@@ -305,7 +305,7 @@ describe("CompactionHandler", () => {
       };
       await handler.handleCompletion(event);
 
-      const appendedMsg = mockHistoryService.appendToHistory.mock.calls[0][1] as MuxMessage;
+      const appendedMsg = mockHistoryService.appendToHistory.mock.calls[0][1] as UnixMessage;
       expect((appendedMsg.parts[0] as { type: "text"; text: string }).text).toBe(
         "Part 1 Part 2 Part 3"
       );
@@ -320,7 +320,7 @@ describe("CompactionHandler", () => {
       const event = createStreamEndEvent("This is the summary");
       await handler.handleCompletion(event);
 
-      const appendedMsg = mockHistoryService.appendToHistory.mock.calls[0][1] as MuxMessage;
+      const appendedMsg = mockHistoryService.appendToHistory.mock.calls[0][1] as UnixMessage;
       expect((appendedMsg.parts[0] as { type: "text"; text: string }).text).toBe(
         "This is the summary"
       );
@@ -356,7 +356,7 @@ describe("CompactionHandler", () => {
       expect(mockHistoryService.clearHistory.mock.calls[0][0]).toBe(workspaceId);
       expect(mockHistoryService.appendToHistory.mock.calls).toHaveLength(1);
       expect(mockHistoryService.appendToHistory.mock.calls[0][0]).toBe(workspaceId);
-      const appendedMsg = mockHistoryService.appendToHistory.mock.calls[0][1] as MuxMessage;
+      const appendedMsg = mockHistoryService.appendToHistory.mock.calls[0][1] as UnixMessage;
       expect(appendedMsg.role).toBe("assistant");
       expect((appendedMsg.parts[0] as { type: "text"; text: string }).text).toBe("Summary");
     });
@@ -395,11 +395,11 @@ describe("CompactionHandler", () => {
       await handler.handleCompletion(event);
 
       const summaryEvent = emittedEvents.find((_e) => {
-        const m = _e.data.message as MuxMessage | undefined;
+        const m = _e.data.message as UnixMessage | undefined;
         return m?.role === "assistant" && m?.parts !== undefined;
       });
       expect(summaryEvent).toBeDefined();
-      const sevt = summaryEvent?.data.message as MuxMessage;
+      const sevt = summaryEvent?.data.message as UnixMessage;
       // providerMetadata is omitted to avoid inflating context with pre-compaction cacheCreationInputTokens
       expect(sevt.metadata).toMatchObject({
         model: "claude-3-5-sonnet-20241022",
@@ -436,7 +436,7 @@ describe("CompactionHandler", () => {
       const event = createStreamEndEvent("Summary");
       await handler.handleCompletion(event);
 
-      const appendedMsg = mockHistoryService.appendToHistory.mock.calls[0][1] as MuxMessage;
+      const appendedMsg = mockHistoryService.appendToHistory.mock.calls[0][1] as UnixMessage;
       expect(appendedMsg.metadata?.compacted).toBe("user");
     });
   });
@@ -594,7 +594,7 @@ describe("CompactionHandler", () => {
       });
     });
 
-    it("should emit summary message with proper MuxMessage structure", async () => {
+    it("should emit summary message with proper UnixMessage structure", async () => {
       const compactionReq = createCompactionRequest();
       mockHistoryService.mockGetHistory(Ok([compactionReq]));
       mockHistoryService.mockClearHistory(Ok([0]));
@@ -604,19 +604,19 @@ describe("CompactionHandler", () => {
       await handler.handleCompletion(event);
 
       const summaryEvent = emittedEvents.find((_e) => {
-        const m = _e.data.message as MuxMessage | undefined;
+        const m = _e.data.message as UnixMessage | undefined;
         return m?.role === "assistant" && m?.parts !== undefined;
       });
       expect(summaryEvent).toBeDefined();
-      const summaryMsg = summaryEvent?.data.message as MuxMessage;
+      const summaryMsg = summaryEvent?.data.message as UnixMessage;
       expect(summaryMsg).toMatchObject({
         id: expect.stringContaining("summary-") as string,
         role: "assistant",
         parts: [{ type: "text", text: "Summary text" }],
         metadata: expect.objectContaining({
           compacted: "user",
-          muxMetadata: { type: "normal" },
-        }) as MuxMessage["metadata"],
+          unixMetadata: { type: "normal" },
+        }) as UnixMessage["metadata"],
       });
     });
 
@@ -639,13 +639,13 @@ describe("CompactionHandler", () => {
   describe("Idle Compaction", () => {
     it("should preserve original recency timestamp from last user message", async () => {
       const originalTimestamp = Date.now() - 3600 * 1000; // 1 hour ago
-      const userMessage = createMuxMessage("user-1", "user", "Hello", {
+      const userMessage = createUnixMessage("user-1", "user", "Hello", {
         timestamp: originalTimestamp,
         historySequence: 0,
       });
-      const idleCompactionReq = createMuxMessage("req-1", "user", "Summarize", {
+      const idleCompactionReq = createUnixMessage("req-1", "user", "Summarize", {
         historySequence: 1,
-        muxMetadata: {
+        unixMetadata: {
           type: "compaction-request",
           source: "idle-compaction",
           rawCommand: "/compact",
@@ -661,25 +661,25 @@ describe("CompactionHandler", () => {
       await handler.handleCompletion(event);
 
       const summaryEvent = emittedEvents.find((_e) => {
-        const m = _e.data.message as MuxMessage | undefined;
+        const m = _e.data.message as UnixMessage | undefined;
         return m?.role === "assistant" && m?.metadata?.compacted;
       });
       expect(summaryEvent).toBeDefined();
-      const summaryMsg = summaryEvent?.data.message as MuxMessage;
+      const summaryMsg = summaryEvent?.data.message as UnixMessage;
       expect(summaryMsg.metadata?.timestamp).toBe(originalTimestamp);
       expect(summaryMsg.metadata?.compacted).toBe("idle");
     });
 
     it("should preserve recency from last compacted message if no user message", async () => {
       const compactedTimestamp = Date.now() - 7200 * 1000; // 2 hours ago
-      const compactedMessage = createMuxMessage("compacted-1", "assistant", "Previous summary", {
+      const compactedMessage = createUnixMessage("compacted-1", "assistant", "Previous summary", {
         timestamp: compactedTimestamp,
         compacted: "user",
         historySequence: 0,
       });
-      const idleCompactionReq = createMuxMessage("req-1", "user", "Summarize", {
+      const idleCompactionReq = createUnixMessage("req-1", "user", "Summarize", {
         historySequence: 1,
-        muxMetadata: {
+        unixMetadata: {
           type: "compaction-request",
           source: "idle-compaction",
           rawCommand: "/compact",
@@ -695,29 +695,29 @@ describe("CompactionHandler", () => {
       await handler.handleCompletion(event);
 
       const summaryEvent = emittedEvents.find((_e) => {
-        const m = _e.data.message as MuxMessage | undefined;
+        const m = _e.data.message as UnixMessage | undefined;
         return m?.role === "assistant" && m?.metadata?.compacted === "idle";
       });
       expect(summaryEvent).toBeDefined();
-      const summaryMsg = summaryEvent?.data.message as MuxMessage;
+      const summaryMsg = summaryEvent?.data.message as UnixMessage;
       expect(summaryMsg.metadata?.timestamp).toBe(compactedTimestamp);
     });
 
     it("should use max of user and compacted timestamps", async () => {
       const olderCompactedTimestamp = Date.now() - 7200 * 1000; // 2 hours ago
       const newerUserTimestamp = Date.now() - 3600 * 1000; // 1 hour ago
-      const compactedMessage = createMuxMessage("compacted-1", "assistant", "Previous summary", {
+      const compactedMessage = createUnixMessage("compacted-1", "assistant", "Previous summary", {
         timestamp: olderCompactedTimestamp,
         compacted: "user",
         historySequence: 0,
       });
-      const userMessage = createMuxMessage("user-1", "user", "Hello", {
+      const userMessage = createUnixMessage("user-1", "user", "Hello", {
         timestamp: newerUserTimestamp,
         historySequence: 1,
       });
-      const idleCompactionReq = createMuxMessage("req-1", "user", "Summarize", {
+      const idleCompactionReq = createUnixMessage("req-1", "user", "Summarize", {
         historySequence: 2,
-        muxMetadata: {
+        unixMetadata: {
           type: "compaction-request",
           source: "idle-compaction",
           rawCommand: "/compact",
@@ -733,11 +733,11 @@ describe("CompactionHandler", () => {
       await handler.handleCompletion(event);
 
       const summaryEvent = emittedEvents.find((_e) => {
-        const m = _e.data.message as MuxMessage | undefined;
+        const m = _e.data.message as UnixMessage | undefined;
         return m?.role === "assistant" && m?.metadata?.compacted === "idle";
       });
       expect(summaryEvent).toBeDefined();
-      const summaryMsg = summaryEvent?.data.message as MuxMessage;
+      const summaryMsg = summaryEvent?.data.message as UnixMessage;
       // Should use the newer timestamp (user message)
       expect(summaryMsg.metadata?.timestamp).toBe(newerUserTimestamp);
     });
@@ -745,15 +745,15 @@ describe("CompactionHandler", () => {
     it("should skip compaction-request message when finding timestamp to preserve", async () => {
       const originalTimestamp = Date.now() - 3600 * 1000; // 1 hour ago - the real user message
       const freshTimestamp = Date.now(); // The compaction request has a fresh timestamp
-      const userMessage = createMuxMessage("user-1", "user", "Hello", {
+      const userMessage = createUnixMessage("user-1", "user", "Hello", {
         timestamp: originalTimestamp,
         historySequence: 0,
       });
       // Idle compaction request WITH a timestamp (as happens in production)
-      const idleCompactionReq = createMuxMessage("req-1", "user", "Summarize", {
+      const idleCompactionReq = createUnixMessage("req-1", "user", "Summarize", {
         timestamp: freshTimestamp,
         historySequence: 1,
-        muxMetadata: {
+        unixMetadata: {
           type: "compaction-request",
           source: "idle-compaction",
           rawCommand: "/compact",
@@ -769,11 +769,11 @@ describe("CompactionHandler", () => {
       await handler.handleCompletion(event);
 
       const summaryEvent = emittedEvents.find((_e) => {
-        const m = _e.data.message as MuxMessage | undefined;
+        const m = _e.data.message as UnixMessage | undefined;
         return m?.role === "assistant" && m?.metadata?.compacted;
       });
       expect(summaryEvent).toBeDefined();
-      const summaryMsg = summaryEvent?.data.message as MuxMessage;
+      const summaryMsg = summaryEvent?.data.message as UnixMessage;
       // Should use the OLD user message timestamp, NOT the fresh compaction request timestamp
       expect(summaryMsg.metadata?.timestamp).toBe(originalTimestamp);
       expect(summaryMsg.metadata?.compacted).toBe("idle");
@@ -781,7 +781,7 @@ describe("CompactionHandler", () => {
 
     it("should use current time for non-idle compaction", async () => {
       const oldTimestamp = Date.now() - 3600 * 1000; // 1 hour ago
-      const userMessage = createMuxMessage("user-1", "user", "Hello", {
+      const userMessage = createUnixMessage("user-1", "user", "Hello", {
         timestamp: oldTimestamp,
         historySequence: 0,
       });
@@ -797,11 +797,11 @@ describe("CompactionHandler", () => {
       const afterTime = Date.now();
 
       const summaryEvent = emittedEvents.find((_e) => {
-        const m = _e.data.message as MuxMessage | undefined;
+        const m = _e.data.message as UnixMessage | undefined;
         return m?.role === "assistant" && m?.metadata?.compacted;
       });
       expect(summaryEvent).toBeDefined();
-      const summaryMsg = summaryEvent?.data.message as MuxMessage;
+      const summaryMsg = summaryEvent?.data.message as UnixMessage;
       // Should use current time, not the old user message timestamp
       expect(summaryMsg.metadata?.timestamp).toBeGreaterThanOrEqual(beforeTime);
       expect(summaryMsg.metadata?.timestamp).toBeLessThanOrEqual(afterTime);
@@ -811,10 +811,10 @@ describe("CompactionHandler", () => {
 
   describe("Empty Summary Validation", () => {
     it("should reject compaction when summary is empty (stream crashed)", async () => {
-      const compactionRequestMsg = createMuxMessage("compact-req-1", "user", "/compact", {
+      const compactionRequestMsg = createUnixMessage("compact-req-1", "user", "/compact", {
         historySequence: 0,
         timestamp: Date.now() - 1000,
-        muxMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
+        unixMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
       });
       mockHistoryService.mockGetHistory(Ok([compactionRequestMsg]));
 
@@ -830,10 +830,10 @@ describe("CompactionHandler", () => {
     });
 
     it("should reject compaction when summary is only whitespace", async () => {
-      const compactionRequestMsg = createMuxMessage("compact-req-1", "user", "/compact", {
+      const compactionRequestMsg = createUnixMessage("compact-req-1", "user", "/compact", {
         historySequence: 0,
         timestamp: Date.now() - 1000,
-        muxMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
+        unixMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
       });
       mockHistoryService.mockGetHistory(Ok([compactionRequestMsg]));
 
@@ -849,10 +849,10 @@ describe("CompactionHandler", () => {
 
   describe("Raw JSON Object Validation", () => {
     it("should reject compaction when summary is a raw JSON object", async () => {
-      const compactionRequestMsg = createMuxMessage("compact-req-1", "user", "/compact", {
+      const compactionRequestMsg = createUnixMessage("compact-req-1", "user", "/compact", {
         historySequence: 0,
         timestamp: Date.now() - 1000,
-        muxMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
+        unixMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
       });
       mockHistoryService.mockGetHistory(Ok([compactionRequestMsg]));
 
@@ -874,10 +874,10 @@ describe("CompactionHandler", () => {
     });
 
     it("should reject any JSON object regardless of structure", async () => {
-      const compactionRequestMsg = createMuxMessage("compact-req-1", "user", "/compact", {
+      const compactionRequestMsg = createUnixMessage("compact-req-1", "user", "/compact", {
         historySequence: 0,
         timestamp: Date.now() - 1000,
-        muxMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
+        unixMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
       });
       mockHistoryService.mockGetHistory(Ok([compactionRequestMsg]));
 
@@ -893,10 +893,10 @@ describe("CompactionHandler", () => {
     });
 
     it("should accept valid compaction summary text", async () => {
-      const compactionRequestMsg = createMuxMessage("compact-req-1", "user", "/compact", {
+      const compactionRequestMsg = createUnixMessage("compact-req-1", "user", "/compact", {
         historySequence: 0,
         timestamp: Date.now() - 1000,
-        muxMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
+        unixMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
       });
       mockHistoryService.mockGetHistory(Ok([compactionRequestMsg]));
       mockHistoryService.mockClearHistory(Ok([0]));
@@ -913,10 +913,10 @@ describe("CompactionHandler", () => {
     });
 
     it("should accept summary with embedded JSON as part of prose", async () => {
-      const compactionRequestMsg = createMuxMessage("compact-req-1", "user", "/compact", {
+      const compactionRequestMsg = createUnixMessage("compact-req-1", "user", "/compact", {
         historySequence: 0,
         timestamp: Date.now() - 1000,
-        muxMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
+        unixMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
       });
       mockHistoryService.mockGetHistory(Ok([compactionRequestMsg]));
       mockHistoryService.mockClearHistory(Ok([0]));
@@ -932,10 +932,10 @@ describe("CompactionHandler", () => {
     });
 
     it("should not reject JSON arrays (only objects)", async () => {
-      const compactionRequestMsg = createMuxMessage("compact-req-1", "user", "/compact", {
+      const compactionRequestMsg = createUnixMessage("compact-req-1", "user", "/compact", {
         historySequence: 0,
         timestamp: Date.now() - 1000,
-        muxMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
+        unixMetadata: { type: "compaction-request", rawCommand: "/compact", parsed: {} },
       });
       mockHistoryService.mockGetHistory(Ok([compactionRequestMsg]));
       mockHistoryService.mockClearHistory(Ok([0]));

@@ -43,7 +43,7 @@ describe("validateTypes", () => {
   test("accepts valid code with correct property names", () => {
     const result = validateTypes(
       `
-      const content = mux.file_read({ filePath: "test.txt" });
+      const content =unix.file_read({ filePath: "test.txt" });
       return content.success;
     `,
       muxTypes
@@ -55,7 +55,7 @@ describe("validateTypes", () => {
   test("accepts code using optional properties", () => {
     const result = validateTypes(
       `
-      mux.file_read({ filePath: "test.txt", offset: 10, limit: 50 });
+     unix.file_read({ filePath: "test.txt", offset: 10, limit: 50 });
     `,
       muxTypes
     );
@@ -65,7 +65,7 @@ describe("validateTypes", () => {
   test("catches wrong property name", () => {
     const result = validateTypes(
       `
-      mux.file_read({ path: "test.txt" });
+     unix.file_read({ path: "test.txt" });
     `,
       muxTypes
     );
@@ -79,7 +79,7 @@ describe("validateTypes", () => {
   test("catches missing required property", () => {
     const result = validateTypes(
       `
-      mux.bash({ script: "ls" });
+     unix.bash({ script: "ls" });
     `,
       muxTypes
     );
@@ -91,7 +91,7 @@ describe("validateTypes", () => {
   test("catches wrong type for property", () => {
     const result = validateTypes(
       `
-      mux.file_read({ filePath: 123 });
+     unix.file_read({ filePath: 123 });
     `,
       muxTypes
     );
@@ -104,7 +104,7 @@ describe("validateTypes", () => {
   test("catches calling non-existent tool", () => {
     const result = validateTypes(
       `
-      mux.nonexistent_tool({ foo: "bar" });
+     unix.nonexistent_tool({ foo: "bar" });
     `,
       muxTypes
     );
@@ -116,18 +116,18 @@ describe("validateTypes", () => {
     const result = validateTypes(
       `const x = 1;
 const y = 2;
-mux.file_read({ path: "test.txt" });`,
+unix.file_read({ path: "test.txt" });`,
       muxTypes
     );
     expect(result.valid).toBe(false);
-    // Error should be on line 3 (the mux.file_read call)
+    // Error should be on line 3 (the unix.file_read call)
     const errorWithLine = result.errors.find((e) => e.line !== undefined);
     expect(errorWithLine).toBeDefined();
     expect(errorWithLine!.line).toBe(3);
   });
 
   test("returns line 1 for error on first line", () => {
-    const result = validateTypes(`mux.file_read({ path: "test.txt" });`, muxTypes);
+    const result = validateTypes(`unix.file_read({ path: "test.txt" });`, muxTypes);
     expect(result.valid).toBe(false);
     const errorWithLine = result.errors.find((e) => e.line !== undefined);
     expect(errorWithLine).toBeDefined();
@@ -140,7 +140,7 @@ mux.file_read({ path: "test.txt" });`,
 const b = 2;
 const c = 3;
 const d = 4;
-mux.file_read({ path: "wrong" });`,
+unix.file_read({ path: "wrong" });`,
       muxTypes
     );
     expect(result.valid).toBe(false);
@@ -151,7 +151,7 @@ mux.file_read({ path: "wrong" });`,
 
   test("returns column number for type errors", () => {
     // Column should point to the problematic property
-    const result = validateTypes(`mux.file_read({ path: "test.txt" });`, muxTypes);
+    const result = validateTypes(`unix.file_read({ path: "test.txt" });`, muxTypes);
     expect(result.valid).toBe(false);
     const errorWithLine = result.errors.find((e) => e.column !== undefined);
     expect(errorWithLine).toBeDefined();
@@ -161,7 +161,7 @@ mux.file_read({ path: "wrong" });`,
   test("allows dynamic property access (no strict checking on unknown keys)", () => {
     const result = validateTypes(
       `
-      const result = mux.file_read({ filePath: "test.txt" });
+      const result =unix.file_read({ filePath: "test.txt" });
       const key = "content";
       console.log(result[key]);
     `,
@@ -188,8 +188,8 @@ mux.file_read({ path: "wrong" });`,
     const result = validateTypes(
       `
       const results = {};
-      results.file1 = mux.file_read({ filePath: "a.txt" });
-      results.file2 = mux.file_read({ filePath: "b.txt" });
+      results.file1 =unix.file_read({ filePath: "a.txt" });
+      results.file2 =unix.file_read({ filePath: "b.txt" });
       return results;
     `,
       muxTypes
@@ -197,11 +197,11 @@ mux.file_read({ path: "wrong" });`,
     expect(result.valid).toBe(true);
   });
 
-  test("still catches mux tool typos", () => {
-    // Must not filter errors for typos on the mux namespace
+  test("still catches unix tool typos", () => {
+    // Must not filter errors for typos on the unix namespace
     const result = validateTypes(
       `
-      mux.file_reade({ filePath: "test.txt" });
+     unix.file_reade({ filePath: "test.txt" });
     `,
       muxTypes
     );
@@ -214,7 +214,7 @@ mux.file_read({ path: "wrong" });`,
     const result = validateTypes(
       `
       const results = {};
-      results.file1 = mux.file_read({ filePath: "a.txt" });
+      results.file1 =unix.file_read({ filePath: "a.txt" });
       return results.filee1;  // typo: should be file1
     `,
       muxTypes
@@ -228,7 +228,7 @@ mux.file_read({ path: "wrong" });`,
     const result = validateTypes(
       `
       const config = {};
-      mux.file_read({ filePath: config.path });  // config.path doesn't exist
+     unix.file_read({ filePath: config.path });  // config.path doesn't exist
     `,
       muxTypes
     );
@@ -267,7 +267,7 @@ mux.file_read({ path: "wrong" });`,
       const data = {};
       data.a = 1;
       data.b = 2;
-      data.c = mux.file_read({ filePath: "test.txt" });
+      data.c =unix.file_read({ filePath: "test.txt" });
       data.d = "string";
     `,
       muxTypes
@@ -306,7 +306,7 @@ mux.file_read({ path: "wrong" });`,
     // This is the idiomatic pattern for handling Result types
     const result = validateTypes(
       `
-      const result = mux.file_read({ filePath: "test.txt" });
+      const result =unix.file_read({ filePath: "test.txt" });
       if (!result.success) {
         console.log(result.error);  // Should be allowed after narrowing
         return { error: result.error };
@@ -321,7 +321,7 @@ mux.file_read({ path: "wrong" });`,
   test("allows discriminated union narrowing with === false", () => {
     const result = validateTypes(
       `
-      const result = mux.file_read({ filePath: "test.txt" });
+      const result =unix.file_read({ filePath: "test.txt" });
       if (result.success === false) {
         console.log(result.error);
         return null;
@@ -336,7 +336,7 @@ mux.file_read({ path: "wrong" });`,
   test("catches syntax error gracefully", () => {
     const result = validateTypes(
       `
-      mux.file_read({ filePath: "test.txt" // missing closing brace
+     unix.file_read({ filePath: "test.txt" // missing closing brace
     `,
       muxTypes
     );

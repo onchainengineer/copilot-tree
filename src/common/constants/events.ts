@@ -13,31 +13,31 @@ export const CUSTOM_EVENTS = {
    * Event to show a toast notification when thinking level changes
    * Detail: { workspaceId: string, level: ThinkingLevel }
    */
-  THINKING_LEVEL_TOAST: "mux:thinkingLevelToast",
+  THINKING_LEVEL_TOAST: "unix:thinkingLevelToast",
 
   /**
    * Event to insert text into the chat input
    * Detail: { text: string, mode?: "replace" | "append", fileParts?: FilePart[] }
    */
-  UPDATE_CHAT_INPUT: "mux:updateChatInput",
+  UPDATE_CHAT_INPUT: "unix:updateChatInput",
 
   /**
    * Event to open the model selector
    * No detail
    */
-  OPEN_MODEL_SELECTOR: "mux:openModelSelector",
+  OPEN_MODEL_SELECTOR: "unix:openModelSelector",
 
   /**
    * Event to open the agent picker (AgentModePicker)
    * No detail
    */
-  OPEN_AGENT_PICKER: "mux:openAgentPicker",
+  OPEN_AGENT_PICKER: "unix:openAgentPicker",
 
   /**
    * Event to close the agent picker (AgentModePicker)
    * No detail
    */
-  CLOSE_AGENT_PICKER: "mux:closeAgentPicker",
+  CLOSE_AGENT_PICKER: "unix:closeAgentPicker",
 
   /**
    * Event to trigger resume check for a workspace
@@ -50,36 +50,36 @@ export const CUSTOM_EVENTS = {
    *
    * useResumeManager handles this idempotently - safe to emit multiple times
    */
-  RESUME_CHECK_REQUESTED: "mux:resumeCheckRequested",
+  RESUME_CHECK_REQUESTED: "unix:resumeCheckRequested",
 
   /**
    * Event to switch to a different workspace after fork
    * Detail: { workspaceId: string, projectPath: string, projectName: string, workspacePath: string, branch: string }
    */
-  WORKSPACE_FORK_SWITCH: "mux:workspaceForkSwitch",
+  WORKSPACE_FORK_SWITCH: "unix:workspaceForkSwitch",
 
   /**
    * Event to execute a command from the command palette
    * Detail: { commandId: string }
    */
-  EXECUTE_COMMAND: "mux:executeCommand",
+  EXECUTE_COMMAND: "unix:executeCommand",
   /**
    * Event to enter the chat-based workspace creation experience.
    * Detail: { projectPath: string, startMessage?: string, model?: string, trunkBranch?: string, runtime?: string }
    */
-  START_WORKSPACE_CREATION: "mux:startWorkspaceCreation",
+  START_WORKSPACE_CREATION: "unix:startWorkspaceCreation",
 
   /**
    * Event to toggle voice input (dictation) mode
    * No detail
    */
-  TOGGLE_VOICE_INPUT: "mux:toggleVoiceInput",
+  TOGGLE_VOICE_INPUT: "unix:toggleVoiceInput",
 
   /**
    * Event to open the debug LLM request modal
    * No detail
    */
-  OPEN_DEBUG_LLM_REQUEST: "mux:openDebugLlmRequest",
+  OPEN_DEBUG_LLM_REQUEST: "unix:openDebugLlmRequest",
 } as const;
 
 /**

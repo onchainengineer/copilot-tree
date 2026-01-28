@@ -2,7 +2,7 @@
  * Code Execution Tool for Programmatic Tool Calling (PTC)
  *
  * Executes JavaScript code in a sandboxed QuickJS environment with access to all
- * Mux tools via the `mux.*` namespace. Enables multi-tool workflows in a single
+ * Unix tools via the `unix.*` namespace. Enables multi-tool workflows in a single
  * inference instead of multiple round-trips.
  */
 
@@ -58,7 +58,7 @@ export async function createCodeExecutionTool(
 ): Promise<Tool> {
   const bridgeableTools = toolBridge.getBridgeableTools();
 
-  // Generate mux types for type validation and documentation (cached by tool set hash)
+  // Generate unix types for type validation and documentation (cached by tool set hash)
   const muxTypes = await getCachedMuxTypes(bridgeableTools);
 
   return tool({
@@ -72,20 +72,20 @@ ${muxTypes}
 \`\`\`
 
 **Usage notes:**
-- \`mux.*\` functions are synchronous—do not use \`await\`
+- \`unix.*\` functions are synchronous—do not use \`await\`
 - Use \`return\` to provide a final result to the model
 - Use \`console.log/warn/error\` for debugging - output is captured
 - Results are JSON-serialized; non-serializable values return \`{ error: "..." }\`
 - On failure, partial results (completed tool calls) are returned for debugging
 
-**Security:** The sandbox has no access to \`require\`, \`import\`, \`process\`, \`fetch\`, or filesystem outside of \`mux.*\` tools.`,
+**Security:** The sandbox has no access to \`require\`, \`import\`, \`process\`, \`fetch\`, or filesystem outside of \`unix.*\` tools.`,
 
     inputSchema: z.object({
       code: z
         .string()
         .min(1)
         .describe(
-          "JavaScript code to execute. mux.* calls are synchronous—do not use await. Use 'return' for final result."
+          "JavaScript code to execute.unix.* calls are synchronous—do not use await. Use 'return' for final result."
         ),
       timeout_secs: z
         .number()

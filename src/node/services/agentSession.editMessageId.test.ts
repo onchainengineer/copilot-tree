@@ -6,8 +6,8 @@ import type { PartialService } from "@/node/services/partialService";
 import type { InitStateManager } from "@/node/services/initStateManager";
 import type { BackgroundProcessManager } from "@/node/services/backgroundProcessManager";
 import type { Config } from "@/node/config";
-import { createMuxMessage } from "@/common/types/message";
-import type { MuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import type { SendMessageError } from "@/common/types/errors";
 import type { Result } from "@/common/types/result";
 import { Ok, Err } from "@/common/types/result";
@@ -22,20 +22,20 @@ describe("AgentSession.sendMessage (editMessageId)", () => {
       getSessionDir: (_workspaceId: string) => "/tmp",
     } as unknown as Config;
 
-    const messages: MuxMessage[] = [];
+    const messages: UnixMessage[] = [];
     let nextSeq = 0;
 
     const truncateAfterMessage = mock((_workspaceId: string, messageId: string) => {
       return Promise.resolve(Err(`Message with ID ${messageId} not found in history`));
     });
 
-    const appendToHistory = mock((_workspaceId: string, message: MuxMessage) => {
+    const appendToHistory = mock((_workspaceId: string, message: UnixMessage) => {
       message.metadata = { ...(message.metadata ?? {}), historySequence: nextSeq++ };
       messages.push(message);
       return Promise.resolve(Ok(undefined));
     });
 
-    const getHistory = mock((_workspaceId: string): Promise<Result<MuxMessage[], string>> => {
+    const getHistory = mock((_workspaceId: string): Promise<Result<UnixMessage[], string>> => {
       return Promise.resolve(Ok([...messages]));
     });
 
@@ -50,7 +50,7 @@ describe("AgentSession.sendMessage (editMessageId)", () => {
     } as unknown as PartialService;
 
     const aiEmitter = new EventEmitter();
-    const streamMessage = mock((_messages: MuxMessage[]) => {
+    const streamMessage = mock((_messages: UnixMessage[]) => {
       return Promise.resolve(Ok(undefined));
     });
     const aiService = Object.assign(aiEmitter, {
@@ -103,8 +103,8 @@ describe("AgentSession.sendMessage (editMessageId)", () => {
     const originalMessageId = "user-message-with-image";
     const originalImageUrl = "data:image/png;base64,AAAA";
 
-    const messages: MuxMessage[] = [
-      createMuxMessage(originalMessageId, "user", "original", { historySequence: 0 }, [
+    const messages: UnixMessage[] = [
+      createUnixMessage(originalMessageId, "user", "original", { historySequence: 0 }, [
         { type: "file" as const, mediaType: "image/png", url: originalImageUrl },
       ]),
     ];
@@ -115,13 +115,13 @@ describe("AgentSession.sendMessage (editMessageId)", () => {
       return Promise.resolve(Ok(undefined));
     });
 
-    const appendToHistory = mock((_workspaceId: string, message: MuxMessage) => {
+    const appendToHistory = mock((_workspaceId: string, message: UnixMessage) => {
       message.metadata = { ...(message.metadata ?? {}), historySequence: nextSeq++ };
       messages.push(message);
       return Promise.resolve(Ok(undefined));
     });
 
-    const getHistory = mock((_workspaceId: string): Promise<Result<MuxMessage[], string>> => {
+    const getHistory = mock((_workspaceId: string): Promise<Result<UnixMessage[], string>> => {
       return Promise.resolve(Ok([...messages]));
     });
 
@@ -136,7 +136,7 @@ describe("AgentSession.sendMessage (editMessageId)", () => {
     } as unknown as PartialService;
 
     const aiEmitter = new EventEmitter();
-    const streamMessage = mock((_messages: MuxMessage[]) => {
+    const streamMessage = mock((_messages: UnixMessage[]) => {
       return Promise.resolve(Ok(undefined));
     });
     const aiService = Object.assign(aiEmitter, {
@@ -195,8 +195,8 @@ describe("AgentSession.sendMessage (editMessageId)", () => {
     const originalMessageId = "user-message-with-image";
     const originalImageUrl = "data:image/png;base64,AAAA";
 
-    const messages: MuxMessage[] = [
-      createMuxMessage(originalMessageId, "user", "original", { historySequence: 0 }, [
+    const messages: UnixMessage[] = [
+      createUnixMessage(originalMessageId, "user", "original", { historySequence: 0 }, [
         { type: "file" as const, mediaType: "image/png", url: originalImageUrl },
       ]),
     ];
@@ -207,13 +207,13 @@ describe("AgentSession.sendMessage (editMessageId)", () => {
       return Promise.resolve(Ok(undefined));
     });
 
-    const appendToHistory = mock((_workspaceId: string, message: MuxMessage) => {
+    const appendToHistory = mock((_workspaceId: string, message: UnixMessage) => {
       message.metadata = { ...(message.metadata ?? {}), historySequence: nextSeq++ };
       messages.push(message);
       return Promise.resolve(Ok(undefined));
     });
 
-    const getHistory = mock((_workspaceId: string): Promise<Result<MuxMessage[], string>> => {
+    const getHistory = mock((_workspaceId: string): Promise<Result<UnixMessage[], string>> => {
       return Promise.resolve(Ok([...messages]));
     });
 
@@ -228,7 +228,7 @@ describe("AgentSession.sendMessage (editMessageId)", () => {
     } as unknown as PartialService;
 
     const aiEmitter = new EventEmitter();
-    const streamMessage = mock((_messages: MuxMessage[]) => {
+    const streamMessage = mock((_messages: UnixMessage[]) => {
       return Promise.resolve(Ok(undefined));
     });
     const aiService = Object.assign(aiEmitter, {

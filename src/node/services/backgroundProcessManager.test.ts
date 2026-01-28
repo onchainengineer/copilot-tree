@@ -36,12 +36,12 @@ describe("BackgroundProcessManager", () => {
     await manager.cleanup(testWorkspaceId2);
     // Remove temp sessions directory (legacy)
     await fs.rm(bgOutputDir, { recursive: true, force: true }).catch(() => undefined);
-    // Remove actual output directories from /tmp/mux-bashes (where executor writes)
+    // Remove actual output directories from /tmp/unix-bashes (where executor writes)
     await fs
-      .rm(`/tmp/mux-bashes/${testWorkspaceId}`, { recursive: true, force: true })
+      .rm(`/tmp/unix-bashes/${testWorkspaceId}`, { recursive: true, force: true })
       .catch(() => undefined);
     await fs
-      .rm(`/tmp/mux-bashes/${testWorkspaceId2}`, { recursive: true, force: true })
+      .rm(`/tmp/unix-bashes/${testWorkspaceId2}`, { recursive: true, force: true })
       .catch(() => undefined);
   });
 
@@ -72,8 +72,8 @@ describe("BackgroundProcessManager", () => {
       if (result.success) {
         // Process ID is now the display name directly
         expect(result.processId).toBe(displayName);
-        // outputDir is now under runtime.tempDir()/mux-bashes/<workspaceId>/<processId>
-        expect(result.outputDir).toContain("mux-bashes");
+        // outputDir is now under runtime.tempDir()/unix-bashes/<workspaceId>/<processId>
+        expect(result.outputDir).toContain("unix-bashes");
         expect(result.outputDir).toContain(testWorkspaceId);
         expect(result.outputDir).toContain(result.processId);
       }

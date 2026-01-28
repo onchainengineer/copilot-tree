@@ -61,7 +61,7 @@ describe("parseRuntimeString", () => {
     expect(result).toEqual({
       type: "ssh",
       host: "user@host",
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     });
   });
 
@@ -70,7 +70,7 @@ describe("parseRuntimeString", () => {
     expect(result).toEqual({
       type: "ssh",
       host: "User@Host.Example.Com",
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     });
   });
 
@@ -79,7 +79,7 @@ describe("parseRuntimeString", () => {
     expect(result).toEqual({
       type: "ssh",
       host: "user@host",
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     });
   });
 
@@ -94,7 +94,7 @@ describe("parseRuntimeString", () => {
     expect(result).toEqual({
       type: "ssh",
       host: "hostname",
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     });
   });
 
@@ -104,7 +104,7 @@ describe("parseRuntimeString", () => {
     expect(result).toEqual({
       type: "ssh",
       host: "dev.example.com",
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     });
   });
 
@@ -114,7 +114,7 @@ describe("parseRuntimeString", () => {
     expect(result).toEqual({
       type: "ssh",
       host: "root@hostname",
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     });
   });
 
@@ -490,7 +490,7 @@ describe("prepareCompactionMessage", () => {
       workspaceId: "ws-1",
       followUpContent: {
         text: "/tests run all tests",
-        muxMetadata: {
+        unixMetadata: {
           type: "agent-skill",
           rawCommand: "/tests run all tests",
           skillName: "tests",
@@ -508,8 +508,8 @@ describe("prepareCompactionMessage", () => {
     expect(metadata.parsed.followUpContent).toBeDefined();
     expect(metadata.parsed.followUpContent?.text).toBe("/tests run all tests");
 
-    // Skill metadata should be preserved in muxMetadata
-    expect(metadata.parsed.followUpContent?.muxMetadata).toEqual({
+    // Skill metadata should be preserved in unixMetadata
+    expect(metadata.parsed.followUpContent?.unixMetadata).toEqual({
       type: "agent-skill",
       rawCommand: "/tests run all tests",
       skillName: "tests",
@@ -745,9 +745,9 @@ describe("handleCompactCommand", () => {
     expect(sendMessageMock).toHaveBeenCalled();
 
     const callArgs = sendMessageMock.mock.calls[0][0] as {
-      options?: { muxMetadata?: { parsed?: { followUpContent?: { reviews?: ReviewNoteData[] } } } };
+      options?: { unixMetadata?: { parsed?: { followUpContent?: { reviews?: ReviewNoteData[] } } } };
     };
-    const followUpContent = callArgs?.options?.muxMetadata?.parsed?.followUpContent;
+    const followUpContent = callArgs?.options?.unixMetadata?.parsed?.followUpContent;
 
     expect(followUpContent).toBeDefined();
     expect(followUpContent?.reviews).toHaveLength(1);
@@ -773,9 +773,9 @@ describe("handleCompactCommand", () => {
     expect(sendMessageMock).toHaveBeenCalled();
 
     const callArgs = sendMessageMock.mock.calls[0][0] as {
-      options?: { muxMetadata?: { parsed?: { followUpContent?: { reviews?: ReviewNoteData[] } } } };
+      options?: { unixMetadata?: { parsed?: { followUpContent?: { reviews?: ReviewNoteData[] } } } };
     };
-    const followUpContent = callArgs?.options?.muxMetadata?.parsed?.followUpContent;
+    const followUpContent = callArgs?.options?.unixMetadata?.parsed?.followUpContent;
 
     // Should have followUpContent even without text, because reviews are present
     expect(followUpContent).toBeDefined();

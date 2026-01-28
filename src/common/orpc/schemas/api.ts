@@ -3,7 +3,7 @@ import { UIModeSchema } from "../../types/mode";
 import { z } from "zod";
 import { ChatStatsSchema, SessionUsageFileSchema } from "./chatStats";
 import { SendMessageErrorSchema } from "./errors";
-import { BranchListResultSchema, FilePartSchema, MuxMessageSchema } from "./message";
+import { BranchListResultSchema, FilePartSchema, UnixMessageSchema } from "./message";
 import { ProjectConfigSchema, SectionConfigSchema } from "./project";
 import { ResultSchema } from "./result";
 import { RuntimeConfigSchema, RuntimeAvailabilitySchema } from "./runtime";
@@ -92,7 +92,7 @@ export const tokenizer = {
   calculateStats: {
     input: z.object({
       workspaceId: z.string(),
-      messages: z.array(MuxMessageSchema),
+      messages: z.array(UnixMessageSchema),
       model: z.string(),
     }),
     output: ChatStatsSchema,
@@ -465,7 +465,7 @@ export const workspace = {
   replaceChatHistory: {
     input: z.object({
       workspaceId: z.string(),
-      summaryMessage: MuxMessageSchema,
+      summaryMessage: UnixMessageSchema,
       /** When true, delete the plan file (new + legacy paths) and clear plan tracking state. */
       deletePlanFile: z.boolean().optional(),
     }),
@@ -709,8 +709,8 @@ export const tasks = {
 
 // Agent definitions (unifies UI modes + subagents)
 // Agents can be discovered from either the PROJECT path or the WORKSPACE path.
-// - Project path: <projectPath>/.mux/agents - shared across all workspaces
-// - Workspace path: <worktree>/.mux/agents - workspace-specific (useful for iterating)
+// - Project path: <projectPath>/.unix/agents - shared across all workspaces
+// - Workspace path: <worktree>/.unix/agents - workspace-specific (useful for iterating)
 // Default is workspace path when workspaceId is provided.
 // Use disableWorkspaceAgents in SendMessageOptions to skip workspace agents during message sending.
 
@@ -873,11 +873,11 @@ export const ApiServerStatusSchema = z.object({
   networkBaseUrls: z.array(z.url()),
   /** Auth token required for HTTP/WS API access. */
   token: z.string().nullable(),
-  /** Configured bind host from ~/.mux/config.json (if set). */
+  /** Configured bind host from ~/.unix/config.json (if set). */
   configuredBindHost: z.string().nullable(),
-  /** Configured port from ~/.mux/config.json (if set). */
+  /** Configured port from ~/.unix/config.json (if set). */
   configuredPort: z.number().int().min(0).max(65535).nullable(),
-  /** Whether the API server should serve the mux web UI at /. */
+  /** Whether the API server should serve the unix web UI at /. */
   configuredServeWebUi: z.boolean(),
 });
 

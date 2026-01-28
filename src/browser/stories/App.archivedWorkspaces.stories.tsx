@@ -87,7 +87,7 @@ export const WorkspaceNameInRuntimeTooltip: AppStory = {
   ),
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const storyRoot = document.getElementById("storybook-root") ?? canvasElement;
-    // App now boots into the built-in mux-chat workspace.
+    // App now boots into the built-in unix-chat workspace.
     // Navigate to the project creation page so ArchivedWorkspaces is visible.
     const projectRow = await waitFor(
       () => {

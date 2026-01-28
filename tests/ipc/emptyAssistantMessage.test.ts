@@ -8,7 +8,7 @@
 import { setupWorkspace, shouldRunIntegrationTests, validateApiKeys } from "./setup";
 import { sendMessageWithModel, createStreamCollector, modelString, HAIKU_MODEL } from "./helpers";
 import { HistoryService } from "../../src/node/services/historyService";
-import { createMuxMessage } from "../../src/common/types/message";
+import { createUnixMessage } from "../../src/common/types/message";
 
 // Skip all tests if TEST_INTEGRATION is not set
 const describeIntegration = shouldRunIntegrationTests() ? describe : describe.skip;
@@ -32,9 +32,9 @@ describeIntegration("empty assistant message self-healing", () => {
         // 3. User follow-up
         // 4. Empty assistant message (crash during stream start - placeholder persisted)
         const messages = [
-          createMuxMessage("msg-1", "user", "Hello", {}),
-          createMuxMessage("msg-2", "assistant", "Hi there!", {}),
-          createMuxMessage("msg-3", "user", "Follow up question", {}),
+          createUnixMessage("msg-1", "user", "Hello", {}),
+          createUnixMessage("msg-2", "assistant", "Hi there!", {}),
+          createUnixMessage("msg-3", "user", "Follow up question", {}),
           // Corrupted: empty parts array (placeholder message from crash)
           {
             id: "msg-4-corrupted",
@@ -94,7 +94,7 @@ describeIntegration("empty assistant message self-healing", () => {
         // Seed history with an assistant message that has only an incomplete tool call
         // (state: "input-available" means tool was requested but never executed)
         const messages = [
-          createMuxMessage("msg-1", "user", "Run a command", {}),
+          createUnixMessage("msg-1", "user", "Run a command", {}),
           // Corrupted: tool-only with incomplete state
           {
             id: "msg-2-corrupted",

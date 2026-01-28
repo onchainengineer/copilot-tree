@@ -1,7 +1,7 @@
-import type { MuxFrontendMetadata, MuxMessage, MuxMetadata } from "@/common/types/message";
+import type { UnixFrontendMetadata, UnixMessage, UnixMetadata } from "@/common/types/message";
 
-interface LegacyMuxMetadata extends MuxMetadata {
-  cmuxMetadata?: MuxFrontendMetadata;
+interface LegacyUnixMetadata extends UnixMetadata {
+  cunixMetadata?: UnixFrontendMetadata;
   idleCompacted?: boolean;
 }
 
@@ -9,29 +9,29 @@ interface LegacyMuxMetadata extends MuxMetadata {
  * Normalize persisted messages from older builds.
  *
  * Migrations:
- * - `cmuxMetadata` → `muxMetadata` (mux rename)
+ * - `cunixMetadata` → `unixMetadata` (unix rename)
  * - `{ compacted: true, idleCompacted: true }` → `{ compacted: "idle" }`
  */
-export function normalizeLegacyMuxMetadata(message: MuxMessage): MuxMessage {
-  const metadata = message.metadata as LegacyMuxMetadata | undefined;
+export function normalizeLegacyUnixMetadata(message: UnixMessage): UnixMessage {
+  const metadata = message.metadata as LegacyUnixMetadata | undefined;
   if (!metadata) return message;
 
-  let normalized: MuxMetadata = { ...metadata };
+  let normalized: UnixMetadata = { ...metadata };
   let changed = false;
 
-  // Migrate cmuxMetadata → muxMetadata
-  if (metadata.cmuxMetadata !== undefined) {
-    const { cmuxMetadata, ...rest } = normalized as LegacyMuxMetadata;
+  // Migrate cunixMetadata → unixMetadata
+  if (metadata.cunixMetadata !== undefined) {
+    const { cunixMetadata, ...rest } = normalized as LegacyUnixMetadata;
     normalized = rest;
-    if (!metadata.muxMetadata) {
-      normalized.muxMetadata = cmuxMetadata;
+    if (!metadata.unixMetadata) {
+      normalized.unixMetadata = cunixMetadata;
     }
     changed = true;
   }
 
   // Migrate idleCompacted: true → compacted: "idle"
   if (metadata.idleCompacted === true) {
-    const { idleCompacted, ...rest } = normalized as LegacyMuxMetadata;
+    const { idleCompacted, ...rest } = normalized as LegacyUnixMetadata;
     normalized = { ...rest, compacted: "idle" };
     changed = true;
   }

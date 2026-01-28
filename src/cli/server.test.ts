@@ -40,7 +40,7 @@ interface TestServerHandle {
  */
 async function createTestServer(): Promise<TestServerHandle> {
   // Create temp dir for config
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-server-test-"));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-server-test-"));
   const config = new Config(tempDir);
 
   // Mock BrowserWindow
@@ -186,11 +186,11 @@ describe("oRPC Server Endpoints", () => {
     test("agentSkills.list and agentSkills.get work with projectPath", async () => {
       const client = createHttpClient(serverHandle.server.baseUrl);
 
-      const projectPath = await fs.mkdtemp(path.join(os.tmpdir(), "mux-agent-skills-project-"));
+      const projectPath = await fs.mkdtemp(path.join(os.tmpdir(), "unix-agent-skills-project-"));
       const skillName = `test-skill-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
       try {
-        const skillDir = path.join(projectPath, ".mux", "skills", skillName);
+        const skillDir = path.join(projectPath, ".unix", "skills", skillName);
         await fs.mkdir(skillDir, { recursive: true });
 
         const skillContent = `---\nname: ${skillName}\ndescription: Test skill\n---\n\nTest body\n`;

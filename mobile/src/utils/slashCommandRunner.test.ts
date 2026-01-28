@@ -69,7 +69,7 @@ describe("parseRuntimeStringForMobile", () => {
     expect(parseRuntimeStringForMobile("ssh user@host")).toEqual({
       type: "ssh",
       host: "user@host",
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     });
   });
 });

@@ -1,4 +1,4 @@
-import assert from "mux/common/utils/assert";
+import assert from "unix/common/utils/assert";
 
 import type { WebviewToExtensionMessage } from "./protocol";
 
@@ -34,7 +34,7 @@ export function getVscodeBridge(): VscodeBridge {
     // @ts-ignore VS Code injects this in the webview
     vscode = acquireVsCodeApi();
   } catch (error) {
-    throw new Error(`mux webview: acquireVsCodeApi failed: ${String(error)}`);
+    throw new Error(`unix webview: acquireVsCodeApi failed: ${String(error)}`);
   }
 
   const startedAtMs = Date.now();
@@ -55,7 +55,7 @@ export function getVscodeBridge(): VscodeBridge {
         handler(event.data);
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error("mux webview: message handler crashed", error);
+        console.error("unix webview: message handler crashed", error);
       }
     }
   });
@@ -70,14 +70,14 @@ export function getVscodeBridge(): VscodeBridge {
       sinceStartMs: Date.now() - startedAtMs,
     };
 
-    const envelope: Record<string, unknown> = { __muxMeta: meta, ...payload };
+    const envelope: Record<string, unknown> = { __unixMeta: meta, ...payload };
     vscode.postMessage(envelope);
   };
 
   const debugLog = (message: string, data?: unknown): void => {
     // Mirror to DevTools console.
     // eslint-disable-next-line no-console
-    console.log(`[mux-webview ${traceId}] ${message}`, data);
+    console.log(`[unix-webview ${traceId}] ${message}`, data);
 
     try {
       postMessage({ type: "debugLog", message, data });

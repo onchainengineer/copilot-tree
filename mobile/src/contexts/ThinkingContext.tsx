@@ -14,7 +14,7 @@ interface ThinkingContextValue {
 
 const ThinkingContext = createContext<ThinkingContextValue | null>(null);
 
-const STORAGE_NAMESPACE = "mux.thinking-level";
+const STORAGE_NAMESPACE = "unix.thinking-level";
 
 /**
  * Sanitize workspace ID to be compatible with SecureStore key requirements.

@@ -11,7 +11,7 @@ describe("ExperimentsService", () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-experiments-test-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-experiments-test-"));
   });
 
   afterEach(async () => {
@@ -51,7 +51,7 @@ describe("ExperimentsService", () => {
 
     const service = new ExperimentsService({
       telemetryService,
-      muxHome: tempDir,
+      unixHome: tempDir,
       cacheTtlMs: 60 * 60 * 1000,
     });
 
@@ -80,7 +80,7 @@ describe("ExperimentsService", () => {
 
     const service = new ExperimentsService({
       telemetryService,
-      muxHome: tempDir,
+      unixHome: tempDir,
       cacheTtlMs: 0,
     });
 
@@ -110,7 +110,7 @@ describe("ExperimentsService", () => {
       setFeatureFlagVariant: mock(() => undefined),
     } as unknown as TelemetryService;
 
-    const service = new ExperimentsService({ telemetryService, muxHome: tempDir });
+    const service = new ExperimentsService({ telemetryService, unixHome: tempDir });
     await service.initialize();
 
     const values = service.getAll();

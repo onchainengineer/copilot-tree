@@ -36,7 +36,7 @@ const createWorkspaceMetadata = (
   name: "main",
   namedWorkspacePath: "/test-main",
   createdAt: "2025-01-01T00:00:00.000Z",
-  runtimeConfig: { type: "local", srcBaseDir: "/home/user/.mux/src" },
+  runtimeConfig: { type: "local", srcBaseDir: "/home/user/.unix/src" },
   ...overrides,
 });
 

@@ -10,7 +10,7 @@ import { sumUsageHistory } from "@/common/utils/tokens/usageAggregator";
 import { createDisplayUsage } from "@/common/utils/tokens/displayUsage";
 import { normalizeGatewayModel } from "@/common/utils/ai/models";
 import type { TokenConsumer } from "@/common/types/chatStats";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import { log } from "./log";
 
 export interface SessionUsageTokenStatsCacheV1 {
@@ -297,7 +297,7 @@ export class SessionUsageService {
    */
   private async rebuildFromMessagesInternal(
     workspaceId: string,
-    messages: MuxMessage[]
+    messages: UnixMessage[]
   ): Promise<void> {
     const result: SessionUsageFile = { byModel: {}, version: 1 };
     let lastAssistantUsage: { model: string; usage: ChatUsageDisplay } | undefined;
@@ -305,7 +305,7 @@ export class SessionUsageService {
     for (const msg of messages) {
       if (msg.role === "assistant") {
         // Include historicalUsage from legacy compaction summaries.
-        // This field was removed from MuxMetadata but may exist in persisted data.
+        // This field was removed from UnixMetadata but may exist in persisted data.
         // It's a ChatUsageDisplay representing all pre-compaction costs (model-agnostic).
         const historicalUsage = (msg.metadata as { historicalUsage?: ChatUsageDisplay })
           ?.historicalUsage;
@@ -350,7 +350,7 @@ export class SessionUsageService {
   /**
    * Public rebuild method (acquires lock).
    */
-  async rebuildFromMessages(workspaceId: string, messages: MuxMessage[]): Promise<void> {
+  async rebuildFromMessages(workspaceId: string, messages: UnixMessage[]): Promise<void> {
     return this.fileLocks.withLock(workspaceId, async () => {
       await this.rebuildFromMessagesInternal(workspaceId, messages);
     });

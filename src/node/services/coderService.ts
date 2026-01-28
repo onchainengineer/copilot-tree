@@ -1,6 +1,6 @@
 /**
  * Service for interacting with the Coder CLI.
- * Used to create/manage Coder workspaces as SSH targets for Mux workspaces.
+ * Used to create/manage Coder workspaces as SSH targets for Unix workspaces.
  */
 import { shescape } from "@/node/runtime/streamUtils";
 import { execAsync } from "@/node/utils/disposableExec";
@@ -477,7 +477,7 @@ export class CoderService {
     }>
   > {
     // Create short-lived token named after workspace (avoids keychain read issues)
-    const tokenName = `mux-${workspaceName}`;
+    const tokenName = `unix-${workspaceName}`;
     using tokenProc = execAsync(
       `coder tokens create --lifetime 5m --name ${shescape.quote(tokenName)}`
     );
@@ -980,12 +980,12 @@ export class CoderService {
   /**
    * Delete a Coder workspace.
    *
-   * Safety: Only deletes workspaces with "mux-" prefix to prevent accidentally
-   * deleting user workspaces that weren't created by mux.
+   * Safety: Only deletes workspaces with "unix-" prefix to prevent accidentally
+   * deleting user workspaces that weren't created byunix.
    */
   async deleteWorkspace(name: string): Promise<void> {
-    if (!name.startsWith("mux-")) {
-      log.warn("Refusing to delete Coder workspace without mux- prefix", { name });
+    if (!name.startsWith("unix-")) {
+      log.warn("Refusing to delete Coder workspace without unix- prefix", { name });
       return;
     }
     log.debug("Deleting Coder workspace", { name });

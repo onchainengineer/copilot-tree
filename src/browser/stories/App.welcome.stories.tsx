@@ -34,7 +34,7 @@ function createSessionUsage(cost: number): MockSessionUsage {
 }
 
 async function openFirstProjectCreationView(storyRoot: HTMLElement): Promise<void> {
-  // App now boots into the built-in mux-chat workspace.
+  // App now boots into the built-in unix-chat workspace.
   // Navigate to the first project's creation page so creation/banner UI is visible.
   const projectRow = await waitFor(
     () => {
@@ -52,7 +52,7 @@ export default {
   title: "App/Welcome",
 };
 
-/** Chat with Mux - the default boot state (no user projects) */
+/** Chat with Unix - the default boot state (no user projects) */
 export const ChatWithMux: AppStory = {
   render: () => (
     <AppWithMocks

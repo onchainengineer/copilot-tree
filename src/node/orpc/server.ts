@@ -1,5 +1,5 @@
 /**
- * oRPC Server factory for mux.
+ * oRPC Server factory forunix.
  * Serves oRPC router over HTTP and WebSocket.
  *
  * This module exports the server creation logic so it can be tested.
@@ -179,9 +179,9 @@ export async function createOrpcServer({
 
     const spec = await openAPIGenerator.generate(orpcRouter, {
       info: {
-        title: "Mux API",
+        title: "Unix API",
         version: gitDescribe,
-        description: "API for Mux",
+        description: "API for Unix",
       },
       servers: [{ url: "/api" }],
       security: authToken ? [{ bearerAuth: [] }] : undefined,
@@ -204,7 +204,7 @@ export async function createOrpcServer({
     const html = `<!doctype html>
 <html>
   <head>
-    <title>mux API Reference</title>
+    <title>unix API Reference</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>

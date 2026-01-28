@@ -4,7 +4,7 @@ import { tmpdir } from "os";
 import * as path from "path";
 import { ExtensionMetadataService } from "./ExtensionMetadataService";
 
-const PREFIX = "mux-extension-metadata-test-";
+const PREFIX = "unix-extension-metadata-test-";
 
 describe("ExtensionMetadataService", () => {
   let tempDir: string;

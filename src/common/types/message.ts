@@ -2,7 +2,7 @@ import type { UIMessage } from "ai";
 import type { LanguageModelV2Usage } from "@ai-sdk/provider";
 import type { StreamErrorType } from "./errors";
 import type { ToolPolicy } from "@/common/utils/tools/toolPolicy";
-import type { FilePart, MuxToolPartSchema } from "@/common/orpc/schemas";
+import type { FilePart, UnixToolPartSchema } from "@/common/orpc/schemas";
 import type { z } from "zod";
 import type { AgentMode } from "./mode";
 import type { AgentSkillScope } from "./agentSkill";
@@ -32,7 +32,7 @@ export interface UserMessageContent {
  */
 export interface CompactionFollowUpInput extends UserMessageContent {
   /** Frontend metadata to apply to the queued follow-up user message (e.g., preserve /skill display) */
-  muxMetadata?: MuxFrontendMetadata;
+  unixMetadata?: UnixFrontendMetadata;
 }
 
 /**
@@ -68,7 +68,7 @@ export type ContinueMessage = UserMessageContent & {
   /** Agent ID for the continue message (determines tool policy via agent definitions). Defaults to 'exec'. */
   agentId?: string;
   /** Frontend metadata to apply to the queued follow-up user message (e.g., preserve /skill display) */
-  muxMetadata?: MuxFrontendMetadata;
+  unixMetadata?: UnixFrontendMetadata;
   /** Brand marker - not present at runtime, enforces factory usage at compile time */
   readonly [ContinueMessageBrand]: true;
 };
@@ -82,7 +82,7 @@ export interface BuildContinueMessageOptions {
   fileParts?: FilePart[];
   reviews?: ReviewNoteDataForDisplay[];
   /** Optional frontend metadata to carry through to the queued follow-up user message */
-  muxMetadata?: MuxFrontendMetadata;
+  unixMetadata?: UnixFrontendMetadata;
   model: string;
   agentId: string;
 }
@@ -107,7 +107,7 @@ export function buildContinueMessage(
     text: opts.text ?? "",
     fileParts: opts.fileParts,
     reviews: opts.reviews,
-    muxMetadata: opts.muxMetadata,
+    unixMetadata: opts.unixMetadata,
     model: opts.model,
     agentId: opts.agentId,
   } as ContinueMessage;
@@ -167,7 +167,7 @@ export function rebuildContinueMessage(
     text: persisted.text,
     fileParts: persisted.fileParts,
     reviews: persisted.reviews,
-    muxMetadata: persisted.muxMetadata,
+    unixMetadata: persisted.unixMetadata,
     model: persisted.model ?? defaults.model,
     agentId: persistedAgentId ?? legacyAgentId ?? defaults.agentId,
   });
@@ -191,10 +191,10 @@ export interface CompactionRequestData {
  */
 export function prepareUserMessageForSend(
   content: UserMessageContent,
-  existingMetadata?: MuxFrontendMetadata
+  existingMetadata?: UnixFrontendMetadata
 ): {
   finalText: string;
-  metadata: MuxFrontendMetadata | undefined;
+  metadata: UnixFrontendMetadata | undefined;
 } {
   const { text, reviews } = content;
 
@@ -203,7 +203,7 @@ export function prepareUserMessageForSend(
   const finalText = reviewsText ? reviewsText + (text ? "\n\n" + text : "") : text;
 
   // Build metadata with reviews for display
-  let metadata: MuxFrontendMetadata | undefined = existingMetadata;
+  let metadata: UnixFrontendMetadata | undefined = existingMetadata;
   if (reviews?.length) {
     metadata = metadata ? { ...metadata, reviews } : { type: "normal", reviews };
   }
@@ -220,7 +220,7 @@ export interface BuildAgentSkillMetadataOptions {
 
 export function buildAgentSkillMetadata(
   options: BuildAgentSkillMetadataOptions
-): MuxFrontendMetadata {
+): UnixFrontendMetadata {
   return {
     type: "agent-skill",
     rawCommand: options.rawCommand,
@@ -231,7 +231,7 @@ export function buildAgentSkillMetadata(
 }
 
 /** Base fields common to all metadata types */
-interface MuxFrontendMetadataBase {
+interface UnixFrontendMetadataBase {
   /** Structured review data for rich UI display (orthogonal to message type) */
   reviews?: ReviewNoteDataForDisplay[];
   /** Command prefix to highlight in UI (e.g., "/compact -m sonnet" or "/react-effects") */
@@ -244,7 +244,7 @@ export interface DisplayStatus {
   message: string;
 }
 
-export type MuxFrontendMetadata = MuxFrontendMetadataBase &
+export type UnixFrontendMetadata = UnixFrontendMetadataBase &
   (
     | {
         type: "compaction-request";
@@ -272,7 +272,7 @@ export type MuxFrontendMetadata = MuxFrontendMetadataBase &
   );
 
 // Our custom metadata type
-export interface MuxMetadata {
+export interface UnixMetadata {
   historySequence?: number; // Assigned by backend for global message ordering (required when writing to history)
   duration?: number;
   /** @deprecated Legacy base mode derived from agent definition. */
@@ -297,8 +297,8 @@ export interface MuxMetadata {
   compacted?: "user" | "idle" | boolean;
   toolPolicy?: ToolPolicy; // Tool policy active when this message was sent (user messages only)
   agentId?: string; // Agent id active when this message was sent (assistant messages only)
-  cmuxMetadata?: MuxFrontendMetadata; // Frontend-defined metadata, backend treats as black-box
-  muxMetadata?: MuxFrontendMetadata; // Frontend-defined metadata, backend treats as black-box
+  cunixMetadata?: UnixFrontendMetadata; // Frontend-defined metadata, backend treats as black-box
+  unixMetadata?: UnixFrontendMetadata; // Frontend-defined metadata, backend treats as black-box
   /**
    * @file mention snapshot token(s) this message provides content for.
    * When present, injectFileAtMentions() skips re-reading these tokens,
@@ -319,17 +319,17 @@ export interface MuxMetadata {
 // Extended tool part type that supports interrupted tool calls (input-available state)
 // Standard AI SDK ToolUIPart only supports output-available (completed tools)
 // Uses discriminated union: output is required when state is "output-available", absent when "input-available"
-export type MuxToolPart = z.infer<typeof MuxToolPartSchema>;
+export type UnixToolPart = z.infer<typeof UnixToolPartSchema>;
 
 // Text part type
-export interface MuxTextPart {
+export interface UnixTextPart {
   type: "text";
   text: string;
   timestamp?: number;
 }
 
 // Reasoning part type for extended thinking content
-export interface MuxReasoningPart {
+export interface UnixReasoningPart {
   type: "reasoning";
   text: string;
   timestamp?: number;
@@ -354,17 +354,17 @@ export interface MuxReasoningPart {
 }
 
 // File part type for multimodal messages (matches AI SDK FileUIPart)
-export interface MuxFilePart {
+export interface UnixFilePart {
   type: "file";
   mediaType: string; // IANA media type, e.g., "image/png", "application/pdf"
   url: string; // Data URL (e.g., "data:application/pdf;base64,...") or hosted URL
   filename?: string; // Optional filename
 }
 
-// MuxMessage extends UIMessage with our metadata and custom parts
+// UnixMessage extends UIMessage with our metadata and custom parts
 // Supports text, reasoning, file, and tool parts (including interrupted tool calls)
-export type MuxMessage = Omit<UIMessage<MuxMetadata, never, never>, "parts"> & {
-  parts: Array<MuxTextPart | MuxReasoningPart | MuxFilePart | MuxToolPart>;
+export type UnixMessage = Omit<UIMessage<UnixMetadata, never, never>, "parts"> & {
+  parts: Array<UnixTextPart | UnixReasoningPart | UnixFilePart | UnixToolPart>;
 };
 
 // DisplayedMessage represents a single UI message block
@@ -373,7 +373,7 @@ export type DisplayedMessage =
   | {
       type: "user";
       id: string; // Display ID for UI/React keys
-      historyId: string; // Original MuxMessage ID for history operations
+      historyId: string; // Original UnixMessage ID for history operations
       content: string;
       /**
        * Command prefix to highlight in the UI (e.g. "/compact -m sonnet" or "/react-effects").
@@ -393,13 +393,13 @@ export type DisplayedMessage =
       compactionRequest?: {
         parsed: CompactionRequestData;
       };
-      /** Structured review data for rich UI display (from muxMetadata) */
+      /** Structured review data for rich UI display (from unixMetadata) */
       reviews?: ReviewNoteDataForDisplay[];
     }
   | {
       type: "assistant";
       id: string; // Display ID for UI/React keys
-      historyId: string; // Original MuxMessage ID for history operations
+      historyId: string; // Original UnixMessage ID for history operations
       content: string;
       historySequence: number; // Global ordering across all messages
       streamSequence?: number; // Local ordering within this assistant message
@@ -418,7 +418,7 @@ export type DisplayedMessage =
   | {
       type: "tool";
       id: string; // Display ID for UI/React keys
-      historyId: string; // Original MuxMessage ID for history operations
+      historyId: string; // Original UnixMessage ID for history operations
       toolCallId: string;
       toolName: string;
       args: unknown;
@@ -442,7 +442,7 @@ export type DisplayedMessage =
   | {
       type: "reasoning";
       id: string; // Display ID for UI/React keys
-      historyId: string; // Original MuxMessage ID for history operations
+      historyId: string; // Original UnixMessage ID for history operations
       content: string;
       historySequence: number; // Global ordering across all messages
       streamSequence?: number; // Local ordering within this assistant message
@@ -455,7 +455,7 @@ export type DisplayedMessage =
   | {
       type: "stream-error";
       id: string; // Display ID for UI/React keys
-      historyId: string; // Original MuxMessage ID for history operations
+      historyId: string; // Original UnixMessage ID for history operations
       error: string; // Error message
       errorType: StreamErrorType; // Error type/category
       historySequence: number; // Global ordering across all messages
@@ -484,7 +484,7 @@ export type DisplayedMessage =
   | {
       type: "plan-display"; // Ephemeral plan display from /plan command
       id: string; // Display ID for UI/React keys
-      historyId: string; // Original MuxMessage ID (same as id for ephemeral messages)
+      historyId: string; // Original UnixMessage ID (same as id for ephemeral messages)
       content: string; // Plan markdown content
       path: string; // Path to the plan file
       historySequence: number; // Global ordering across all messages
@@ -497,20 +497,20 @@ export interface QueuedMessage {
   id: string;
   content: string;
   fileParts?: FilePart[];
-  /** Structured review data for rich UI display (from muxMetadata) */
+  /** Structured review data for rich UI display (from unixMetadata) */
   reviews?: ReviewNoteDataForDisplay[];
   /** True when the queued message is a compaction request (/compact) */
   hasCompactionRequest?: boolean;
 }
 
 // Helper to create a simple text message
-export function createMuxMessage(
+export function createUnixMessage(
   id: string,
   role: "user" | "assistant",
   content: string,
-  metadata?: MuxMetadata,
-  additionalParts?: MuxMessage["parts"]
-): MuxMessage {
+  metadata?: UnixMetadata,
+  additionalParts?: UnixMessage["parts"]
+): UnixMessage {
   const textPart = content
     ? [{ type: "text" as const, text: content, state: "done" as const }]
     : [];

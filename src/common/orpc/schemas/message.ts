@@ -9,20 +9,20 @@ export const FilePartSchema = z.object({
   filename: z.string().optional(),
 });
 
-export const MuxTextPartSchema = z.object({
+export const UnixTextPartSchema = z.object({
   type: z.literal("text"),
   text: z.string(),
   timestamp: z.number().optional(),
 });
 
-export const MuxReasoningPartSchema = z.object({
+export const UnixReasoningPartSchema = z.object({
   type: z.literal("reasoning"),
   text: z.string(),
   timestamp: z.number().optional(),
 });
 
 // Base schema for tool parts - shared fields
-const MuxToolPartBase = z.object({
+const UnixToolPartBase = z.object({
   type: z.literal("dynamic-tool"),
   toolCallId: z.string(),
   toolName: z.string(),
@@ -52,12 +52,12 @@ export const NestedToolCallSchema = z.object({
 export type NestedToolCall = z.infer<typeof NestedToolCallSchema>;
 
 // Discriminated tool part schemas - output required only when state is "output-available"
-export const DynamicToolPartPendingSchema = MuxToolPartBase.extend({
+export const DynamicToolPartPendingSchema = UnixToolPartBase.extend({
   state: z.literal("input-available"),
   nestedCalls: z.array(NestedToolCallSchema).optional(),
 });
 
-export const DynamicToolPartAvailableSchema = MuxToolPartBase.extend({
+export const DynamicToolPartAvailableSchema = UnixToolPartBase.extend({
   state: z.literal("output-available"),
   output: z.unknown(),
   nestedCalls: z.array(NestedToolCallSchema).optional(),
@@ -69,26 +69,26 @@ export const DynamicToolPartSchema = z.discriminatedUnion("state", [
 ]);
 
 // Alias for message schemas
-export const MuxToolPartSchema = DynamicToolPartSchema;
+export const UnixToolPartSchema = DynamicToolPartSchema;
 
-export const MuxFilePartSchema = FilePartSchema.extend({
+export const UnixFilePartSchema = FilePartSchema.extend({
   type: z.literal("file"),
 });
 
 // Export types inferred from schemas for reuse across app/test code.
 export type FilePart = z.infer<typeof FilePartSchema>;
-export type MuxFilePart = z.infer<typeof MuxFilePartSchema>;
+export type UnixFilePart = z.infer<typeof UnixFilePartSchema>;
 
-// MuxMessage (simplified)
-export const MuxMessageSchema = z.object({
+// UnixMessage (simplified)
+export const UnixMessageSchema = z.object({
   id: z.string(),
   role: z.enum(["system", "user", "assistant"]),
   parts: z.array(
     z.discriminatedUnion("type", [
-      MuxTextPartSchema,
-      MuxReasoningPartSchema,
-      MuxToolPartSchema,
-      MuxFilePartSchema,
+      UnixTextPartSchema,
+      UnixReasoningPartSchema,
+      UnixToolPartSchema,
+      UnixFilePartSchema,
     ])
   ),
   createdAt: z.date().optional(),
@@ -103,8 +103,8 @@ export const MuxMessageSchema = z.object({
       contextProviderMetadata: z.record(z.string(), z.unknown()).optional(),
       duration: z.number().optional(),
       systemMessageTokens: z.number().optional(),
-      muxMetadata: z.any().optional(),
-      cmuxMetadata: z.any().optional(), // Legacy field for backward compatibility
+      unixMetadata: z.any().optional(),
+      cunixMetadata: z.any().optional(), // Legacy field for backward compatibility
       // Compaction source: "user" (manual), "idle" (auto), or legacy boolean (true)
       compacted: z.union([z.literal("user"), z.literal("idle"), z.boolean()]).optional(),
       toolPolicy: z.any().optional(),

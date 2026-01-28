@@ -159,7 +159,7 @@ function validateTiming(params: {
  *
  * Backend source-of-truth for timing stats.
  * - Keeps active stream timing in memory
- * - Persists cumulative session timing to ~/.mux/sessions/{workspaceId}/session-timing.json
+ * - Persists cumulative session timing to ~/.unix/sessions/{workspaceId}/session-timing.json
  * - Emits snapshots to oRPC subscribers
  */
 export class SessionTimingService {

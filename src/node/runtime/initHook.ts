@@ -14,12 +14,12 @@ import {
 import type { ThinkingLevel } from "@/common/types/thinking";
 
 /**
- * Check if .mux/init hook exists and is executable
+ * Check if .unix/init hook exists and is executable
  * @param projectPath - Path to the project root
  * @returns true if hook exists and is executable, false otherwise
  */
 export async function checkInitHookExists(projectPath: string): Promise<boolean> {
-  const hookPath = path.join(projectPath, ".mux", "init");
+  const hookPath = path.join(projectPath, ".unix", "init");
 
   try {
     await fsPromises.access(hookPath, fs.constants.X_OK);
@@ -33,17 +33,17 @@ export async function checkInitHookExists(projectPath: string): Promise<boolean>
  * Get the init hook path for a project
  */
 export function getInitHookPath(projectPath: string): string {
-  return path.join(projectPath, ".mux", "init");
+  return path.join(projectPath, ".unix", "init");
 }
 
 /**
- * Get MUX_ environment variables for bash execution.
+ * Get UNIX_ environment variables for bash execution.
  * Used by both init hook and regular bash tool calls.
  * @param projectPath - Path to project root (local path for LocalRuntime, remote path for SSHRuntime)
  * @param runtime - Runtime type: "local", "worktree", "ssh", or "docker"
  * @param workspaceName - Name of the workspace (branch name or custom name)
  */
-export function getMuxEnv(
+export function getUnixEnv(
   projectPath: string,
   runtime: RuntimeMode,
   workspaceName: string,
@@ -55,28 +55,28 @@ export function getMuxEnv(
   }
 ): Record<string, string> {
   if (!projectPath) {
-    throw new Error("getMuxEnv: projectPath is required");
+    throw new Error("getUnixEnv: projectPath is required");
   }
   if (!workspaceName) {
-    throw new Error("getMuxEnv: workspaceName is required");
+    throw new Error("getUnixEnv: workspaceName is required");
   }
 
   const env: Record<string, string> = {
-    MUX_PROJECT_PATH: projectPath,
-    MUX_RUNTIME: runtime,
-    MUX_WORKSPACE_NAME: workspaceName,
+    UNIX_PROJECT_PATH: projectPath,
+    UNIX_RUNTIME: runtime,
+    UNIX_WORKSPACE_NAME: workspaceName,
   };
 
   if (options?.modelString) {
-    env.MUX_MODEL_STRING = options.modelString;
+    env.UNIX_MODEL_STRING = options.modelString;
   }
 
   if (options?.thinkingLevel !== undefined) {
-    env.MUX_THINKING_LEVEL = options.thinkingLevel;
+    env.UNIX_THINKING_LEVEL = options.thinkingLevel;
   }
 
   if (options?.costsUsd !== undefined) {
-    env.MUX_COSTS_USD = options.costsUsd.toFixed(2);
+    env.UNIX_COSTS_USD = options.costsUsd.toFixed(2);
   }
 
   return env;
@@ -159,13 +159,13 @@ export interface InitHookRuntime {
 }
 
 /**
- * Run .mux/init hook on a runtime and stream output to logger.
+ * Run .unix/init hook on a runtime and stream output to logger.
  * Shared implementation used by SSH and Docker runtimes.
  *
  * @param runtime - Runtime instance with exec capability
- * @param hookPath - Full path to the init hook (e.g., "/src/.mux/init" or "~/mux/project/workspace/.mux/init")
+ * @param hookPath - Full path to the init hook (e.g., "/src/.unix/init" or "~/unix/project/workspace/.unix/init")
  * @param workspacePath - Working directory for the hook
- * @param muxEnv - MUX_ environment variables from getMuxEnv()
+ * @param muxEnv - UNIX_ environment variables from getUnixEnv()
  * @param initLogger - Logger for streaming output
  * @param abortSignal - Optional abort signal
  */

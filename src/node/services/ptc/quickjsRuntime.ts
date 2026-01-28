@@ -275,7 +275,7 @@ export class QuickJSRuntime implements IJSRuntime {
 
     // Set up a real timeout timer that fires even during async suspension.
     // The interrupt handler only runs during QuickJS execution, but when suspended
-    // waiting for an async host function (e.g., mux.bash()), it never fires.
+    // waiting for an async host function (e.g.,unix.bash()), it never fires.
     // This timer ensures nested tools are cancelled when the deadline is exceeded.
     const timeoutId = setTimeout(() => {
       this.abortController?.abort();
@@ -406,7 +406,7 @@ export class QuickJSRuntime implements IJSRuntime {
     if (refErrorMatch) {
       const identifier = refErrorMatch[1];
       if (UNAVAILABLE_IDENTIFIERS.has(identifier)) {
-        return `'${identifier}' is not available in the sandbox. Use mux.* tools for I/O operations.`;
+        return `'${identifier}' is not available in the sandbox. Useunix.* tools for I/O operations.`;
       }
     }
 

@@ -53,7 +53,7 @@ jobs:
           fetch-depth: 0 # Required for git describe to find tags
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-mux
+      - uses: ./.github/actions/setup-unix
 
       - name: Build application
         run: bun run build
@@ -86,7 +86,7 @@ jobs:
           fetch-depth: 0 # Required for git describe to find tags
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-mux
+      - uses: ./.github/actions/setup-unix
 
       - name: Build application
         run: bun run build
@@ -110,7 +110,7 @@ jobs:
           fetch-depth: 0 # Required for git describe to find tags
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-mux
+      - uses: ./.github/actions/setup-unix
 
       - uses: ./.github/actions/build-vscode-extension
 
@@ -136,7 +136,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "$RELEASE_TAG" \
-            vscode/mux-*.vsix \
+            vscode/unix-*.vsix \
             --clobber
 
       - name: Publish to VS Code Marketplace
@@ -166,7 +166,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-mux
+      - uses: ./.github/actions/setup-unix
 
       - name: Add MSYS2 make to PATH
         shell: pwsh

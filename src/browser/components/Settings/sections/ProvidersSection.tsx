@@ -223,7 +223,7 @@ export function ProvidersSection() {
     <div className="space-y-2">
       <p className="text-muted mb-4 text-xs">
         Configure API keys and endpoints for AI providers. Keys are stored in{" "}
-        <code className="text-accent">~/.mux/providers.jsonc</code>
+        <code className="text-accent">~/.unix/providers.jsonc</code>
       </p>
 
       {SUPPORTED_PROVIDERS.map((provider) => {

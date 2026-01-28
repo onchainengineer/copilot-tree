@@ -4,7 +4,7 @@ import { cn } from "@/common/lib/utils";
 import { useGitStatus } from "@/browser/stores/GitStatusStore";
 import { useWorkspaceUnread } from "@/browser/hooks/useWorkspaceUnread";
 import { useWorkspaceSidebarState } from "@/browser/stores/WorkspaceStore";
-import { MUX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/muxChat";
+import { UNIX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/unixChat";
 import type { FrontendWorkspaceMetadata } from "@/common/types/workspace";
 import React, { useState, useEffect } from "react";
 import { useDrag } from "react-dnd";
@@ -52,7 +52,7 @@ const WorkspaceListItemInner: React.FC<WorkspaceListItemProps> = ({
 }) => {
   // Destructure metadata for convenience
   const { id: workspaceId, namedWorkspacePath, status } = metadata;
-  const isMuxHelpChat = workspaceId === MUX_HELP_CHAT_WORKSPACE_ID;
+  const isUnixHelpChat = workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID;
   const isCreating = status === "creating";
   const isDisabled = isCreating || isArchiving;
 
@@ -219,7 +219,7 @@ const WorkspaceListItemInner: React.FC<WorkspaceListItemProps> = ({
           unreadBar
         )}
         {/* Archive button - vertically centered against entire item */}
-        {!isMuxHelpChat && !isCreating && !isEditing && (
+        {!isUnixHelpChat && !isCreating && !isEditing && (
           <div className="relative inline-flex h-4 w-4 shrink-0 items-center self-center">
             <Tooltip>
               <TooltipTrigger asChild>

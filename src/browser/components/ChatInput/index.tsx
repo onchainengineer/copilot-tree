@@ -82,7 +82,7 @@ import {
 import type { AgentSkillDescriptor } from "@/common/types/agentSkill";
 import type { AgentAiDefaults } from "@/common/types/agentAiDefaults";
 import { coerceThinkingLevel, type ThinkingLevel } from "@/common/types/thinking";
-import { type MuxFrontendMetadata, prepareUserMessageForSend } from "@/common/types/message";
+import { type UnixFrontendMetadata, prepareUserMessageForSend } from "@/common/types/message";
 import { getModelCapabilities } from "@/common/utils/ai/modelCapabilities";
 import { KNOWN_MODELS, MODEL_ABBREVIATION_EXAMPLES } from "@/common/constants/knownModels";
 import { useTelemetry } from "@/browser/hooks/useTelemetry";
@@ -1476,7 +1476,7 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
 
         creationMessageTextForSend = skillInvocation.userText;
         creationOptionsOverride = {
-          muxMetadata: buildSkillInvocationMetadata(messageText, skillInvocation.descriptor),
+          unixMetadata: buildSkillInvocationMetadata(messageText, skillInvocation.descriptor),
           // In the creation flow, skills are discovered from the project path. If the skill is
           // project-scoped (often untracked in git), it may not exist in the new worktree.
           // Force project-path discovery for this send so resolution matches suggestions.
@@ -1526,7 +1526,7 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
 
       // Regular message - send directly via API
       const messageTextForSend = skillInvocation?.userText ?? messageText;
-      const skillMuxMetadata = skillInvocation
+      const skillUnixMetadata = skillInvocation
         ? buildSkillInvocationMetadata(messageText, skillInvocation.descriptor)
         : undefined;
 
@@ -1623,7 +1623,7 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
               text: messageTextForSend,
               fileParts,
               reviews: reviewsData,
-              muxMetadata: skillMuxMetadata,
+              unixMetadata: skillUnixMetadata,
             },
             sendMessageOptions: compactionSendMessageOptions,
           });
@@ -1679,7 +1679,7 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
 
         // When editing a /compact command, regenerate the actual summarization request
         let actualMessageText = messageTextForSend;
-        let muxMetadata: MuxFrontendMetadata | undefined = skillMuxMetadata;
+        let unixMetadata: UnixFrontendMetadata | undefined = skillUnixMetadata;
         let compactionOptions: Partial<SendMessageOptions> = {};
 
         if (editingMessage && actualMessageText.startsWith("/")) {
@@ -1707,14 +1707,14 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
               sendMessageOptions,
             });
             actualMessageText = regeneratedText;
-            muxMetadata = metadata;
+            unixMetadata = metadata;
             compactionOptions = sendOptions;
           }
         }
 
         const { finalText: finalMessageText, metadata: reviewMetadata } = prepareUserMessageForSend(
           { text: actualMessageText, reviews: reviewsData },
-          muxMetadata
+          unixMetadata
         );
         // When editing /compact, compactionOptions already includes the base sendMessageOptions.
         // Avoid duplicating additionalSystemInstructions.
@@ -1722,7 +1722,7 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
           compactionOptions.additionalSystemInstructions ??
           sendMessageOptions.additionalSystemInstructions;
 
-        muxMetadata = reviewMetadata;
+        unixMetadata = reviewMetadata;
 
         // Capture review IDs before clearing (for marking as checked on success)
         const sentReviewIds = attachedReviews.map((r) => r.id);
@@ -1747,7 +1747,7 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
             additionalSystemInstructions,
             editMessageId: editingMessage?.id,
             fileParts: sendFileParts,
-            muxMetadata,
+            unixMetadata,
           },
         });
 

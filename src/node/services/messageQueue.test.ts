@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { MessageQueue } from "./messageQueue";
-import type { MuxFrontendMetadata } from "@/common/types/message";
+import type { UnixFrontendMetadata } from "@/common/types/message";
 import type { SendMessageOptions } from "@/common/orpc/types";
 
 describe("MessageQueue", () => {
@@ -19,7 +19,7 @@ describe("MessageQueue", () => {
     });
 
     it("should return rawCommand for compaction request", () => {
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "compaction-request",
         rawCommand: "/compact -t 3000",
         parsed: { maxOutputTokens: 3000 },
@@ -28,7 +28,7 @@ describe("MessageQueue", () => {
       const options: SendMessageOptions = {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       };
 
       queue.add("Summarize this conversation into a compact form...", options);
@@ -39,7 +39,7 @@ describe("MessageQueue", () => {
     it("should throw when adding compaction after normal message", () => {
       queue.add("First message");
 
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "compaction-request",
         rawCommand: "/compact",
         parsed: {},
@@ -48,7 +48,7 @@ describe("MessageQueue", () => {
       const options: SendMessageOptions = {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       };
 
       // Compaction requests cannot be mixed with other messages to prevent
@@ -59,14 +59,14 @@ describe("MessageQueue", () => {
     });
 
     it("should return joined messages when metadata type is not compaction-request", () => {
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "normal",
       };
 
       const options: SendMessageOptions = {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       };
 
       queue.add("Regular message", options);
@@ -79,7 +79,7 @@ describe("MessageQueue", () => {
     });
 
     it("should return joined messages after clearing compaction metadata", () => {
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "compaction-request",
         rawCommand: "/compact",
         parsed: {},
@@ -88,7 +88,7 @@ describe("MessageQueue", () => {
       const options: SendMessageOptions = {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       };
 
       queue.add("Summarize this...", options);
@@ -101,7 +101,7 @@ describe("MessageQueue", () => {
 
   describe("getMessages", () => {
     it("should return raw messages even for compaction requests", () => {
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "compaction-request",
         rawCommand: "/compact",
         parsed: {},
@@ -110,7 +110,7 @@ describe("MessageQueue", () => {
       const options: SendMessageOptions = {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       };
 
       queue.add("Summarize this conversation...", options);
@@ -133,7 +133,7 @@ describe("MessageQueue", () => {
     });
 
     it("should return true when compaction request is queued", () => {
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "compaction-request",
         rawCommand: "/compact",
         parsed: {},
@@ -142,14 +142,14 @@ describe("MessageQueue", () => {
       queue.add("Summarize...", {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       });
 
       expect(queue.hasCompactionRequest()).toBe(true);
     });
 
     it("should return false after clearing", () => {
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "compaction-request",
         rawCommand: "/compact",
         parsed: {},
@@ -158,7 +158,7 @@ describe("MessageQueue", () => {
       queue.add("Summarize...", {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       });
       queue.clear();
 
@@ -198,7 +198,7 @@ describe("MessageQueue", () => {
     });
 
     it("should preserve compaction metadata when follow-up is added", () => {
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "compaction-request",
         rawCommand: "/compact",
         parsed: {},
@@ -207,7 +207,7 @@ describe("MessageQueue", () => {
       queue.add("Summarize...", {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       });
       queue.add("And then do this follow-up task");
 
@@ -220,17 +220,17 @@ describe("MessageQueue", () => {
       // produceMessage preserves compaction metadata from first message
       const { message, options } = queue.produceMessage();
       expect(message).toBe("Summarize...\nAnd then do this follow-up task");
-      const muxMeta = options?.muxMetadata as MuxFrontendMetadata;
-      expect(muxMeta.type).toBe("compaction-request");
-      if (muxMeta.type === "compaction-request") {
-        expect(muxMeta.rawCommand).toBe("/compact");
+      const unixMeta = options?.unixMetadata as UnixFrontendMetadata;
+      expect(unixMeta.type).toBe("compaction-request");
+      if (unixMeta.type === "compaction-request") {
+        expect(unixMeta.rawCommand).toBe("/compact");
       }
     });
 
     it("should throw when adding agent-skill invocation after normal message", () => {
       queue.add("First message");
 
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "agent-skill",
         rawCommand: "/init",
         skillName: "init",
@@ -240,7 +240,7 @@ describe("MessageQueue", () => {
       const options: SendMessageOptions = {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       };
 
       expect(() => queue.add("Using skill init", options)).toThrow(
@@ -249,7 +249,7 @@ describe("MessageQueue", () => {
     });
 
     it("should throw when adding normal message after agent-skill invocation", () => {
-      const metadata: MuxFrontendMetadata = {
+      const metadata: UnixFrontendMetadata = {
         type: "agent-skill",
         rawCommand: "/init",
         skillName: "init",
@@ -259,7 +259,7 @@ describe("MessageQueue", () => {
       queue.add("Use skill init", {
         model: "claude-3-5-sonnet-20241022",
         agentId: "exec",
-        muxMetadata: metadata,
+        unixMetadata: metadata,
       });
 
       expect(queue.getDisplayText()).toBe("/init");

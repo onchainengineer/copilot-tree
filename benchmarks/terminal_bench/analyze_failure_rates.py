@@ -2,11 +2,11 @@
 """
 Analyze Terminal-Bench failure rates to identify optimization opportunities.
 
-Pulls Mux results from BigQuery and other agents from HuggingFace leaderboard.
+Pulls Unix results from BigQuery and other agents from HuggingFace leaderboard.
 Computes:
-  M/O ratio = Mux failure rate / Average failure rate of top 10 agents
+  M/O ratio = Unix failure rate / Average failure rate of top 10 agents
 
-Tasks with high M/O ratio are where Mux underperforms relative to competitors,
+Tasks with high M/O ratio are where Unix underperforms relative to competitors,
 representing the best optimization opportunities.
 
 Usage:
@@ -16,15 +16,15 @@ Usage:
     # Show more results
     python benchmarks/terminal_bench/analyze_failure_rates.py --top 50
 
-    # Filter to specific Mux model
-    python benchmarks/terminal_bench/analyze_failure_rates.py --mux-model "claude-sonnet"
+    # Filter to specific Unix model
+    python benchmarks/terminal_bench/analyze_failure_rates.py --unix-model "claude-sonnet"
 
     # Force re-download of data
     python benchmarks/terminal_bench/analyze_failure_rates.py --refresh
 
 Requirements:
     git (for cloning from HuggingFace)
-    bq CLI (for querying Mux results from BigQuery)
+    bq CLI (for querying Unix results from BigQuery)
 """
 
 import argparse
@@ -131,10 +131,10 @@ def download_leaderboard_data(refresh: bool = False) -> Path:
 
 def query_mux_results_from_bq() -> list[TaskResult]:
     """
-    Query Mux results from BigQuery.
+    Query Unix results from BigQuery.
 
-    Uses the bq CLI to query mux-benchmarks.benchmarks.tbench_results.
-    Returns TaskResult objects for all Mux benchmark runs.
+    Uses the bq CLI to query unix-benchmarks.benchmarks.tbench_results.
+    Returns TaskResult objects for all Unix benchmark runs.
     """
     import csv
     import subprocess
@@ -145,11 +145,11 @@ def query_mux_results_from_bq() -> list[TaskResult]:
         model_name,
         thinking_level,
         passed
-    FROM `mux-benchmarks.benchmarks.tbench_results`
+    FROM `unix-benchmarks.benchmarks.tbench_results`
     WHERE dataset = 'terminal-bench@2.0'
     """
 
-    print("Querying Mux results from BigQuery...", file=sys.stderr)
+    print("Querying Unix results from BigQuery...", file=sys.stderr)
     try:
         result = subprocess.run(
             [
@@ -178,7 +178,7 @@ def query_mux_results_from_bq() -> list[TaskResult]:
     results: list[TaskResult] = []
     lines = result.stdout.strip().split("\n")
     if len(lines) < 2:
-        print("No Mux results found in BigQuery", file=sys.stderr)
+        print("No Unix results found in BigQuery", file=sys.stderr)
         return results
 
     reader = csv.DictReader(lines)
@@ -202,12 +202,12 @@ def query_mux_results_from_bq() -> list[TaskResult]:
             TaskResult(
                 task_id=task_id,
                 passed=passed_str == "true",
-                agent_name="Mux",
+                agent_name="Unix",
                 model_name=f"{model}@{thinking}",
             )
         )
 
-    print(f"Found {len(results)} Mux results from BigQuery", file=sys.stderr)
+    print(f"Found {len(results)} Unix results from BigQuery", file=sys.stderr)
     if skipped:
         print(f"  (skipped {skipped} incomplete runs)", file=sys.stderr)
     return results
@@ -227,7 +227,7 @@ def parse_leaderboard_results(
                     result.json  # contains "passed" or "score"
 
     Args:
-        exclude_mux: If True, skip Mux agents (we get those from BigQuery)
+        exclude_mux: If True, skip Unix agents (we get those from BigQuery)
     """
     results: list[TaskResult] = []
     submissions_dir = repo_path / "submissions" / "terminal-bench" / DATASET_VERSION
@@ -245,8 +245,8 @@ def parse_leaderboard_results(
         agent_name = parts[0]
         model_name = parts[1] if len(parts) > 1 else "unknown"
 
-        # Skip Mux agents if requested (we get those from BigQuery)
-        if exclude_mux and agent_name.lower() == "mux":
+        # Skip Unix agents if requested (we get those from BigQuery)
+        if exclude_mux and agent_name.lower() == "unix":
             continue
 
         # Find all result.json files in trial folders
@@ -306,7 +306,7 @@ def compute_agent_stats(results: list[TaskResult]) -> dict[str, AgentStats]:
 
 
 def get_top_agents(stats: dict[str, AgentStats], n: int = 10) -> list[str]:
-    """Get the top N agents by pass rate (excluding Mux)."""
+    """Get the top N agents by pass rate (excluding Unix)."""
     sorted_agents = sorted(
         [(k, v) for k, v in stats.items() if not k.startswith("Mux__")],
         key=lambda x: x[1].pass_rate,
@@ -346,13 +346,13 @@ def compute_task_failure_rates(
 
 @dataclass
 class OptimizationOpportunity:
-    """A task where Mux underperforms relative to competitors."""
+    """A task where Unix underperforms relative to competitors."""
 
     task_id: str
     mux_fail_rate: float
     avg_other_fail_rate: float
     ratio: float  # M/O ratio
-    mux_agent: str
+    unix_agent: str
     n_other_agents: int
 
 
@@ -362,28 +362,28 @@ def find_optimization_opportunities(
     top_n_agents: int = 10,
 ) -> list[OptimizationOpportunity]:
     """
-    Find tasks where Mux has high failure rate relative to top agents.
+    Find tasks where Unix has high failure rate relative to top agents.
 
     Returns opportunities sorted by M/O ratio (descending).
     """
     stats = compute_agent_stats(results)
 
-    # Find Mux agents
-    mux_agents = [k for k in stats.keys() if k.startswith("Mux__")]
+    # Find Unix agents
+    unix_agents = [k for k in stats.keys() if k.startswith("Mux__")]
     if mux_filter:
-        mux_agents = [k for k in mux_agents if mux_filter.lower() in k.lower()]
+        unix_agents = [k for k in unix_agents if mux_filter.lower() in k.lower()]
 
-    if not mux_agents:
-        print("Warning: No Mux agents found in results", file=sys.stderr)
+    if not unix_agents:
+        print("Warning: No Unix agents found in results", file=sys.stderr)
         return []
 
-    # Get top N non-Mux agents
+    # Get top N non-Unix agents
     top_agents = get_top_agents(stats, top_n_agents)
     if not top_agents:
-        print("Warning: No non-Mux agents found", file=sys.stderr)
+        print("Warning: No non-Unix agents found", file=sys.stderr)
         return []
 
-    print(f"\nAnalyzing Mux agents: {', '.join(mux_agents)}", file=sys.stderr)
+    print(f"\nAnalyzing Unix agents: {', '.join(unix_agents)}", file=sys.stderr)
     print(f"Comparing against top {len(top_agents)} agents:", file=sys.stderr)
     for agent in top_agents[:5]:
         s = stats[agent]
@@ -395,18 +395,18 @@ def find_optimization_opportunities(
         print(f"  ... and {len(top_agents) - 5} more", file=sys.stderr)
 
     # Compute task-level failure rates
-    all_relevant_agents = set(mux_agents) | set(top_agents)
+    all_relevant_agents = set(unix_agents) | set(top_agents)
     task_rates = compute_task_failure_rates(results, all_relevant_agents)
 
-    # Find opportunities for each Mux agent
+    # Find opportunities for each Unix agent
     opportunities: list[OptimizationOpportunity] = []
 
-    for mux_agent in mux_agents:
+    for unix_agent in unix_agents:
         for task_id, agent_rates in task_rates.items():
-            if mux_agent not in agent_rates:
+            if unix_agent not in agent_rates:
                 continue
 
-            mux_fail_rate = agent_rates[mux_agent]
+            mux_fail_rate = agent_rates[unix_agent]
 
             # Compute average failure rate of top agents on this task
             other_rates = [
@@ -421,7 +421,7 @@ def find_optimization_opportunities(
             epsilon = 0.01
             ratio = mux_fail_rate / (avg_other_fail_rate + epsilon)
 
-            # Only include if Mux actually fails sometimes
+            # Only include if Unix actually fails sometimes
             if mux_fail_rate > 0:
                 opportunities.append(
                     OptimizationOpportunity(
@@ -429,7 +429,7 @@ def find_optimization_opportunities(
                         mux_fail_rate=mux_fail_rate,
                         avg_other_fail_rate=avg_other_fail_rate,
                         ratio=ratio,
-                        mux_agent=mux_agent,
+                        unix_agent=unix_agent,
                         n_other_agents=len(other_rates),
                     )
                 )
@@ -447,7 +447,7 @@ def print_opportunities(
     print("OPTIMIZATION OPPORTUNITIES (sorted by M/O ratio)")
     print(f"{'=' * 80}")
     print(
-        f"{'Task ID':<40} {'Mux Fail%':>10} {'Avg Other%':>11} {'M/O Ratio':>10} {'Agent':<20}"
+        f"{'Task ID':<40} {'Unix Fail%':>10} {'Avg Other%':>11} {'M/O Ratio':>10} {'Agent':<20}"
     )
     print("-" * 80)
 
@@ -457,7 +457,7 @@ def print_opportunities(
             f"{opp.mux_fail_rate * 100:>9.1f}% "
             f"{opp.avg_other_fail_rate * 100:>10.1f}% "
             f"{opp.ratio:>10.2f} "
-            f"{opp.mux_agent:<20}"
+            f"{opp.unix_agent:<20}"
         )
 
     if len(opportunities) > top_n:
@@ -471,7 +471,7 @@ def print_opportunities(
         total_tasks = len(opportunities)
         high_ratio = sum(1 for o in opportunities if o.ratio > 2.0)
         medium_ratio = sum(1 for o in opportunities if 1.0 < o.ratio <= 2.0)
-        print(f"Total tasks with Mux failures: {total_tasks}")
+        print(f"Total tasks with Unix failures: {total_tasks}")
         print(f"  High priority (M/O > 2.0):   {high_ratio}")
         print(f"  Medium priority (1.0 < M/O ≤ 2.0): {medium_ratio}")
 
@@ -487,10 +487,10 @@ def main() -> None:
         help="Number of top opportunities to show (default: 20)",
     )
     parser.add_argument(
-        "--mux-model",
+        "--unix-model",
         type=str,
         default=None,
-        help="Filter to specific Mux model (substring match)",
+        help="Filter to specific Unix model (substring match)",
     )
     parser.add_argument(
         "--top-agents",
@@ -510,17 +510,17 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Get Mux results from BigQuery
+    # Get Unix results from BigQuery
     mux_results = query_mux_results_from_bq()
     if not mux_results:
         print(
-            "Warning: No Mux results from BigQuery. Ensure bq CLI is configured.",
+            "Warning: No Unix results from BigQuery. Ensure bq CLI is configured.",
             file=sys.stderr,
         )
 
     # Download/load other agents from HuggingFace leaderboard
     repo_path = download_leaderboard_data(refresh=args.refresh)
-    print("Parsing leaderboard results (excluding Mux)...", file=sys.stderr)
+    print("Parsing leaderboard results (excluding Unix)...", file=sys.stderr)
     other_results = parse_leaderboard_results(repo_path, exclude_mux=True)
     print(f"Found {len(other_results)} results from other agents", file=sys.stderr)
 
@@ -544,7 +544,7 @@ def main() -> None:
                 "mux_fail_rate": o.mux_fail_rate,
                 "avg_other_fail_rate": o.avg_other_fail_rate,
                 "ratio": o.ratio,
-                "mux_agent": o.mux_agent,
+                "unix_agent": o.unix_agent,
             }
             for o in opportunities[: args.top]
         ]

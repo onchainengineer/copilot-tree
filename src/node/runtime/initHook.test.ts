@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { LineBuffer, createLineBufferedLoggers, getMuxEnv } from "./initHook";
+import { LineBuffer, createLineBufferedLoggers, getUnixEnv } from "./initHook";
 import type { InitLogger } from "./Runtime";
 
 describe("LineBuffer", () => {
@@ -53,7 +53,7 @@ describe("LineBuffer", () => {
   });
 });
 
-// getMuxEnv tests are placed here because initHook.ts owns the implementation.
+// getUnixEnv tests are placed here because initHook.ts owns the implementation.
 describe("createLineBufferedLoggers", () => {
   it("should create separate buffers for stdout and stderr", () => {
     const stdoutLines: string[] = [];
@@ -111,61 +111,61 @@ describe("createLineBufferedLoggers", () => {
   });
 });
 
-describe("getMuxEnv", () => {
-  it("should include base MUX_ environment variables", () => {
-    const env = getMuxEnv("/path/to/project", "worktree", "feature-branch");
+describe("getUnixEnv", () => {
+  it("should include base UNIX_ environment variables", () => {
+    const env = getUnixEnv("/path/to/project", "worktree", "feature-branch");
 
-    expect(env.MUX_PROJECT_PATH).toBe("/path/to/project");
-    expect(env.MUX_RUNTIME).toBe("worktree");
-    expect(env.MUX_WORKSPACE_NAME).toBe("feature-branch");
-    expect(env.MUX_MODEL_STRING).toBeUndefined();
-    expect(env.MUX_THINKING_LEVEL).toBeUndefined();
-    expect(env.MUX_COSTS_USD).toBeUndefined();
+    expect(env.UNIX_PROJECT_PATH).toBe("/path/to/project");
+    expect(env.UNIX_RUNTIME).toBe("worktree");
+    expect(env.UNIX_WORKSPACE_NAME).toBe("feature-branch");
+    expect(env.UNIX_MODEL_STRING).toBeUndefined();
+    expect(env.UNIX_THINKING_LEVEL).toBeUndefined();
+    expect(env.UNIX_COSTS_USD).toBeUndefined();
   });
 
   it("should include model + thinking env vars when provided", () => {
-    const env = getMuxEnv("/path/to/project", "worktree", "feature-branch", {
+    const env = getUnixEnv("/path/to/project", "worktree", "feature-branch", {
       modelString: "openai:gpt-5.2-pro",
       thinkingLevel: "medium",
     });
 
-    expect(env.MUX_MODEL_STRING).toBe("openai:gpt-5.2-pro");
-    expect(env.MUX_THINKING_LEVEL).toBe("medium");
+    expect(env.UNIX_MODEL_STRING).toBe("openai:gpt-5.2-pro");
+    expect(env.UNIX_THINKING_LEVEL).toBe("medium");
   });
 
   it("should allow explicit thinkingLevel=off", () => {
-    const env = getMuxEnv("/path/to/project", "local", "main", {
+    const env = getUnixEnv("/path/to/project", "local", "main", {
       modelString: "anthropic:claude-3-5-sonnet",
       thinkingLevel: "off",
     });
 
-    expect(env.MUX_MODEL_STRING).toBe("anthropic:claude-3-5-sonnet");
-    expect(env.MUX_THINKING_LEVEL).toBe("off");
+    expect(env.UNIX_MODEL_STRING).toBe("anthropic:claude-3-5-sonnet");
+    expect(env.UNIX_THINKING_LEVEL).toBe("off");
   });
 
-  it("should include MUX_COSTS_USD when costsUsd is provided", () => {
-    const env = getMuxEnv("/path/to/project", "worktree", "feature-branch", {
+  it("should include UNIX_COSTS_USD when costsUsd is provided", () => {
+    const env = getUnixEnv("/path/to/project", "worktree", "feature-branch", {
       modelString: "anthropic:claude-opus-4-5",
       thinkingLevel: "high",
       costsUsd: 1.2345,
     });
 
-    expect(env.MUX_COSTS_USD).toBe("1.23");
+    expect(env.UNIX_COSTS_USD).toBe("1.23");
   });
 
-  it("should include MUX_COSTS_USD=0.00 when costsUsd is 0", () => {
-    const env = getMuxEnv("/path/to/project", "worktree", "main", {
+  it("should include UNIX_COSTS_USD=0.00 when costsUsd is 0", () => {
+    const env = getUnixEnv("/path/to/project", "worktree", "main", {
       costsUsd: 0,
     });
 
-    expect(env.MUX_COSTS_USD).toBe("0.00");
+    expect(env.UNIX_COSTS_USD).toBe("0.00");
   });
 
-  it("should not include MUX_COSTS_USD when costsUsd is undefined", () => {
-    const env = getMuxEnv("/path/to/project", "worktree", "main", {
+  it("should not include UNIX_COSTS_USD when costsUsd is undefined", () => {
+    const env = getUnixEnv("/path/to/project", "worktree", "main", {
       modelString: "openai:gpt-4",
     });
 
-    expect(env.MUX_COSTS_USD).toBeUndefined();
+    expect(env.UNIX_COSTS_USD).toBeUndefined();
   });
 });

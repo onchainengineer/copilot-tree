@@ -94,7 +94,7 @@ describe("executeFileEditOperation plan mode enforcement", () => {
     // This test verifies that when in plan mode with a planFilePath set,
     // attempting to edit any other file is blocked BEFORE trying to read/write
     const OTHER_FILE_PATH = "/home/user/project/src/main.ts";
-    const PLAN_FILE_PATH = "/home/user/.mux/sessions/workspace-123/plan.md";
+    const PLAN_FILE_PATH = "/home/user/.unix/sessions/workspace-123/plan.md";
     const TEST_CWD = "/home/user/project";
 
     const readFileMock = jest.fn();
@@ -255,12 +255,12 @@ describe("executeFileEditOperation plan mode enforcement", () => {
       writeFile: jest.fn(),
       normalizePath: jest.fn<(targetPath: string, basePath: string) => string>(
         (targetPath: string, basePath: string) => {
-          // Simulate: "../.mux/sessions/ws/plan.md" resolves to "/home/user/.mux/sessions/ws/plan.md"
-          if (targetPath === "../.mux/sessions/ws/plan.md") {
-            return "/home/user/.mux/sessions/ws/plan.md";
+          // Simulate: "../.unix/sessions/ws/plan.md" resolves to "/home/user/.unix/sessions/ws/plan.md"
+          if (targetPath === "../.unix/sessions/ws/plan.md") {
+            return "/home/user/.unix/sessions/ws/plan.md";
           }
-          if (targetPath === "/home/user/.mux/sessions/ws/plan.md") {
-            return "/home/user/.mux/sessions/ws/plan.md";
+          if (targetPath === "/home/user/.unix/sessions/ws/plan.md") {
+            return "/home/user/.unix/sessions/ws/plan.md";
           }
           if (targetPath.startsWith("/")) return targetPath;
           return `${basePath}/${targetPath}`;
@@ -269,11 +269,11 @@ describe("executeFileEditOperation plan mode enforcement", () => {
       resolvePath: jest.fn<(targetPath: string) => Promise<string>>((targetPath: string) => {
         resolvePathCalls.push(targetPath);
         // Both paths resolve to the same absolute path
-        if (targetPath === "../.mux/sessions/ws/plan.md") {
-          return Promise.resolve("/home/user/.mux/sessions/ws/plan.md");
+        if (targetPath === "../.unix/sessions/ws/plan.md") {
+          return Promise.resolve("/home/user/.unix/sessions/ws/plan.md");
         }
-        if (targetPath === "/home/user/.mux/sessions/ws/plan.md") {
-          return Promise.resolve("/home/user/.mux/sessions/ws/plan.md");
+        if (targetPath === "/home/user/.unix/sessions/ws/plan.md") {
+          return Promise.resolve("/home/user/.unix/sessions/ws/plan.md");
         }
         if (targetPath.startsWith("/")) return Promise.resolve(targetPath);
         return Promise.resolve(targetPath);
@@ -286,22 +286,22 @@ describe("executeFileEditOperation plan mode enforcement", () => {
         runtime: mockRuntime,
         runtimeTempDir: "/tmp",
         planFileOnly: true,
-        planFilePath: "/home/user/.mux/sessions/ws/plan.md",
+        planFilePath: "/home/user/.unix/sessions/ws/plan.md",
       },
-      filePath: "../.mux/sessions/ws/plan.md", // Alternate path to plan file
+      filePath: "../.unix/sessions/ws/plan.md", // Alternate path to plan file
       operation: () => ({ success: true, newContent: "# Plan", metadata: {} }),
     });
 
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toContain("exact plan file path");
-      expect(result.error).toContain("/home/user/.mux/sessions/ws/plan.md");
-      expect(result.error).toContain("../.mux/sessions/ws/plan.md");
+      expect(result.error).toContain("/home/user/.unix/sessions/ws/plan.md");
+      expect(result.error).toContain("../.unix/sessions/ws/plan.md");
       expect(result.error).toContain("resolves to the plan file");
     }
 
     // We still resolve both paths to determine whether the attempted path is the plan file.
-    expect(resolvePathCalls).toContain("../.mux/sessions/ws/plan.md");
-    expect(resolvePathCalls).toContain("/home/user/.mux/sessions/ws/plan.md");
+    expect(resolvePathCalls).toContain("../.unix/sessions/ws/plan.md");
+    expect(resolvePathCalls).toContain("/home/user/.unix/sessions/ws/plan.md");
   });
 });

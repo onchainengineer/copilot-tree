@@ -1,5 +1,5 @@
 import { MAX_SVG_TEXT_CHARS, SVG_MEDIA_TYPE } from "@/common/constants/imageAttachments";
-import type { MuxMessage, MuxTextPart } from "@/common/types/message";
+import type { UnixMessage, UnixTextPart } from "@/common/types/message";
 
 // Guardrail: prevent accidentally injecting a multi‑MB SVG into the prompt.
 const DEFAULT_MAX_SVG_TEXT_BYTES = 200 * 1024; // 200 KiB
@@ -90,9 +90,9 @@ function decodeSvgDataUrlToUtf8(svgDataUrl: string, maxBytes: number, maxChars: 
  * - Scope: user message `file` parts only.
  */
 export function inlineSvgAsTextForProvider(
-  messages: MuxMessage[],
+  messages: UnixMessage[],
   options?: { maxSvgTextBytes?: number; maxSvgTextChars?: number }
-): MuxMessage[] {
+): UnixMessage[] {
   const maxSvgTextChars = options?.maxSvgTextChars ?? MAX_SVG_TEXT_CHARS;
   const maxSvgTextBytes = options?.maxSvgTextBytes ?? DEFAULT_MAX_SVG_TEXT_BYTES;
 
@@ -112,13 +112,13 @@ export function inlineSvgAsTextForProvider(
 
     didChange = true;
 
-    const newParts: MuxMessage["parts"] = [];
+    const newParts: UnixMessage["parts"] = [];
 
     for (const part of msg.parts) {
       if (part.type === "file" && normalizeMediaType(part.mediaType) === SVG_MEDIA_TYPE) {
         try {
           const svgText = decodeSvgDataUrlToUtf8(part.url, maxSvgTextBytes, maxSvgTextChars);
-          const textPart: MuxTextPart = {
+          const textPart: UnixTextPart = {
             type: "text",
             text:
               `[SVG attachment converted to text (providers generally don't accept ${SVG_MEDIA_TYPE} as an image input).]\n\n` +
@@ -128,7 +128,7 @@ export function inlineSvgAsTextForProvider(
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : "Failed to decode SVG attachment.";
-          const textPart: MuxTextPart = {
+          const textPart: UnixTextPart = {
             type: "text",
             text: `[SVG attachment omitted from provider request: ${errorMessage}]`,
           };

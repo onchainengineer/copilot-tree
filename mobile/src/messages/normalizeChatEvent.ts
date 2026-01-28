@@ -1,19 +1,19 @@
 import type { DisplayedMessage, WorkspaceChatEvent } from "../types";
-import type { MuxMessage, MuxTextPart, MuxFilePart } from "@/common/types/message";
+import type { UnixMessage, UnixTextPart, UnixFilePart } from "@/common/types/message";
 import type { DynamicToolPart } from "@/common/types/toolParts";
 import type { WorkspaceChatMessage } from "@/common/orpc/types";
-import { isMuxMessage } from "@/common/orpc/types";
+import { isUnixMessage } from "@/common/orpc/types";
 import { createChatEventProcessor } from "@/browser/utils/messages/ChatEventProcessor";
 
 /**
  * All possible event types that have a `type` discriminant field.
- * This is derived from WorkspaceChatMessage excluding MuxMessage (which uses `role`).
+ * This is derived from WorkspaceChatMessage excluding UnixMessage (which uses `role`).
  *
  * IMPORTANT: When adding new event types to the schema, TypeScript will error
  * here if the handler map doesn't handle them - preventing runtime surprises.
  */
 type TypedEventType =
-  Exclude<WorkspaceChatMessage, MuxMessage> extends infer T
+  Exclude<WorkspaceChatMessage, UnixMessage> extends infer T
     ? T extends { type: infer U }
       ? U
       : never
@@ -55,10 +55,10 @@ function hasFailureResult(result: unknown): boolean {
 }
 
 /**
- * Transform MuxMessage into DisplayedMessage array.
+ * Transform UnixMessage into DisplayedMessage array.
  * Handles merging adjacent text/reasoning parts and extracting tool calls.
  */
-function transformMuxToDisplayed(message: MuxMessage): DisplayedMessage[] {
+function transformMuxToDisplayed(message: UnixMessage): DisplayedMessage[] {
   const displayed: DisplayedMessage[] = [];
   const historySequence = message.metadata?.historySequence ?? 0;
   const baseTimestamp = message.metadata?.timestamp;
@@ -66,12 +66,12 @@ function transformMuxToDisplayed(message: MuxMessage): DisplayedMessage[] {
 
   if (message.role === "user") {
     const content = message.parts
-      .filter((p): p is MuxTextPart => p.type === "text")
+      .filter((p): p is UnixTextPart => p.type === "text")
       .map((p) => p.text)
       .join("");
 
     const fileParts = message.parts
-      .filter((p): p is MuxFilePart => p.type === "file")
+      .filter((p): p is UnixFilePart => p.type === "file")
       .map((p) => ({
         url: p.url,
         mediaType: p.mediaType,
@@ -286,12 +286,12 @@ export function createChatEventExpander(): ChatEventExpander {
 
     if (isObject(payload)) {
       const candidate = payload as WorkspaceChatMessage;
-      if (isMuxMessage(candidate)) {
-        const muxMessage: MuxMessage = candidate;
+      if (isUnixMessage(candidate)) {
+        const muxMessage: UnixMessage = candidate;
         const historySequence = muxMessage.metadata?.historySequence;
 
         if (typeof historySequence !== "number" || !Number.isFinite(historySequence)) {
-          console.warn(`${DEBUG_TAG} Dropping mux message without historySequence`, {
+          console.warn(`${DEBUG_TAG} Dropping unix message without historySequence`, {
             id: muxMessage.id,
             role: muxMessage.role,
             metadata: muxMessage.metadata,

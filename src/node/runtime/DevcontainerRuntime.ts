@@ -26,7 +26,7 @@ import {
   resolveSshAgentForwarding,
 } from "./credentialForwarding";
 import { devcontainerUp, devcontainerDown } from "./devcontainerCli";
-import { checkInitHookExists, getMuxEnv } from "./initHook";
+import { checkInitHookExists, getUnixEnv } from "./initHook";
 import { runInitHookOnRuntime } from "./initHook";
 import { DisposableProcess, killProcessTree } from "@/node/utils/disposableExec";
 import { EXIT_CODE_ABORTED, EXIT_CODE_TIMEOUT } from "@/common/constants/exitCodes";
@@ -465,7 +465,7 @@ export class DevcontainerRuntime extends LocalBaseRuntime {
   }
 
   /**
-   * Run .mux/init hook inside the devcontainer.
+   * Run .unix/init hook inside the devcontainer.
    */
   async initWorkspace(params: WorkspaceInitParams): Promise<WorkspaceInitResult> {
     const { projectPath, branchName, workspacePath, initLogger, env } = params;
@@ -474,9 +474,9 @@ export class DevcontainerRuntime extends LocalBaseRuntime {
       // Check if init hook exists (on host - worktree is bind-mounted)
       const hookExists = await checkInitHookExists(workspacePath);
       if (hookExists) {
-        const muxEnv = { ...env, ...getMuxEnv(projectPath, "devcontainer", branchName) };
+        const muxEnv = { ...env, ...getUnixEnv(projectPath, "devcontainer", branchName) };
         const containerWorkspacePath = this.remoteWorkspaceFolder ?? workspacePath;
-        const hookPath = `${containerWorkspacePath}/.mux/init`;
+        const hookPath = `${containerWorkspacePath}/.unix/init`;
         await runInitHookOnRuntime(this, hookPath, containerWorkspacePath, muxEnv, initLogger);
       } else {
         // No hook - signal completion immediately
@@ -674,8 +674,8 @@ export class DevcontainerRuntime extends LocalBaseRuntime {
     }
 
     const tmpPath = this.remoteWorkspaceFolder
-      ? path.posix.join(workspaceRoot, ".mux", "tmp")
-      : path.join(workspaceRoot, ".mux", "tmp");
+      ? path.posix.join(workspaceRoot, ".unix", "tmp")
+      : path.join(workspaceRoot, ".unix", "tmp");
     return Promise.resolve(tmpPath);
   }
 

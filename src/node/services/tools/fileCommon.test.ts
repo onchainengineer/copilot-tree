@@ -227,14 +227,14 @@ describe("fileCommon", () => {
       const sshRuntime = createRuntime({
         type: "ssh",
         host: "user@localhost",
-        srcBaseDir: "/home/user/mux",
+        srcBaseDir: "/home/user/unix",
         identityFile: "/tmp/fake-key",
       });
-      const sshCwd = "/home/user/mux/project/branch";
+      const sshCwd = "/home/user/unix/project/branch";
 
       // Should auto-correct absolute paths with redundant prefix on SSH too
       const result = validateNoRedundantPrefix(
-        "/home/user/mux/project/branch/src/file.ts",
+        "/home/user/unix/project/branch/src/file.ts",
         sshCwd,
         sshRuntime
       );
@@ -248,8 +248,8 @@ describe("fileCommon", () => {
   });
 
   describe("validatePlanModeAccess", () => {
-    const planFilePath = "~/.mux/plans/plan.md";
-    const resolvedPlanFilePath = "/home/user/.mux/plans/plan.md";
+    const planFilePath = "~/.unix/plans/plan.md";
+    const resolvedPlanFilePath = "/home/user/.unix/plans/plan.md";
 
     const mockRuntime = {
       resolvePath: (targetPath: string): Promise<string> => {

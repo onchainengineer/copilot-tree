@@ -1,7 +1,7 @@
 /**
  * Tool Bridge for PTC
  *
- * Bridges Mux tools into the QuickJS sandbox, making them callable via `mux.*` namespace.
+ * Bridges Unix tools into the QuickJS sandbox, making them callable via `unix.*` namespace.
  * Handles argument validation via Zod schemas and result serialization.
  */
 
@@ -21,7 +21,7 @@ const EXCLUDED_TOOLS = new Set([
 ]);
 
 /**
- * Bridge that exposes Mux tools in the QuickJS sandbox under `mux.*` namespace.
+ * Bridge that exposes Unix tools in the QuickJS sandbox under `unix.*` namespace.
  */
 export class ToolBridge {
   private readonly bridgeableTools: Map<string, Tool>;
@@ -67,7 +67,7 @@ export class ToolBridge {
   }
 
   /**
-   * Register all bridgeable tools on the runtime under `mux` namespace.
+   * Register all bridgeable tools on the runtime under `unix` namespace.
    *
    * Tools receive the runtime's abort signal, which is aborted when:
    * - The sandbox timeout is exceeded
@@ -109,7 +109,7 @@ export class ToolBridge {
       };
     }
 
-    runtime.registerObject("mux", muxObj);
+    runtime.registerObject("unix", muxObj);
   }
 
   private hasExecute(tool: Tool): tool is Tool & { execute: NonNullable<Tool["execute"]> } {

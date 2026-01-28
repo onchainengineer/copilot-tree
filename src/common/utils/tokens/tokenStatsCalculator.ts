@@ -6,7 +6,7 @@
  * For renderer-safe usage utilities, use displayUsage.ts instead.
  */
 
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import type { ChatStats, TokenConsumer } from "@/common/types/chatStats";
 import {
   getTokenizerForModel,
@@ -168,7 +168,7 @@ export interface TokenCountJob {
  * Creates all token counting jobs from messages
  * Jobs are executed immediately (promises start running)
  */
-function createTokenCountingJobs(messages: MuxMessage[], tokenizer: Tokenizer): TokenCountJob[] {
+function createTokenCountingJobs(messages: UnixMessage[], tokenizer: Tokenizer): TokenCountJob[] {
   const jobs: TokenCountJob[] = [];
 
   for (const message of messages) {
@@ -235,7 +235,7 @@ function createTokenCountingJobs(messages: MuxMessage[], tokenizer: Tokenizer): 
 /**
  * Collects all unique tool names from messages
  */
-export function collectUniqueToolNames(messages: MuxMessage[]): Set<string> {
+export function collectUniqueToolNames(messages: UnixMessage[]): Set<string> {
   const toolNames = new Set<string>();
 
   for (const message of messages) {
@@ -280,7 +280,7 @@ interface SyncMetadata {
 /**
  * Extracts synchronous metadata from messages (no token counting needed)
  */
-export function extractSyncMetadata(messages: MuxMessage[], model: string): SyncMetadata {
+export function extractSyncMetadata(messages: UnixMessage[], model: string): SyncMetadata {
   let systemMessageTokens = 0;
   const usageHistory: ChatUsageDisplay[] = [];
 
@@ -385,15 +385,15 @@ export function mergeResults(
 }
 
 /**
- * Calculate token statistics from raw MuxMessages
+ * Calculate token statistics from raw UnixMessages
  * This is the single source of truth for token counting
  *
- * @param messages - Array of MuxMessages from chat history
+ * @param messages - Array of UnixMessages from chat history
  * @param model - Model string (e.g., "anthropic:claude-opus-4-1")
  * @returns ChatStats with token breakdown by consumer and usage history
  */
 export async function calculateTokenStats(
-  messages: MuxMessage[],
+  messages: UnixMessage[],
   model: string
 ): Promise<ChatStats> {
   if (messages.length === 0) {

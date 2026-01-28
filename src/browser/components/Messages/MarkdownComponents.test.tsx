@@ -53,7 +53,7 @@ describe("MarkdownComponents command code blocks", () => {
     const element = markdownComponents.code({
       inline: false,
       className: "language-powershell",
-      children: "PS C:\\Users\\mike> npm install mux\n",
+      children: "PS C:\\Users\\mike> npm install unix\n",
     });
 
     const { getByRole } = render(
@@ -74,7 +74,7 @@ describe("MarkdownComponents command code blocks", () => {
     fireEvent.click(runButton);
 
     expect(openTerminal).toHaveBeenCalledWith({
-      initialCommand: "npm install mux",
+      initialCommand: "npm install unix",
     });
   });
 

@@ -105,7 +105,7 @@ if (shouldRunIntegrationTests() && !shouldRunSuite) {
 
 const TEST_TIMEOUT_MS = 60_000;
 
-const ERROR_MARKER = "MUX_SYSTEM1_KEEP_RANGES_TEST_ERROR_MARKER";
+const ERROR_MARKER = "UNIX_SYSTEM1_KEEP_RANGES_TEST_ERROR_MARKER";
 const RAW_OUTPUT = [
   "running...",
   "some noise line 1",

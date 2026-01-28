@@ -20,7 +20,7 @@ describe("SessionTimingService", () => {
   let config: Config;
 
   beforeEach(async () => {
-    tempDir = path.join(os.tmpdir(), `mux-session-timing-test-${Date.now()}-${Math.random()}`);
+    tempDir = path.join(os.tmpdir(), `unix-session-timing-test-${Date.now()}-${Math.random()}`);
     await fs.mkdir(tempDir, { recursive: true });
     config = new Config(tempDir);
   });
@@ -155,7 +155,7 @@ describe("SessionTimingService", () => {
       const service = new SessionTimingService(config, telemetry as unknown as TelemetryService);
       service.setStatsTabState({ enabled: true, variant: "stats", override: "default" });
 
-      const projectPath = "/tmp/mux-session-timing-rollup-test-project";
+      const projectPath = "/tmp/unix-session-timing-rollup-test-project";
       const model = "openai:gpt-4o";
 
       const parentWorkspaceId = "parent-workspace";
@@ -315,7 +315,7 @@ describe("SessionTimingService", () => {
       const service = new SessionTimingService(config, telemetry as unknown as TelemetryService);
       service.setStatsTabState({ enabled: true, variant: "stats", override: "default" });
 
-      const projectPath = "/tmp/mux-session-timing-rollup-test-project";
+      const projectPath = "/tmp/unix-session-timing-rollup-test-project";
       const model = "openai:gpt-4o";
 
       const parentWorkspaceId = "parent-workspace";

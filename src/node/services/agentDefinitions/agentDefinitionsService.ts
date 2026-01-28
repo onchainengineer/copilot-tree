@@ -49,7 +49,7 @@ export function computeBaseSkipScope(
   return baseId === currentId ? currentScope : undefined;
 }
 
-const GLOBAL_AGENTS_ROOT = "~/.mux/agents";
+const GLOBAL_AGENTS_ROOT = "~/.unix/agents";
 
 function resolveUiSelectable(
   ui: { hidden?: boolean; selectable?: boolean; disabled?: boolean } | undefined
@@ -96,7 +96,7 @@ export function getDefaultAgentDefinitionsRoots(
   }
 
   return {
-    projectRoot: runtime.normalizePath(".mux/agents", workspacePath),
+    projectRoot: runtime.normalizePath(".unix/agents", workspacePath),
     globalRoot: GLOBAL_AGENTS_ROOT,
   };
 }

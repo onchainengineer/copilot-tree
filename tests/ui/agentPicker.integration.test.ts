@@ -143,7 +143,7 @@ async function createAgentFile(
   agentId: string,
   content: string
 ): Promise<void> {
-  const agentsDir = path.join(workspacePath, ".mux", "agents");
+  const agentsDir = path.join(workspacePath, ".unix", "agents");
   await fs.mkdir(agentsDir, { recursive: true });
   await fs.writeFile(path.join(agentsDir, `${agentId}.md`), content);
 }
@@ -152,7 +152,7 @@ async function createAgentFile(
  * Remove a custom agent definition file from the workspace.
  */
 async function removeAgentFile(workspacePath: string, agentId: string): Promise<void> {
-  const filePath = path.join(workspacePath, ".mux", "agents", `${agentId}.md`);
+  const filePath = path.join(workspacePath, ".unix", "agents", `${agentId}.md`);
   try {
     await fs.unlink(filePath);
   } catch {

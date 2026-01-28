@@ -15,8 +15,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { parseArgs } from "util";
 import { defaultConfig } from "@/node/config";
-import type { MuxMessage } from "@/common/types/message";
-import { createMuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import { InitStateManager } from "@/node/services/initStateManager";
 import { AIService } from "@/node/services/aiService";
 import { HistoryService } from "@/node/services/historyService";
@@ -57,11 +57,11 @@ async function main() {
 
   // Read history
   const historyContent = fs.readFileSync(historyFile, "utf-8");
-  let messages: MuxMessage[];
+  let messages: UnixMessage[];
 
   try {
     // Try parsing as JSON array first
-    messages = JSON.parse(historyContent) as MuxMessage[];
+    messages = JSON.parse(historyContent) as UnixMessage[];
     if (!Array.isArray(messages)) {
       messages = [messages];
     }
@@ -70,7 +70,7 @@ async function main() {
     messages = historyContent
       .split("\n")
       .filter((line) => line.trim())
-      .map((line) => JSON.parse(line) as MuxMessage);
+      .map((line) => JSON.parse(line) as UnixMessage);
   }
 
   console.log(`📝 Loaded ${messages.length} messages from history\n`);
@@ -110,7 +110,7 @@ async function main() {
   console.log(`\n✓ Created temporary workspace: ${workspaceId}`);
 
   // Add new user message to the history
-  const userMessage = createMuxMessage(
+  const userMessage = createUnixMessage(
     `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     "user",
     messageText,

@@ -9,7 +9,7 @@ describe("TelemetryService feature flag properties", () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-telemetry-test-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-telemetry-test-"));
   });
 
   afterEach(async () => {
@@ -25,8 +25,8 @@ describe("TelemetryService feature flag properties", () => {
       VITEST: process.env.VITEST,
       CI: process.env.CI,
       GITHUB_ACTIONS: process.env.GITHUB_ACTIONS,
-      MUX_DISABLE_TELEMETRY: process.env.MUX_DISABLE_TELEMETRY,
-      MUX_E2E: process.env.MUX_E2E,
+      UNIX_DISABLE_TELEMETRY: process.env.UNIX_DISABLE_TELEMETRY,
+      UNIX_E2E: process.env.UNIX_E2E,
       TEST_INTEGRATION: process.env.TEST_INTEGRATION,
     };
 
@@ -36,8 +36,8 @@ describe("TelemetryService feature flag properties", () => {
     delete process.env.VITEST;
     delete process.env.CI;
     delete process.env.GITHUB_ACTIONS;
-    delete process.env.MUX_DISABLE_TELEMETRY;
-    delete process.env.MUX_E2E;
+    delete process.env.UNIX_DISABLE_TELEMETRY;
+    delete process.env.UNIX_E2E;
     delete process.env.TEST_INTEGRATION;
 
     try {

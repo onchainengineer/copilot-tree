@@ -43,7 +43,7 @@ describe("code_execution integration tests", () => {
 
   describe("file_read through sandbox", () => {
     it(
-      "reads a real file via mux.file_read()",
+      "reads a real file viaunix.file_read()",
       async () => {
         // Create a real file
         const testContent = "hello from integration test\nline two\nline three";
@@ -63,7 +63,7 @@ describe("code_execution integration tests", () => {
 
         // Execute code that reads the file
         const code = `
-        const result = mux.file_read({ file_path: "test.txt" });
+        const result =unix.file_read({ file_path: "test.txt" });
         return result;
       `;
 
@@ -109,7 +109,7 @@ describe("code_execution integration tests", () => {
         );
 
         const code = `
-        const result = mux.file_read({ file_path: "nonexistent.txt" });
+        const result =unix.file_read({ file_path: "nonexistent.txt" });
         return result;
       `;
 
@@ -131,7 +131,7 @@ describe("code_execution integration tests", () => {
   });
 
   describe("bash through sandbox", () => {
-    it("executes a real bash command via mux.bash()", async () => {
+    it("executes a real bash command viaunix.bash()", async () => {
       // Create real bash tool
       const tempDir = new TestTempDir("ptc-bash-integration");
       const bashConfig = {
@@ -151,7 +151,7 @@ describe("code_execution integration tests", () => {
 
       // Execute a simple echo command
       const code = `
-        const result = mux.bash({
+        const result =unix.bash({
           script: "echo 'hello from sandbox'",
           timeout_secs: 5,
           run_in_background: false,
@@ -207,7 +207,7 @@ describe("code_execution integration tests", () => {
       // Code that creates a file with bash, then reads it with file_read
       const code = `
         // Create a file using bash
-        const bashResult = mux.bash({
+        const bashResult =unix.bash({
           script: "echo 'created by sandbox' > sandbox_created.txt",
           timeout_secs: 5,
           run_in_background: false,
@@ -219,7 +219,7 @@ describe("code_execution integration tests", () => {
         }
         
         // Read the file we just created
-        const readResult = mux.file_read({ file_path: "sandbox_created.txt" });
+        const readResult =unix.file_read({ file_path: "sandbox_created.txt" });
         
         return {
           bashResult,
@@ -274,7 +274,7 @@ describe("code_execution integration tests", () => {
 
       // Call file_read without required file_path argument
       const code = `
-        const result = mux.file_read({});
+        const result =unix.file_read({});
         return result;
       `;
 
@@ -309,7 +309,7 @@ describe("code_execution integration tests", () => {
       );
 
       const code = `
-        const result = mux.throwing_tool({});
+        const result =unix.throwing_tool({});
         return result;
       `;
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { DEFAULT_MODEL_ID, assertKnownModelId, sanitizeModelSequence } from "../utils/modelCatalog";
 
-const STORAGE_KEY = "mux.models.recent";
+const STORAGE_KEY = "unix.models.recent";
 const MAX_RECENT_MODELS = 8;
 const FALLBACK_RECENTS = [DEFAULT_MODEL_ID];
 

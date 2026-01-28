@@ -13,8 +13,8 @@ interface WorkspaceSettings {
 // Default values (hardcoded tier 3)
 const DEFAULT_MODE: WorkspaceMode = "plan";
 const DEFAULT_THINKING_LEVEL: ThinkingLevel = "off";
-const WORKSPACE_PREFIX = "mux.workspace";
-const DEFAULT_PREFIX = "mux.defaults";
+const WORKSPACE_PREFIX = "unix.workspace";
+const DEFAULT_PREFIX = "unix.defaults";
 const DEFAULT_MODEL = DEFAULT_MODEL_ID;
 const DEFAULT_1M_CONTEXT = false;
 
@@ -28,7 +28,7 @@ function sanitizeWorkspaceId(workspaceId: string): string {
 
 /**
  * Get the storage key for a workspace-specific setting
- * Format: "mux.workspace.{sanitizedWorkspaceId}.{setting}"
+ * Format: "unix.workspace.{sanitizedWorkspaceId}.{setting}"
  */
 function getWorkspaceSettingKey(workspaceId: string, setting: string): string {
   return `${WORKSPACE_PREFIX}.${sanitizeWorkspaceId(workspaceId)}.${setting}`;
@@ -36,7 +36,7 @@ function getWorkspaceSettingKey(workspaceId: string, setting: string): string {
 
 /**
  * Get the storage key for a global default setting
- * Format: "mux.defaults.{setting}"
+ * Format: "unix.defaults.{setting}"
  */
 function getDefaultSettingKey(setting: string): string {
   return `${DEFAULT_PREFIX}.${setting}`;

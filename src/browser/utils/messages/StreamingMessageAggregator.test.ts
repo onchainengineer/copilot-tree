@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import { StreamingMessageAggregator } from "./StreamingMessageAggregator";
 
 // Test helper: create aggregator with default createdAt for tests
@@ -188,12 +188,12 @@ describe("StreamingMessageAggregator", () => {
     test("should hide synthetic messages by default", () => {
       const aggregator = new StreamingMessageAggregator(TEST_CREATED_AT);
 
-      const synthetic = createMuxMessage("s1", "user", "synthetic", {
+      const synthetic = createUnixMessage("s1", "user", "synthetic", {
         timestamp: 1,
         historySequence: 1,
         synthetic: true,
       });
-      const user = createMuxMessage("u1", "user", "hello", {
+      const user = createUnixMessage("u1", "user", "hello", {
         timestamp: 2,
         historySequence: 2,
       });
@@ -210,12 +210,12 @@ describe("StreamingMessageAggregator", () => {
       withDebugLlmRequestEnabled(() => {
         const aggregator = new StreamingMessageAggregator(TEST_CREATED_AT);
 
-        const synthetic = createMuxMessage("s1", "user", "synthetic", {
+        const synthetic = createUnixMessage("s1", "user", "synthetic", {
           timestamp: 1,
           historySequence: 1,
           synthetic: true,
         });
-        const user = createMuxMessage("u1", "user", "hello", {
+        const user = createUnixMessage("u1", "user", "hello", {
           timestamp: 2,
           historySequence: 2,
         });
@@ -235,7 +235,7 @@ describe("StreamingMessageAggregator", () => {
 
     test("should disable displayed message cap when showAllMessages is enabled", () => {
       const manyMessages = Array.from({ length: 200 }, (_, i) =>
-        createMuxMessage(`u${i}`, "user", `msg-${i}`, {
+        createUnixMessage(`u${i}`, "user", `msg-${i}`, {
           timestamp: i,
           historySequence: i,
         })
@@ -520,7 +520,7 @@ describe("StreamingMessageAggregator", () => {
         metadata: {
           historySequence: 1,
           timestamp: Date.now(),
-          muxMetadata: {
+          unixMetadata: {
             type: "compaction-request" as const,
             rawCommand: "/compact",
             parsed: { model: "anthropic:claude-3-5-haiku-20241022" },
@@ -553,7 +553,7 @@ describe("StreamingMessageAggregator", () => {
         metadata: {
           historySequence: 1,
           timestamp: Date.now(),
-          muxMetadata: {
+          unixMetadata: {
             type: "compaction-request" as const,
             rawCommand: "/compact",
             parsed: { model: "anthropic:claude-3-5-haiku-20241022" },
@@ -589,7 +589,7 @@ describe("StreamingMessageAggregator", () => {
         metadata: {
           historySequence: 1,
           timestamp: Date.now(),
-          muxMetadata: {
+          unixMetadata: {
             type: "compaction-request",
             rawCommand: "/compact",
             parsed: { model: "anthropic:claude-3-5-haiku-20241022" },
@@ -902,7 +902,7 @@ describe("StreamingMessageAggregator", () => {
         messageId: "msg-1",
         toolCallId: "parent-tool-1",
         toolName: "code_execution",
-        args: { code: "mux.file_read({ filePath: 'test.txt' })" },
+        args: { code: "unix.file_read({ filePath: 'test.txt' })" },
         tokens: 10,
         timestamp: 1000,
       });
@@ -1201,7 +1201,7 @@ describe("StreamingMessageAggregator", () => {
       });
 
       aggregator.handleMessage({
-        ...createMuxMessage("user-1", "user", "Hello", { historySequence: 1 }),
+        ...createUnixMessage("user-1", "user", "Hello", { historySequence: 1 }),
         type: "message",
       });
 

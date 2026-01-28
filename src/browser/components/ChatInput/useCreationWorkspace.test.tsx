@@ -330,7 +330,7 @@ const TEST_METADATA: FrontendWorkspaceMetadata = {
   projectName: "Demo",
   projectPath: TEST_PROJECT_PATH,
   namedWorkspacePath: "/worktrees/demo/demo-branch",
-  runtimeConfig: { type: "local", srcBaseDir: "/home/user/.mux/src" },
+  runtimeConfig: { type: "local", srcBaseDir: "/home/user/.unix/src" },
   createdAt: "2025-01-01T00:00:00.000Z",
 };
 
@@ -486,7 +486,7 @@ describe("useCreationWorkspace", () => {
     expect(createRequest?.runtimeConfig).toEqual({
       type: "ssh",
       host: "example.com",
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     });
 
     // workspace.sendMessage should be called with the created workspace ID

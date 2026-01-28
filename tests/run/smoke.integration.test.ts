@@ -1,7 +1,7 @@
 /**
- * Smoke integration test for `mux run` CLI.
+ * Smoke integration test for `unix run` CLI.
  *
- * Runs `mux run` with a real AI model to verify the end-to-end CLI flow works.
+ * Runs `unix run` with a real AI model to verify the end-to-end CLI flow works.
  * Uses a simple, deterministic prompt with thinking off for fast, reliable tests.
  */
 
@@ -30,7 +30,7 @@ interface ExecResult {
 }
 
 /**
- * Run `mux run` CLI with the given arguments.
+ * Run `unix run` CLI with the given arguments.
  * Returns combined stdout/stderr and exit code.
  */
 async function runMuxRun(
@@ -47,7 +47,7 @@ async function runMuxRun(
         ...process.env,
         NO_COLOR: "1",
         // Isolate config to avoid reading user's providers.jsonc
-        ...(muxRoot ? { MUX_ROOT: muxRoot } : {}),
+        ...(muxRoot ? { UNIX_ROOT: muxRoot } : {}),
       },
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -76,17 +76,17 @@ async function runMuxRun(
   });
 }
 
-describeIntegration("mux run smoke tests", () => {
+describeIntegration("unix run smoke tests", () => {
   let testDir: string;
   let muxRoot: string;
 
   beforeAll(async () => {
     // Create a temporary directory for tests
-    testDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-run-smoke-"));
-    // Create isolated MUX_ROOT to avoid reading user's providers.jsonc
-    muxRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mux-root-smoke-"));
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-run-smoke-"));
+    // Create isolated UNIX_ROOT to avoid reading user's providers.jsonc
+    muxRoot = await fs.mkdtemp(path.join(os.tmpdir(), "unix-root-smoke-"));
 
-    // Initialize a git repo (mux run requires a git repo)
+    // Initialize a git repo (unix run requires a git repo)
     const { execSync } = await import("child_process");
     execSync("git init", { cwd: testDir, stdio: "pipe" });
     execSync("git config user.email 'test@test.com'", { cwd: testDir, stdio: "pipe" });
@@ -118,7 +118,7 @@ describeIntegration("mux run smoke tests", () => {
         "anthropic:claude-haiku-4-5",
         "--thinking",
         "off",
-        "Say exactly 'HELLO_MUX_TEST' and nothing else. Do not use any tools.",
+        "Say exactly 'HELLO_UNIX_TEST' and nothing else. Do not use any tools.",
       ],
       { timeoutMs: 45000, muxRoot }
     );
@@ -127,12 +127,12 @@ describeIntegration("mux run smoke tests", () => {
     expect(result.exitCode).toBe(0);
 
     // Should contain our expected response somewhere in the output
-    expect(result.output).toContain("HELLO_MUX_TEST");
+    expect(result.output).toContain("HELLO_UNIX_TEST");
   }, 60000);
 
   test("file creation with bash tool", async () => {
     const testFileName = `test-${Date.now()}.txt`;
-    const testContent = "mux-run-integration-test";
+    const testContent = "unix-run-integration-test";
 
     const result = await runMuxRun(
       [

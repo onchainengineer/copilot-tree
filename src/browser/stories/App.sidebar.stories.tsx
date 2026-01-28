@@ -91,15 +91,15 @@ function createGitStatusExecutor(gitStatus?: Map<string, GitStatusFixture>) {
         : "";
 
     return [
-      "__MUX_BRANCH_DATA__BEGIN_SHOW_BRANCH__",
+      "__UNIX_BRANCH_DATA__BEGIN_SHOW_BRANCH__",
       showBranchLines.join("\n"),
-      "__MUX_BRANCH_DATA__END_SHOW_BRANCH__",
-      "__MUX_BRANCH_DATA__BEGIN_DATES__",
+      "__UNIX_BRANCH_DATA__END_SHOW_BRANCH__",
+      "__UNIX_BRANCH_DATA__BEGIN_DATES__",
       dates,
-      "__MUX_BRANCH_DATA__END_DATES__",
-      "__MUX_BRANCH_DATA__BEGIN_DIRTY_FILES__",
+      "__UNIX_BRANCH_DATA__END_DATES__",
+      "__UNIX_BRANCH_DATA__BEGIN_DIRTY_FILES__",
       dirtyFiles,
-      "__MUX_BRANCH_DATA__END_DIRTY_FILES__",
+      "__UNIX_BRANCH_DATA__END_DIRTY_FILES__",
     ].join("\n");
   };
 
@@ -107,7 +107,7 @@ function createGitStatusExecutor(gitStatus?: Map<string, GitStatusFixture>) {
     const status = gitStatus?.get(workspaceId) ?? {};
 
     // useGitBranchDetails consolidated script (tooltip content)
-    if (script.includes("__MUX_BRANCH_DATA__BEGIN_SHOW_BRANCH__")) {
+    if (script.includes("__UNIX_BRANCH_DATA__BEGIN_SHOW_BRANCH__")) {
       const output = buildBranchDetailsOutput(status);
       return Promise.resolve({ success: true as const, output, exitCode: 0, wall_duration_ms: 50 });
     }

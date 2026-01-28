@@ -9,7 +9,7 @@ import type { AgentSkillDescriptor } from "@/common/types/agentSkill";
 import type { FrontendWorkspaceMetadata } from "@/common/types/workspace";
 import type {
   WorkspaceChatMessage,
-  ChatMuxMessage,
+  ChatUnixMessage,
   ProvidersConfigMap,
   WorkspaceStatsSnapshot,
 } from "@/common/orpc/types";
@@ -288,7 +288,7 @@ export interface SimpleChatSetupOptions {
   workspaceName?: string;
   projectName?: string;
   projectPath?: string;
-  messages: ChatMuxMessage[];
+  messages: ChatUnixMessage[];
   gitStatus?: GitStatusFixture;
   /** Git diff output for Review tab */
   gitDiff?: GitDiffFixture;
@@ -409,7 +409,7 @@ export interface StreamingChatSetupOptions {
   workspaceId?: string;
   workspaceName?: string;
   projectName?: string;
-  messages: ChatMuxMessage[];
+  messages: ChatUnixMessage[];
   streamingMessageId: string;
   model?: string;
   historySequence: number;

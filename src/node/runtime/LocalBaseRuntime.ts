@@ -382,8 +382,8 @@ export abstract class LocalBaseRuntime implements Runtime {
     return Promise.resolve(isWindows ? (process.env.TEMP ?? "C:\\Temp") : "/tmp");
   }
 
-  getMuxHome(): string {
-    return "~/.mux";
+  getUnixHome(): string {
+    return "~/.unix";
   }
 
   /**
@@ -394,10 +394,10 @@ export abstract class LocalBaseRuntime implements Runtime {
   }
 
   /**
-   * Helper to run .mux/init hook if it exists and is executable.
+   * Helper to run .unix/init hook if it exists and is executable.
    * Shared between WorktreeRuntime and LocalRuntime.
    * @param workspacePath - Path to the workspace directory
-   * @param muxEnv - MUX_ environment variables (from getMuxEnv)
+   * @param muxEnv - UNIX_ environment variables (from getUnixEnv)
    * @param initLogger - Logger for streaming output
    */
   protected async runInitHook(
@@ -405,8 +405,8 @@ export abstract class LocalBaseRuntime implements Runtime {
     muxEnv: Record<string, string>,
     initLogger: InitLogger
   ): Promise<void> {
-    // Hook path is derived from MUX_PROJECT_PATH in muxEnv
-    const projectPath = muxEnv.MUX_PROJECT_PATH;
+    // Hook path is derived from UNIX_PROJECT_PATH in muxEnv
+    const projectPath = muxEnv.UNIX_PROJECT_PATH;
     const hookPath = getInitHookPath(projectPath);
     initLogger.logStep(`Running init hook: ${hookPath}`);
 

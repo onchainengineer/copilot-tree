@@ -14,9 +14,9 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ELECTRON_PATH="$PROJECT_ROOT/node_modules/electron"
 NODE_PTY_PATH="$PROJECT_ROOT/node_modules/node-pty"
 
-# 1) Skip if this is not the mux repo root (installed as a dependency)
+# 1) Skip if this is not the unix repo root (installed as a dependency)
 if [ "${INIT_CWD:-$PROJECT_ROOT}" != "$PROJECT_ROOT" ]; then
-  echo "📦 mux installed as a dependency – skipping native rebuild"
+  echo "📦 unix installed as a dependency – skipping native rebuild"
   exit 0
 fi
 
@@ -37,7 +37,7 @@ NODE_PTY_VERSION="$(
 PLATFORM="$(uname -s 2>/dev/null || echo unknown)"
 ARCH="$(uname -m 2>/dev/null || echo unknown)"
 
-STAMP_DIR="$PROJECT_ROOT/node_modules/.cache/mux-native"
+STAMP_DIR="$PROJECT_ROOT/node_modules/.cache/unix-native"
 STAMP_FILE="$STAMP_DIR/node-pty-${ELECTRON_VERSION}-${NODE_PTY_VERSION}-${PLATFORM}-${ARCH}.stamp"
 
 mkdir -p "$STAMP_DIR"

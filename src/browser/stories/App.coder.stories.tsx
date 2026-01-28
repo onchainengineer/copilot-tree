@@ -12,7 +12,7 @@ import type { ProjectConfig } from "@/node/config";
 import type { CoderTemplate, CoderPreset, CoderWorkspace } from "@/common/orpc/schemas/coder";
 
 async function openProjectCreationView(storyRoot: HTMLElement): Promise<void> {
-  // App now boots into the built-in mux-chat workspace.
+  // App now boots into the built-in unix-chat workspace.
   // Navigate to the project creation page so runtime controls are visible.
   const projectRow = await waitFor(
     () => {
@@ -91,7 +91,7 @@ const mockPresetsK8s: CoderPreset[] = [
 /** Mock existing Coder workspaces */
 const mockWorkspaces: CoderWorkspace[] = [
   {
-    name: "mux-dev",
+    name: "unix-dev",
     templateName: "coder-on-coder",
     templateDisplayName: "Coder on Coder",
     status: "running",

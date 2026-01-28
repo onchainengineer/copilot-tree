@@ -2,7 +2,7 @@
  * Platform-specific bash path resolution
  *
  * On Unix/Linux/macOS, bash is in PATH by default.
- * On Windows, mux requires Git for Windows' Git Bash (WSL is not supported).
+ * On Windows, unix requires Git for Windows' Git Bash (WSL is not supported).
  */
 
 import { execSync, type ExecSyncOptionsWithStringEncoding } from "child_process";
@@ -213,7 +213,7 @@ export function getBashPathForPlatform(params: GetBashPathForPlatformParams): st
 
   if (!bashPath) {
     throw new Error(
-      "Git Bash not found. On Windows, mux requires Git for Windows (Git Bash). WSL is not supported. Install Git for Windows from https://git-scm.com/download/win"
+      "Git Bash not found. On Windows, unix requires Git for Windows (Git Bash). WSL is not supported. Install Git for Windows from https://git-scm.com/download/win"
     );
   }
 

@@ -12,7 +12,7 @@ import type { Result } from "@/common/types/result";
 import { Ok, Err } from "@/common/types/result";
 import type { LanguageModelV2Usage } from "@ai-sdk/provider";
 
-import { createMuxMessage, type MuxMessage } from "@/common/types/message";
+import { createUnixMessage, type UnixMessage } from "@/common/types/message";
 import { createCompactionSummaryMessageId } from "@/node/services/utils/messageIds";
 import type { TelemetryService } from "@/node/services/telemetryService";
 import { MAX_EDITED_FILES, MAX_FILE_CONTENT_SIZE } from "@/common/constants/attachments";
@@ -315,8 +315,8 @@ export class CompactionHandler {
 
     const messages = historyResult.data;
     const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
-    const muxMeta = lastUserMsg?.metadata?.muxMetadata;
-    const isCompaction = muxMeta?.type === "compaction-request";
+    const unixMeta = lastUserMsg?.metadata?.unixMetadata;
+    const isCompaction = unixMeta?.type === "compaction-request";
 
     if (!isCompaction || !lastUserMsg) {
       return false;
@@ -367,7 +367,7 @@ export class CompactionHandler {
 
     // Check if this was an idle-compaction (auto-triggered due to inactivity)
     const isIdleCompaction =
-      muxMeta?.type === "compaction-request" && muxMeta.source === "idle-compaction";
+      unixMeta?.type === "compaction-request" && unixMeta.source === "idle-compaction";
     // Mark as processed before performing compaction
     this.processedCompactionRequestIds.add(lastUserMsg.id);
 
@@ -426,7 +426,7 @@ export class CompactionHandler {
       providerMetadata?: Record<string, unknown>;
       systemMessageTokens?: number;
     },
-    messages: MuxMessage[],
+    messages: UnixMessage[],
     isIdleCompaction = false
   ): Promise<Result<void, string>> {
     // CRITICAL: Delete partial.json BEFORE clearing history
@@ -479,7 +479,7 @@ export class CompactionHandler {
     // session-usage.json, which is updated on every stream-end. If that file is deleted
     // or corrupted, pre-compaction costs are lost - this is acceptable since manual
     // file deletion is out of scope for data recovery.
-    const summaryMessage = createMuxMessage(
+    const summaryMessage = createUnixMessage(
       createCompactionSummaryMessageId(),
       "assistant",
       summary,
@@ -490,7 +490,7 @@ export class CompactionHandler {
         usage: metadata.usage,
         duration: metadata.duration,
         systemMessageTokens: metadata.systemMessageTokens,
-        muxMetadata: { type: "normal" },
+        unixMetadata: { type: "normal" },
       }
     );
 

@@ -3,14 +3,14 @@ import * as path from "path";
 import writeFileAtomic from "write-file-atomic";
 import type { Result } from "@/common/types/result";
 import { Ok, Err } from "@/common/types/result";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import type { Config } from "@/node/config";
 import { workspaceFileLocks } from "@/node/utils/concurrency/workspaceFileLocks";
 import { log } from "./log";
 import { getTokenizerForModel } from "@/node/utils/main/tokenizer";
 import { KNOWN_MODELS } from "@/common/constants/knownModels";
 import { safeStringifyForCounting } from "@/common/utils/tokens/safeStringifyForCounting";
-import { normalizeLegacyMuxMetadata } from "@/node/utils/messages/legacy";
+import { normalizeLegacyUnixMetadata } from "@/node/utils/messages/legacy";
 
 /**
  * HistoryService - Manages chat history persistence and sequence numbering
@@ -42,17 +42,17 @@ export class HistoryService {
    * Returns empty array if file doesn't exist
    * Skips malformed JSON lines to prevent data loss from corruption
    */
-  private async readChatHistory(workspaceId: string): Promise<MuxMessage[]> {
+  private async readChatHistory(workspaceId: string): Promise<UnixMessage[]> {
     try {
       const chatHistoryPath = this.getChatHistoryPath(workspaceId);
       const data = await fs.readFile(chatHistoryPath, "utf-8");
       const lines = data.split("\n").filter((line) => line.trim());
-      const messages: MuxMessage[] = [];
+      const messages: UnixMessage[] = [];
 
       for (let i = 0; i < lines.length; i++) {
         try {
-          const message = JSON.parse(lines[i]) as MuxMessage;
-          messages.push(normalizeLegacyMuxMetadata(message));
+          const message = JSON.parse(lines[i]) as UnixMessage;
+          messages.push(normalizeLegacyUnixMetadata(message));
         } catch (parseError) {
           // Skip malformed lines but log error for debugging
           log.warn(
@@ -73,7 +73,7 @@ export class HistoryService {
     }
   }
 
-  async getHistory(workspaceId: string): Promise<Result<MuxMessage[]>> {
+  async getHistory(workspaceId: string): Promise<Result<UnixMessage[]>> {
     try {
       // Read chat history from disk
       // Note: partial.json is NOT merged here - it's managed by PartialService
@@ -122,7 +122,7 @@ export class HistoryService {
    */
   private async _appendToHistoryUnlocked(
     workspaceId: string,
-    message: MuxMessage
+    message: UnixMessage
   ): Promise<Result<void>> {
     try {
       const workspaceDir = this.config.getSessionDir(workspaceId);
@@ -183,7 +183,7 @@ export class HistoryService {
     }
   }
 
-  async appendToHistory(workspaceId: string, message: MuxMessage): Promise<Result<void>> {
+  async appendToHistory(workspaceId: string, message: UnixMessage): Promise<Result<void>> {
     return this.fileLocks.withLock(workspaceId, async () => {
       return this._appendToHistoryUnlocked(workspaceId, message);
     });
@@ -193,7 +193,7 @@ export class HistoryService {
    * Update an existing message in history by historySequence
    * Reads entire history, replaces the matching message, and rewrites the file
    */
-  async updateHistory(workspaceId: string, message: MuxMessage): Promise<Result<void>> {
+  async updateHistory(workspaceId: string, message: UnixMessage): Promise<Result<void>> {
     return this.fileLocks.withLock(workspaceId, async () => {
       try {
         const historyPath = this.getChatHistoryPath(workspaceId);
@@ -399,7 +399,7 @@ export class HistoryService {
 
         // Count tokens for each message
         // We stringify the entire message for simplicity - only relative weights matter
-        const messageTokens: Array<{ message: MuxMessage; tokens: number }> = await Promise.all(
+        const messageTokens: Array<{ message: UnixMessage; tokens: number }> = await Promise.all(
           messages.map(async (msg) => {
             const tokens = await tokenizer.countTokens(safeStringifyForCounting(msg));
             return { message: msg, tokens };

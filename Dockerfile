@@ -1,8 +1,8 @@
-# mux server Docker image
+# unix server Docker image
 # Multi-stage build with esbuild bundling for minimal runtime image
 #
-# Build:   docker build -t mux-server .
-# Run:     docker run -p 3000:3000 -v ~/.mux:/root/.mux mux-server
+# Build:   docker build -t unix-server .
+# Run:     docker run -p 3000:3000 -v ~/.unix:/root/.unix unix-server
 #
 # See docker-compose.yml for easier orchestration
 
@@ -114,12 +114,12 @@ COPY --from=builder /app/node_modules/safer-buffer ./node_modules/safer-buffer
 COPY --from=builder /app/node_modules/bcrypt-pbkdf ./node_modules/bcrypt-pbkdf
 COPY --from=builder /app/node_modules/tweetnacl ./node_modules/tweetnacl
 
-# Create mux data directory
-RUN mkdir -p /root/.mux
+# Create unix data directory
+RUN mkdir -p /root/.unix
 
 # Default environment variables
 ENV NODE_ENV=production
-ENV MUX_HOME=/root/.mux
+ENV UNIX_HOME=/root/.unix
 
 # Expose server port
 EXPOSE 3000
@@ -128,7 +128,7 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD node -e "fetch('http://localhost:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
 
-# Run bundled mux server
+# Run bundled unix server
 # --host 0.0.0.0: bind to all interfaces (required for Docker networking)
 # --port 3000: default port (can be remapped via docker run -p)
 ENTRYPOINT ["node", "dist/server-bundle.js"]

@@ -10,11 +10,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const disableMermaid = process.env.VITE_DISABLE_MERMAID === "1";
 
 // Vite server configuration (for dev-server remote access)
-const devServerHost = process.env.MUX_VITE_HOST ?? "127.0.0.1"; // Secure by default
-const devServerPort = Number(process.env.MUX_VITE_PORT ?? "5173");
+const devServerHost = process.env.UNIX_VITE_HOST ?? "127.0.0.1"; // Secure by default
+const devServerPort = Number(process.env.UNIX_VITE_PORT ?? "5173");
 
 const devServerAllowedHosts = (() => {
-  const raw = process.env.MUX_VITE_ALLOWED_HOSTS?.trim();
+  const raw = process.env.UNIX_VITE_ALLOWED_HOSTS?.trim();
   if (raw) {
     if (raw === "true" || raw === "all") {
       return true;
@@ -28,7 +28,7 @@ const devServerAllowedHosts = (() => {
     return parsed.length ? parsed : ["localhost", "127.0.0.1"];
   }
 
-  // Default to localhost-only. For remote access, set MUX_VITE_ALLOWED_HOSTS (or
+  // Default to localhost-only. For remote access, set UNIX_VITE_ALLOWED_HOSTS (or
   // the Makefile's VITE_ALLOWED_HOSTS).
   const defaults = ["localhost", "127.0.0.1"];
 
@@ -46,7 +46,7 @@ const devServerAllowedHosts = (() => {
   return defaults;
 })();
 
-const previewPort = Number(process.env.MUX_VITE_PREVIEW_PORT ?? "4173");
+const previewPort = Number(process.env.UNIX_VITE_PREVIEW_PORT ?? "4173");
 
 function formatHostForUrl(host: string): string {
   const trimmed = host.trim();
@@ -67,8 +67,8 @@ function formatHostForUrl(host: string): string {
 
 // In dev-server mode we run the backend on a separate local port, but we want the
 // browser UI to talk to it via same-origin paths (single public port).
-const backendProxyHost = process.env.MUX_BACKEND_HOST ?? "127.0.0.1";
-const backendProxyPort = Number(process.env.MUX_BACKEND_PORT ?? "3000");
+const backendProxyHost = process.env.UNIX_BACKEND_HOST ?? "127.0.0.1";
+const backendProxyPort = Number(process.env.UNIX_BACKEND_PORT ?? "3000");
 const backendProxyTarget = `http://${formatHostForUrl(backendProxyHost)}:${backendProxyPort}`;
 
 const alias: Record<string, string> = {
@@ -153,7 +153,7 @@ export default defineConfig(({ mode }) => {
       plugins: () => [topLevelAwait()],
     },
     server: {
-      host: devServerHost, // Configurable via MUX_VITE_HOST (defaults to 127.0.0.1 for security)
+      host: devServerHost, // Configurable via UNIX_VITE_HOST (defaults to 127.0.0.1 for security)
       port: devServerPort,
       strictPort: true,
       allowedHosts: devServerAllowedHosts,
@@ -170,7 +170,7 @@ export default defineConfig(({ mode }) => {
         },
         "/auth": {
           target: backendProxyTarget,
-          // Preserve the original Host so mux can generate OAuth redirect URLs that
+          // Preserve the original Host so unix can generate OAuth redirect URLs that
           // point back to the public dev-server origin (not 127.0.0.1:3000).
           changeOrigin: false,
         },

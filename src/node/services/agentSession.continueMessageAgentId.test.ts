@@ -97,7 +97,7 @@ describe("AgentSession continue-message agentId fallback", () => {
       agentId: "compact",
       disableWorkspaceAgents: true,
       toolPolicy: [{ regex_match: ".*", action: "disable" }],
-      muxMetadata: {
+      unixMetadata: {
         type: "compaction-request",
         rawCommand: "/compact",
         parsed: {

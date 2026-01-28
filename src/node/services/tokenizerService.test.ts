@@ -3,7 +3,7 @@ import { TokenizerService } from "./tokenizerService";
 import type { SessionUsageService } from "./sessionUsageService";
 import * as tokenizerUtils from "@/node/utils/main/tokenizer";
 import * as statsUtils from "@/common/utils/tokens/tokenStatsCalculator";
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 
 describe("TokenizerService", () => {
   let sessionUsageService: SessionUsageService;
@@ -55,8 +55,8 @@ describe("TokenizerService", () => {
   describe("calculateStats", () => {
     test("delegates to underlying function and persists token stats cache", async () => {
       const messages = [
-        createMuxMessage("msg1", "user", "Hello", { historySequence: 1 }),
-        createMuxMessage("msg2", "assistant", "World", { historySequence: 2 }),
+        createUnixMessage("msg1", "user", "Hello", { historySequence: 1 }),
+        createUnixMessage("msg2", "assistant", "World", { historySequence: 2 }),
       ];
 
       const mockResult = {
@@ -95,13 +95,13 @@ describe("TokenizerService", () => {
 
     test("skips persisting stale token stats cache when calculations overlap", async () => {
       const messagesV1 = [
-        createMuxMessage("msg1", "user", "Hello", { historySequence: 1 }),
-        createMuxMessage("msg2", "assistant", "World", { historySequence: 2 }),
+        createUnixMessage("msg1", "user", "Hello", { historySequence: 1 }),
+        createUnixMessage("msg2", "assistant", "World", { historySequence: 2 }),
       ];
 
       const messagesV2 = [
         ...messagesV1,
-        createMuxMessage("msg3", "assistant", "!!!", { historySequence: 3 }),
+        createUnixMessage("msg3", "assistant", "!!!", { historySequence: 3 }),
       ];
 
       const deferred = <T>() => {

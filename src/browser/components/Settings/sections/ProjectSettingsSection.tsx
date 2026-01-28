@@ -556,7 +556,7 @@ export const ProjectSettingsSection: React.FC = () => {
       <div>
         <p className="text-muted mb-4 text-xs">
           Configure project-specific settings. Settings are stored in{" "}
-          <code className="text-accent">.mux/</code> within your project.
+          <code className="text-accent">.unix/</code> within your project.
         </p>
         <div className="flex items-center justify-between">
           <div>

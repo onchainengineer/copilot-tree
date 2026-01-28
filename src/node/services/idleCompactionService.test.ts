@@ -4,7 +4,7 @@ import type { Config } from "@/node/config";
 import type { HistoryService } from "./historyService";
 import type { ExtensionMetadataService } from "./ExtensionMetadataService";
 import type { ProjectConfig, ProjectsConfig } from "@/common/types/project";
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import { Ok } from "@/common/types/result";
 
 describe("IdleCompactionService", () => {
@@ -43,8 +43,8 @@ describe("IdleCompactionService", () => {
       getHistory: mock(() =>
         Promise.resolve(
           Ok([
-            createMuxMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
-            createMuxMessage("2", "assistant", "Hi there!", { timestamp: idleTimestamp }),
+            createUnixMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
+            createUnixMessage("2", "assistant", "Hi there!", { timestamp: idleTimestamp }),
           ])
         )
       ),
@@ -95,8 +95,8 @@ describe("IdleCompactionService", () => {
       const idleTimestamp = now - 25 * oneHourMs;
       (mockHistoryService.getHistory as ReturnType<typeof mock>).mockResolvedValueOnce(
         Ok([
-          createMuxMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
-          createMuxMessage("2", "assistant", "Hi!", { timestamp: idleTimestamp }),
+          createUnixMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
+          createUnixMessage("2", "assistant", "Hi!", { timestamp: idleTimestamp }),
         ])
       );
       (mockExtensionMetadata.getMetadata as ReturnType<typeof mock>).mockResolvedValueOnce({
@@ -125,7 +125,7 @@ describe("IdleCompactionService", () => {
       const idleTimestamp = now - 25 * oneHourMs;
       (mockHistoryService.getHistory as ReturnType<typeof mock>).mockResolvedValueOnce(
         Ok([
-          createMuxMessage("1", "assistant", "Summary", {
+          createUnixMessage("1", "assistant", "Summary", {
             compacted: true,
             timestamp: idleTimestamp,
           }),
@@ -142,8 +142,8 @@ describe("IdleCompactionService", () => {
       const recentTimestamp = now - 1 * oneHourMs;
       (mockHistoryService.getHistory as ReturnType<typeof mock>).mockResolvedValueOnce(
         Ok([
-          createMuxMessage("1", "user", "Hello", { timestamp: recentTimestamp }),
-          createMuxMessage("2", "assistant", "Hi!", { timestamp: recentTimestamp }),
+          createUnixMessage("1", "user", "Hello", { timestamp: recentTimestamp }),
+          createUnixMessage("2", "assistant", "Hi!", { timestamp: recentTimestamp }),
         ])
       );
 
@@ -156,9 +156,9 @@ describe("IdleCompactionService", () => {
       const idleTimestamp = now - 25 * oneHourMs;
       (mockHistoryService.getHistory as ReturnType<typeof mock>).mockResolvedValueOnce(
         Ok([
-          createMuxMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
-          createMuxMessage("2", "assistant", "Hi!", { timestamp: idleTimestamp }),
-          createMuxMessage("3", "user", "Another question?", { timestamp: idleTimestamp }), // Last message is user
+          createUnixMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
+          createUnixMessage("2", "assistant", "Hi!", { timestamp: idleTimestamp }),
+          createUnixMessage("3", "user", "Another question?", { timestamp: idleTimestamp }), // Last message is user
         ])
       );
 
@@ -170,7 +170,7 @@ describe("IdleCompactionService", () => {
     test("returns ineligible when messages have no timestamps", async () => {
       // Messages without timestamps - can't determine recency
       (mockHistoryService.getHistory as ReturnType<typeof mock>).mockResolvedValueOnce(
-        Ok([createMuxMessage("1", "user", "Hello"), createMuxMessage("2", "assistant", "Hi!")])
+        Ok([createUnixMessage("1", "user", "Hello"), createUnixMessage("2", "assistant", "Hi!")])
       );
 
       const result = await service.checkEligibility(testWorkspaceId, threshold24h, now);
@@ -239,8 +239,8 @@ describe("IdleCompactionService", () => {
         }
         return Promise.resolve(
           Ok([
-            createMuxMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
-            createMuxMessage("2", "assistant", "Hi!", { timestamp: idleTimestamp }),
+            createUnixMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
+            createUnixMessage("2", "assistant", "Hi!", { timestamp: idleTimestamp }),
           ])
         );
       });
@@ -271,8 +271,8 @@ describe("IdleCompactionService", () => {
       // Update history mock to return idle messages for the name-based ID
       (mockHistoryService.getHistory as ReturnType<typeof mock>).mockResolvedValueOnce(
         Ok([
-          createMuxMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
-          createMuxMessage("2", "assistant", "Hi!", { timestamp: idleTimestamp }),
+          createUnixMessage("1", "user", "Hello", { timestamp: idleTimestamp }),
+          createUnixMessage("2", "assistant", "Hi!", { timestamp: idleTimestamp }),
         ])
       );
 

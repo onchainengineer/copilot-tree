@@ -11,10 +11,10 @@ export interface GlobalDefaults {
 }
 
 // New storage keys for global defaults (new tier 2 in the fallback)
-const STORAGE_KEY_MODE = "com.coder.mux.defaults.mode";
-const STORAGE_KEY_REASONING = "com.coder.mux.defaults.reasoning";
-const STORAGE_KEY_MODEL = "com.coder.mux.defaults.model";
-const STORAGE_KEY_1M_CONTEXT = "com.coder.mux.defaults.use1MContext";
+const STORAGE_KEY_MODE = "com.coder.unix.defaults.mode";
+const STORAGE_KEY_REASONING = "com.coder.unix.defaults.reasoning";
+const STORAGE_KEY_MODEL = "com.coder.unix.defaults.model";
+const STORAGE_KEY_1M_CONTEXT = "com.coder.unix.defaults.use1MContext";
 
 const DEFAULT_MODE: WorkspaceMode = "exec";
 const DEFAULT_REASONING: ThinkingLevel = "off";

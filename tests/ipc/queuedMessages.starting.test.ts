@@ -9,7 +9,7 @@ import {
   HAIKU_MODEL,
   createStreamCollector,
 } from "./helpers";
-import { isMuxMessage } from "@/common/orpc/types";
+import { isUnixMessage } from "@/common/orpc/types";
 import { buildMockStreamStartGateMessage } from "@/node/services/mock/mockAiRouter";
 
 describe("Queued messages during stream start", () => {
@@ -66,7 +66,7 @@ describe("Queued messages during stream start", () => {
           .getEvents()
           .some(
             (event) =>
-              isMuxMessage(event) &&
+              isUnixMessage(event) &&
               event.role === "user" &&
               event.parts.some((part) => "text" in part && part.text === gatedMessage)
           );
@@ -157,7 +157,7 @@ describe("Queued messages during stream start", () => {
 
       const userMessages = collector
         .getEvents()
-        .filter(isMuxMessage)
+        .filter(isUnixMessage)
         .filter((event) => event.role === "user")
         .map((event) =>
           event.parts

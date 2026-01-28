@@ -14,7 +14,7 @@ describe("TelemetryService enablement", () => {
   test("disables telemetry when explicitly disabled", () => {
     const enabled = shouldEnableTelemetry(
       createContext({
-        env: { MUX_DISABLE_TELEMETRY: "1" },
+        env: { UNIX_DISABLE_TELEMETRY: "1" },
         isElectron: true,
         isPackaged: true,
       })
@@ -26,7 +26,7 @@ describe("TelemetryService enablement", () => {
   test("disables telemetry in E2E runs", () => {
     const enabled = shouldEnableTelemetry(
       createContext({
-        env: { MUX_E2E: "1" },
+        env: { UNIX_E2E: "1" },
         isElectron: true,
         isPackaged: true,
       })
@@ -99,7 +99,7 @@ describe("TelemetryService enablement", () => {
   test("allows opting into telemetry in unpackaged Electron", () => {
     const enabled = shouldEnableTelemetry(
       createContext({
-        env: { MUX_ENABLE_TELEMETRY_IN_DEV: "1" },
+        env: { UNIX_ENABLE_TELEMETRY_IN_DEV: "1" },
         isElectron: true,
         isPackaged: false,
       })
@@ -113,7 +113,7 @@ describe("TelemetryService enablement", () => {
       createContext({
         env: {
           NODE_ENV: "test",
-          MUX_ENABLE_TELEMETRY_IN_DEV: "1",
+          UNIX_ENABLE_TELEMETRY_IN_DEV: "1",
         },
         isElectron: false,
       })

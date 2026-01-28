@@ -1,11 +1,11 @@
 {
-  "name": "mux",
+  "name": "unix",
   "version": "0.14.1",
   "description": "DEV OS - parallel agentic workspace",
   "author": "DEV OS",
   "main": "dist/cli/index.js",
   "bin": {
-    "mux": "dist/cli/index.js"
+    "unix": "dist/cli/index.js"
   },
   "license": "AGPL-3.0-only",
   "private": true,
@@ -241,8 +241,8 @@
     "LICENSE"
   ],
   "build": {
-    "appId": "com.mux.app",
-    "productName": "mux",
+    "appId": "com.unix.app",
+    "productName": "unix",
     "publish": {
       "provider": "github",
       "releaseType": "release"

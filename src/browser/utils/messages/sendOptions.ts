@@ -15,7 +15,7 @@ import {
 import { getDefaultModel } from "@/browser/hooks/useModelsFromSettings";
 import type { SendMessageOptions } from "@/common/orpc/types";
 import { coerceThinkingLevel, type ThinkingLevel } from "@/common/types/thinking";
-import type { MuxProviderOptions } from "@/common/types/providerOptions";
+import type { UnixProviderOptions } from "@/common/types/providerOptions";
 import { WORKSPACE_DEFAULTS } from "@/constants/workspaceDefaults";
 import { isExperimentEnabled } from "@/browser/hooks/useExperiments";
 import { EXPERIMENT_IDS } from "@/common/constants/experiments";
@@ -23,12 +23,12 @@ import { EXPERIMENT_IDS } from "@/common/constants/experiments";
 /**
  * Read provider options from localStorage
  */
-function getProviderOptions(): MuxProviderOptions {
-  const anthropic = readPersistedState<MuxProviderOptions["anthropic"]>(
+function getProviderOptions(): UnixProviderOptions {
+  const anthropic = readPersistedState<UnixProviderOptions["anthropic"]>(
     "provider_options_anthropic",
     { use1MContext: false }
   );
-  const google = readPersistedState<MuxProviderOptions["google"]>("provider_options_google", {});
+  const google = readPersistedState<UnixProviderOptions["google"]>("provider_options_google", {});
 
   return {
     anthropic,

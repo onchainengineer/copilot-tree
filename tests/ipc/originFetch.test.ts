@@ -61,7 +61,7 @@ async function createRepoWithAheadOrigin(): Promise<{
   trunkBranch: string;
 }> {
   // Create local repo
-  const repoPath = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-repo-"));
+  const repoPath = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-repo-"));
   await execAsync(`git init`, { cwd: repoPath });
   await execAsync(
     `git config user.email "test@example.com" && git config user.name "Test User" && git config commit.gpgsign false`,
@@ -74,7 +74,7 @@ async function createRepoWithAheadOrigin(): Promise<{
   const trunkBranch = await detectDefaultTrunkBranch(repoPath);
 
   // Create bare origin from local repo
-  const originPath = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-origin-"));
+  const originPath = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-origin-"));
   await execAsync(`git clone --bare "${repoPath}" "${originPath}"`);
 
   // Add origin remote to local repo
@@ -86,7 +86,7 @@ async function createRepoWithAheadOrigin(): Promise<{
 
   // Now add a commit DIRECTLY to origin (simulating someone else pushing)
   // We do this by creating a temp clone, committing, and pushing
-  const tempClone = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-clone-"));
+  const tempClone = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-clone-"));
   await execAsync(`git clone "${originPath}" "${tempClone}"`);
   await execAsync(
     `git config user.email "test@example.com" && git config user.name "Test User" && git config commit.gpgsign false`,
@@ -270,7 +270,7 @@ describeIntegration("Origin fetch ordering during workspace creation", () => {
         const env = await createTestEnvironment();
 
         // Create a repo with a fake origin URL that doesn't exist
-        const repoPath = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-repo-"));
+        const repoPath = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-repo-"));
         await execAsync(`git init`, { cwd: repoPath });
         await execAsync(
           `git config user.email "test@example.com" && git config user.name "Test User" && git config commit.gpgsign false`,
@@ -333,7 +333,7 @@ describeIntegration("Origin fetch ordering during workspace creation", () => {
         const env = await createTestEnvironment();
 
         // Create a repo with origin, then add an unpushed local commit
-        const repoPath = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-repo-"));
+        const repoPath = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-repo-"));
         await execAsync(`git init`, { cwd: repoPath });
         await execAsync(
           `git config user.email "test@example.com" && git config user.name "Test User" && git config commit.gpgsign false`,
@@ -347,7 +347,7 @@ describeIntegration("Origin fetch ordering during workspace creation", () => {
         const trunkBranch = await detectDefaultTrunkBranch(repoPath);
 
         // Create bare origin from local repo
-        const originPath = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-origin-"));
+        const originPath = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-origin-"));
         await execAsync(`git clone --bare "${repoPath}" "${originPath}"`);
 
         // Add origin remote to local repo
@@ -499,7 +499,7 @@ describeIntegration("Origin fetch ordering during workspace creation", () => {
         const env = await createTestEnvironment();
 
         // Create a repo with a fake origin URL
-        const repoPath = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-repo-"));
+        const repoPath = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-repo-"));
         await execAsync(`git init`, { cwd: repoPath });
         await execAsync(
           `git config user.email "test@example.com" && git config user.name "Test User" && git config commit.gpgsign false`,

@@ -1,11 +1,11 @@
 /**
- * CLI entry point for the mux oRPC server.
+ * CLI entry point for the unix oRPC server.
  * Uses createOrpcServer from ./orpcServer.ts for the actual server logic.
  */
 import { Config } from "@/node/config";
 import { ServiceContainer } from "@/node/services/serviceContainer";
 import { ServerLockfile } from "@/node/services/serverLockfile";
-import { getMuxHome, migrateLegacyMuxHome } from "@/common/constants/paths";
+import { getUnixHome, migrateLegacyUnixHome } from "@/common/constants/paths";
 import type { BrowserWindow } from "electron";
 import { Command } from "commander";
 import { validateProjectPath } from "@/node/utils/pathUtils";
@@ -13,7 +13,7 @@ import { createOrpcServer } from "@/node/orpc/server";
 import type { ORPCContext } from "@/node/orpc/context";
 import { VERSION } from "@/version";
 import {
-  buildMuxMdnsServiceOptions,
+  buildUnixMdnsServiceOptions,
   MdnsAdvertiserService,
 } from "@/node/services/mdnsAdvertiserService";
 import * as os from "os";
@@ -21,8 +21,8 @@ import { getParseOptions } from "./argv";
 
 const program = new Command();
 program
-  .name("mux server")
-  .description("HTTP/WebSocket ORPC server for mux")
+  .name("unix server")
+  .description("HTTP/WebSocket ORPC server for unix")
   .option("-h, --host <host>", "bind to specific host", "localhost")
   .option("-p, --port <port>", "bind to specific port", "3000")
   .option("--auth-token <token>", "optional bearer token for HTTP/WS auth")
@@ -33,7 +33,7 @@ program
 const options = program.opts();
 const HOST = options.host as string;
 const PORT = Number.parseInt(String(options.port), 10);
-const rawAuthToken = (options.authToken as string | undefined) ?? process.env.MUX_SERVER_AUTH_TOKEN;
+const rawAuthToken = (options.authToken as string | undefined) ?? process.env.UNIX_SERVER_AUTH_TOKEN;
 const AUTH_TOKEN = rawAuthToken?.trim() ? rawAuthToken.trim() : undefined;
 const ADD_PROJECT_PATH = options.addProject as string | undefined;
 // SSH host for editor deep links (CLI flag > env var > config file, resolved later)
@@ -64,14 +64,14 @@ const mockWindow: BrowserWindow = {
 } as unknown as BrowserWindow;
 
 (async () => {
-  migrateLegacyMuxHome();
+  migrateLegacyUnixHome();
 
-  // Check for existing server (Electron or another mux server instance)
-  const lockfile = new ServerLockfile(getMuxHome());
+  // Check for existing server (Electron or another unix server instance)
+  const lockfile = new ServerLockfile(getUnixHome());
   const existing = await lockfile.read();
   if (existing) {
-    console.error(`Error: mux API server is already running at ${existing.baseUrl}`);
-    console.error(`Use 'mux api' commands to interact with the running instance.`);
+    console.error(`Error: unix API server is already running at ${existing.baseUrl}`);
+    console.error(`Use 'unix api' commands to interact with the running instance.`);
     process.exit(1);
   }
 
@@ -88,7 +88,7 @@ const mockWindow: BrowserWindow = {
   serviceContainer.serverService.setLaunchProject(launchProjectPath);
 
   // Set SSH host for editor deep links (CLI > env > config file)
-  const sshHost = CLI_SSH_HOST ?? process.env.MUX_SSH_HOST ?? config.getServerSshHost();
+  const sshHost = CLI_SSH_HOST ?? process.env.UNIX_SSH_HOST ?? config.getServerSshHost();
   serviceContainer.serverService.setSshHost(sshHost);
 
   // Build oRPC context from services
@@ -133,8 +133,8 @@ const mockWindow: BrowserWindow = {
 
   const mdnsAdvertisementEnabled = config.getMdnsAdvertisementEnabled();
   if (mdnsAdvertisementEnabled !== false && !isLoopbackHost(HOST)) {
-    const instanceName = config.getMdnsServiceName() ?? `mux-${os.hostname()}`;
-    const serviceOptions = buildMuxMdnsServiceOptions({
+    const instanceName = config.getMdnsServiceName() ?? `unix-${os.hostname()}`;
+    const serviceOptions = buildUnixMdnsServiceOptions({
       bindHost: HOST,
       port: server.port,
       instanceName,
@@ -145,7 +145,7 @@ const mockWindow: BrowserWindow = {
     try {
       await mdnsAdvertiser.start(serviceOptions);
     } catch (err) {
-      console.warn("Failed to advertise mux API server via mDNS:", err);
+      console.warn("Failed to advertise unix API server via mDNS:", err);
     }
   } else if (mdnsAdvertisementEnabled === true && isLoopbackHost(HOST)) {
     console.warn(

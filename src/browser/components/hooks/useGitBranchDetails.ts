@@ -22,12 +22,12 @@ const GitBranchDataSchema = z.object({
 type GitBranchData = z.infer<typeof GitBranchDataSchema>;
 
 const SECTION_MARKERS = {
-  showBranchStart: "__MUX_BRANCH_DATA__BEGIN_SHOW_BRANCH__",
-  showBranchEnd: "__MUX_BRANCH_DATA__END_SHOW_BRANCH__",
-  datesStart: "__MUX_BRANCH_DATA__BEGIN_DATES__",
-  datesEnd: "__MUX_BRANCH_DATA__END_DATES__",
-  dirtyStart: "__MUX_BRANCH_DATA__BEGIN_DIRTY_FILES__",
-  dirtyEnd: "__MUX_BRANCH_DATA__END_DIRTY_FILES__",
+  showBranchStart: "__UNIX_BRANCH_DATA__BEGIN_SHOW_BRANCH__",
+  showBranchEnd: "__UNIX_BRANCH_DATA__END_SHOW_BRANCH__",
+  datesStart: "__UNIX_BRANCH_DATA__BEGIN_DATES__",
+  datesEnd: "__UNIX_BRANCH_DATA__END_DATES__",
+  dirtyStart: "__UNIX_BRANCH_DATA__BEGIN_DIRTY_FILES__",
+  dirtyEnd: "__UNIX_BRANCH_DATA__END_DIRTY_FILES__",
 } as const;
 // eslint-disable-next-line no-restricted-globals, no-restricted-syntax
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -213,9 +213,9 @@ fi
 # Get dirty files if requested
 ${getDirtyFiles}
 
-printf '__MUX_BRANCH_DATA__BEGIN_SHOW_BRANCH__\\n%s\\n__MUX_BRANCH_DATA__END_SHOW_BRANCH__\\n' "$SHOW_BRANCH"
-printf '__MUX_BRANCH_DATA__BEGIN_DATES__\\n%s\\n__MUX_BRANCH_DATA__END_DATES__\\n' "$DATES_OUTPUT"
-printf '__MUX_BRANCH_DATA__BEGIN_DIRTY_FILES__\\n%s\\n__MUX_BRANCH_DATA__END_DIRTY_FILES__\\n' "$DIRTY_FILES"
+printf '__UNIX_BRANCH_DATA__BEGIN_SHOW_BRANCH__\\n%s\\n__UNIX_BRANCH_DATA__END_SHOW_BRANCH__\\n' "$SHOW_BRANCH"
+printf '__UNIX_BRANCH_DATA__BEGIN_DATES__\\n%s\\n__UNIX_BRANCH_DATA__END_DATES__\\n' "$DATES_OUTPUT"
+printf '__UNIX_BRANCH_DATA__BEGIN_DIRTY_FILES__\\n%s\\n__UNIX_BRANCH_DATA__END_DIRTY_FILES__\\n' "$DIRTY_FILES"
 `;
 
       const result = await api.workspace.executeBash({

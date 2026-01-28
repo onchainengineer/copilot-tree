@@ -225,7 +225,7 @@ export function OnboardingWizardSplash(props: { onDismiss: () => void }) {
       body: (
         <>
           <p>
-            Mux is provider-agnostic: bring your own keys, mix and match models, or run locally.
+            Unix is provider-agnostic: bring your own keys, mix and match models, or run locally.
           </p>
 
           {configuredProviders.length > 0 && configuredProvidersSummary ? (
@@ -294,7 +294,7 @@ export function OnboardingWizardSplash(props: { onDismiss: () => void }) {
       body: (
         <>
           <p>
-            Projects are the folders you want Mux to work in. Choose one now, then click Next to add
+            Projects are the folders you want Unix to work in. Choose one now, then click Next to add
             it.
           </p>
 
@@ -340,8 +340,8 @@ export function OnboardingWizardSplash(props: { onDismiss: () => void }) {
         <>
           <p>
             Agents are file-based definitions (system prompt + tool policy). You can create
-            project-local agents in <code className="text-accent">.mux/agents/*.md</code> or global
-            agents in <code className="text-accent">~/.mux/agents/*.md</code>.
+            project-local agents in <code className="text-accent">.unix/agents/*.md</code> or global
+            agents in <code className="text-accent">~/.unix/agents/*.md</code>.
           </p>
 
           <div className="mt-3 grid gap-2">
@@ -385,7 +385,7 @@ export function OnboardingWizardSplash(props: { onDismiss: () => void }) {
               Work directly in your project directory.
             </Card>
             <Card icon={<WorktreeIcon size={14} />} title="Worktree">
-              Isolated git worktree under <code className="text-accent">~/.mux/src</code>.
+              Isolated git worktree under <code className="text-accent">~/.unix/src</code>.
             </Card>
             <Card icon={<SSHIcon size={14} />} title="SSH">
               Remote clone and commands run on an SSH host.
@@ -410,16 +410,16 @@ export function OnboardingWizardSplash(props: { onDismiss: () => void }) {
       body: (
         <>
           <p>
-            MCP servers extend Mux with tools (memory, ticketing, databases, internal APIs).
+            MCP servers extend Unix with tools (memory, ticketing, databases, internal APIs).
             Configure them per project and optionally override per workspace.
           </p>
 
           <div className="mt-3 grid gap-2">
             <Card icon={<Server className="h-4 w-4" />} title="Project config">
-              <code className="text-accent">.mux/mcp.jsonc</code>
+              <code className="text-accent">.unix/mcp.jsonc</code>
             </Card>
             <Card icon={<Server className="h-4 w-4" />} title="Workspace overrides">
-              <code className="text-accent">.mux/mcp.local.jsonc</code>
+              <code className="text-accent">.unix/mcp.local.jsonc</code>
             </Card>
           </div>
 

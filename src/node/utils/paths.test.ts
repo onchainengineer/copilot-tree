@@ -19,12 +19,12 @@ describe("PlatformPaths", () => {
 
   describe("parse", () => {
     test("parses absolute path on current platform", () => {
-      const testPath = path.join("/", "home", "user", "projects", "mux");
+      const testPath = path.join("/", "home", "user", "projects", "unix");
       const result = PlatformPaths.parse(testPath);
       expect(result.segments).toContain("home");
       expect(result.segments).toContain("user");
       expect(result.segments).toContain("projects");
-      expect(result.basename).toBe("mux");
+      expect(result.basename).toBe("unix");
     });
 
     test("parses relative path", () => {
@@ -41,11 +41,11 @@ describe("PlatformPaths", () => {
 
   describe("abbreviate", () => {
     test("abbreviates path", () => {
-      const testPath = path.join("/", "home", "user", "Projects", "coder", "mux");
+      const testPath = path.join("/", "home", "user", "Projects", "coder", "unix");
       const result = PlatformPaths.abbreviate(testPath);
 
       // Should end with the full basename
-      expect(result.endsWith("mux")).toBe(true);
+      expect(result.endsWith("unix")).toBe(true);
 
       // Should be shorter than original (segments abbreviated)
       expect(result.length).toBeLessThan(testPath.length);
@@ -65,9 +65,9 @@ describe("PlatformPaths", () => {
 
   describe("splitAbbreviated", () => {
     test("splits abbreviated path", () => {
-      const testPath = path.join("/", "h", "u", "P", "c", "mux");
+      const testPath = path.join("/", "h", "u", "P", "c", "unix");
       const result = PlatformPaths.splitAbbreviated(testPath);
-      expect(result.basename).toBe("mux");
+      expect(result.basename).toBe("unix");
       expect(result.dirPath.endsWith(path.sep)).toBe(true);
     });
 
@@ -81,11 +81,11 @@ describe("PlatformPaths", () => {
   describe("formatHome", () => {
     test("replaces home directory with tilde", () => {
       const home = os.homedir();
-      const testPath = path.join(home, "projects", "mux");
+      const testPath = path.join(home, "projects", "unix");
       const result = PlatformPaths.formatHome(testPath);
 
       const sep = PlatformPaths.separator;
-      expect(result).toBe(`~${sep}projects${sep}mux`);
+      expect(result).toBe(`~${sep}projects${sep}unix`);
     });
 
     test("leaves non-home paths unchanged", () => {
@@ -103,33 +103,33 @@ describe("PlatformPaths", () => {
     test("expands tilde with path", () => {
       const home = os.homedir();
       const sep = path.sep;
-      const result = PlatformPaths.expandHome(`~${sep}projects${sep}mux`);
-      expect(result).toBe(path.join(home, "projects", "mux"));
+      const result = PlatformPaths.expandHome(`~${sep}projects${sep}unix`);
+      expect(result).toBe(path.join(home, "projects", "unix"));
     });
 
     test("leaves absolute paths unchanged", () => {
       const testPath = path.join("/", "home", "user", "project");
       expect(PlatformPaths.expandHome(testPath)).toBe(testPath);
     });
-    test("expands ~/.mux to MUX_ROOT when set", () => {
-      const originalMuxRoot = process.env.MUX_ROOT;
-      const testMuxRoot = path.join(os.tmpdir(), "mux-root-test");
-      process.env.MUX_ROOT = testMuxRoot;
+    test("expands ~/.unix to UNIX_ROOT when set", () => {
+      const originalMuxRoot = process.env.UNIX_ROOT;
+      const testMuxRoot = path.join(os.tmpdir(), "unix-root-test");
+      process.env.UNIX_ROOT = testMuxRoot;
 
       try {
         const sep = path.sep;
-        const muxPath = `~${sep}.mux${sep}src${sep}project`;
+        const muxPath = `~${sep}.unix${sep}src${sep}project`;
         expect(PlatformPaths.expandHome(muxPath)).toBe(path.join(testMuxRoot, "src", "project"));
 
         // Other ~ paths should still resolve to the actual OS home directory.
         const home = os.homedir();
-        const homePath = `~${sep}projects${sep}mux`;
-        expect(PlatformPaths.expandHome(homePath)).toBe(path.join(home, "projects", "mux"));
+        const homePath = `~${sep}projects${sep}unix`;
+        expect(PlatformPaths.expandHome(homePath)).toBe(path.join(home, "projects", "unix"));
       } finally {
         if (originalMuxRoot === undefined) {
-          delete process.env.MUX_ROOT;
+          delete process.env.UNIX_ROOT;
         } else {
-          process.env.MUX_ROOT = originalMuxRoot;
+          process.env.UNIX_ROOT = originalMuxRoot;
         }
       }
     });
@@ -141,12 +141,12 @@ describe("PlatformPaths", () => {
 
   describe("getProjectName", () => {
     test("extracts project name from path", () => {
-      const testPath = path.join("/", "home", "user", "projects", "mux");
-      expect(PlatformPaths.getProjectName(testPath)).toBe("mux");
+      const testPath = path.join("/", "home", "user", "projects", "unix");
+      expect(PlatformPaths.getProjectName(testPath)).toBe("unix");
     });
 
     test("handles relative paths", () => {
-      expect(PlatformPaths.getProjectName("projects/mux")).toBe("mux");
+      expect(PlatformPaths.getProjectName("projects/unix")).toBe("unix");
     });
 
     test("returns 'unknown' for empty path", () => {
@@ -168,7 +168,7 @@ describe("toPosixPath", () => {
     test("returns POSIX paths unchanged", () => {
       if (process.platform !== "win32") {
         expect(toPosixPath("/home/user/project")).toBe("/home/user/project");
-        expect(toPosixPath("/tmp/mux-bashes")).toBe("/tmp/mux-bashes");
+        expect(toPosixPath("/tmp/unix-bashes")).toBe("/tmp/unix-bashes");
       }
     });
 
@@ -218,7 +218,7 @@ describe("toPosixPath", () => {
       // On Windows with Git Bash/MSYS2, cygpath converts:
       //   "C:\\Users\\test" → "/c/Users/test"
       //   "C:\\Program Files\\Git" → "/c/Program Files/Git"
-      //   "D:\\Projects\\mux" → "/d/Projects/mux"
+      //   "D:\\Projects\\unix" → "/d/Projects/unix"
       //
       // On non-Windows, this is a no-op (returns input unchanged)
       if (process.platform === "win32") {

@@ -49,7 +49,7 @@ describe("staticAnalysis", () => {
     });
 
     test("await expression gives clear error message", async () => {
-      const result = await analyzeCode(`const x = await mux.bash({ script: "ls" })`);
+      const result = await analyzeCode(`const x = awaitunix.bash({ script: "ls" })`);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0].type).toBe("syntax");
@@ -60,7 +60,7 @@ describe("staticAnalysis", () => {
 
     test("allows return statements (wrapped in function)", async () => {
       const result = await analyzeCode(`
-        const x = mux.fileRead("test.txt");
+        const x =unix.fileRead("test.txt");
         return x;
       `);
       expect(result.valid).toBe(true);
@@ -215,7 +215,7 @@ const z = 3;`);
   describe("valid code examples", () => {
     test("file reading and processing", async () => {
       const result = await analyzeCode(`
-        const content = mux.fileRead("package.json");
+        const content =unix.fileRead("package.json");
         const pkg = JSON.parse(content);
         return pkg.name;
       `);
@@ -228,7 +228,7 @@ const z = 3;`);
         const files = ["a.txt", "b.txt", "c.txt"];
         const results = [];
         for (const file of files) {
-          results.push(mux.fileRead(file));
+          results.push(unix.fileRead(file));
         }
         return results;
       `);
@@ -258,7 +258,7 @@ const z = 3;`);
     test("try-catch error handling", async () => {
       const result = await analyzeCode(`
         try {
-          const content = mux.fileRead("maybe-missing.txt");
+          const content =unix.fileRead("maybe-missing.txt");
           return content;
         } catch (err) {
           console.error("File not found:", err.message);
@@ -270,7 +270,7 @@ const z = 3;`);
 
     test("regex operations", async () => {
       const result = await analyzeCode(`
-        const text = mux.fileRead("log.txt");
+        const text =unix.fileRead("log.txt");
         const pattern = /error:.*/gi;
         const matches = text.match(pattern);
         return matches || [];

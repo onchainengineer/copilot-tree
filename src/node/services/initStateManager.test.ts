@@ -13,7 +13,7 @@ describe("InitStateManager", () => {
   let manager: InitStateManager;
 
   beforeEach(async () => {
-    // Create temp directory as mux root
+    // Create temp directory as unix root
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "init-state-test-"));
 
     // Create sessions directory

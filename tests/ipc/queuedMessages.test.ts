@@ -504,7 +504,7 @@ describeIntegration("Queued messages", () => {
 
         await sendMessage(env, workspaceId, "Summarize this conversation into a compact form...", {
           model: "anthropic:claude-sonnet-4-5",
-          muxMetadata: compactionMetadata,
+          unixMetadata: compactionMetadata,
         });
 
         // Wait for queued-message-changed event

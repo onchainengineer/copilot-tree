@@ -7,7 +7,7 @@ import { ProviderService } from "./providerService";
 
 describe("ProviderService.getConfig", () => {
   it("surfaces valid OpenAI serviceTier", () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mux-provider-service-"));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "unix-provider-service-"));
     try {
       const config = new Config(tmpDir);
       config.saveProvidersConfig({
@@ -29,7 +29,7 @@ describe("ProviderService.getConfig", () => {
   });
 
   it("omits invalid OpenAI serviceTier", () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mux-provider-service-"));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "unix-provider-service-"));
     try {
       const config = new Config(tmpDir);
       config.saveProvidersConfig({

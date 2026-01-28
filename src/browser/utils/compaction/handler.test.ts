@@ -23,7 +23,7 @@ describe("cancelCompaction", () => {
           id: "user-1",
           role: "user",
           metadata: {
-            muxMetadata: {
+            unixMetadata: {
               type: "compaction-request",
               rawCommand: "/compact -t 100",
               parsed: { followUpContent: { text: "Do the thing" } },

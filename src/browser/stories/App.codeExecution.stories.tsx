@@ -21,16 +21,16 @@ export default {
 };
 
 const SAMPLE_CODE = `// Read a file and make an edit
-const content = await mux.file_read({ file_path: "src/config.ts" });
+const content = awaitunix.file_read({ file_path: "src/config.ts" });
 console.log("Read file with", content.lines_read, "lines");
 
-await mux.file_edit_replace_string({
+awaitunix.file_edit_replace_string({
   file_path: "src/config.ts",
   old_string: "debug: false",
   new_string: "debug: true"
 });
 
-await mux.bash({
+awaitunix.bash({
   script: "echo 'Config updated!'",
   timeout_secs: 5,
   run_in_background: false,
@@ -261,7 +261,7 @@ export const Failed: AppStory = {
               toolCalls: [
                 createCodeExecutionTool(
                   "call-1",
-                  `const result = await mux.bash({ script: "cat /nonexistent" });`,
+                  `const result = awaitunix.bash({ script: "cat /nonexistent" });`,
                   {
                     success: false,
                     error: "Tool execution failed: file not found",
@@ -367,7 +367,7 @@ export const NestedToolError: AppStory = {
               toolCalls: [
                 createCodeExecutionTool(
                   "call-1",
-                  `const result = mux.file_read({ file_path: "nonexistent.ts" });
+                  `const result =unix.file_read({ file_path: "nonexistent.ts" });
 return result;`,
                   {
                     success: false,
@@ -462,7 +462,7 @@ export const ShowCodeView: AppStory = {
                 createCodeExecutionTool(
                   "call-1",
                   `// Analysis script with various syntax elements
-const data = mux.file_read({ file_path: "data.json" });
+const data =unix.file_read({ file_path: "data.json" });
 const parsed = JSON.parse(data.content);
 
 function analyze(items) {

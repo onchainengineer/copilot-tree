@@ -146,7 +146,7 @@ describe("buildProviderOptions - OpenAI", () => {
       const openai = getOpenAIOptions(result);
 
       expect(openai).toBeDefined();
-      expect(openai!.promptCacheKey).toBe("mux-v1-abc123");
+      expect(openai!.promptCacheKey).toBe("unix-v1-abc123");
       expect(openai!.truncation).toBe("disabled");
     });
 

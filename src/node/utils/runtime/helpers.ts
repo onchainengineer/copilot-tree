@@ -133,8 +133,8 @@ export interface ReadPlanResult {
 
 /**
  * Read plan file content, checking new path first then legacy, migrating if needed.
- * This handles the transparent migration from ~/.mux/plans/{id}.md to
- * ~/.mux/plans/{projectName}/{workspaceName}.md
+ * This handles the transparent migration from ~/.unix/plans/{id}.md to
+ * ~/.unix/plans/{projectName}/{workspaceName}.md
  */
 export async function readPlanFile(
   runtime: Runtime,
@@ -142,8 +142,8 @@ export async function readPlanFile(
   projectName: string,
   workspaceId: string
 ): Promise<ReadPlanResult> {
-  const muxHome = runtime.getMuxHome();
-  const planPath = getPlanFilePath(workspaceName, projectName, muxHome);
+  const unixHome = runtime.getUnixHome();
+  const planPath = getPlanFilePath(workspaceName, projectName, unixHome);
   // Legacy paths only used for non-Docker runtimes
   const legacyPath = getLegacyPlanFilePath(workspaceId);
 
@@ -187,9 +187,9 @@ export async function movePlanFile(
   newWorkspaceName: string,
   projectName: string
 ): Promise<void> {
-  const muxHome = runtime.getMuxHome();
-  const oldPath = getPlanFilePath(oldWorkspaceName, projectName, muxHome);
-  const newPath = getPlanFilePath(newWorkspaceName, projectName, muxHome);
+  const unixHome = runtime.getUnixHome();
+  const oldPath = getPlanFilePath(oldWorkspaceName, projectName, unixHome);
+  const newPath = getPlanFilePath(newWorkspaceName, projectName, unixHome);
 
   try {
     await runtime.stat(oldPath);
@@ -217,11 +217,11 @@ export async function copyPlanFile(
   targetWorkspaceName: string,
   projectName: string
 ): Promise<void> {
-  const muxHome = runtime.getMuxHome();
-  const sourcePath = getPlanFilePath(sourceWorkspaceName, projectName, muxHome);
+  const unixHome = runtime.getUnixHome();
+  const sourcePath = getPlanFilePath(sourceWorkspaceName, projectName, unixHome);
   // Legacy paths only used for non-Docker runtimes
   const legacySourcePath = getLegacyPlanFilePath(sourceWorkspaceId);
-  const targetPath = getPlanFilePath(targetWorkspaceName, projectName, muxHome);
+  const targetPath = getPlanFilePath(targetWorkspaceName, projectName, unixHome);
 
   // Prefer the new layout, but fall back to the legacy layout.
   //

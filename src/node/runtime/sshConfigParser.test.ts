@@ -5,7 +5,7 @@ import { resolveSSHConfig } from "./sshConfigParser";
 
 describe("resolveSSHConfig", () => {
   test("applies Host + Match host proxy rules", async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-ssh-config-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-ssh-config-"));
     const previousUserProfile = process.env.USERPROFILE;
 
     process.env.USERPROFILE = tempDir;
@@ -42,7 +42,7 @@ describe("resolveSSHConfig", () => {
   });
 
   test("defaults %r to local username when no User is specified", async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-ssh-config-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-ssh-config-"));
     const previousUserProfile = process.env.USERPROFILE;
 
     process.env.USERPROFILE = tempDir;

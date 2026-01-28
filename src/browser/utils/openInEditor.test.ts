@@ -47,7 +47,7 @@ describe("openInEditor", () => {
     const runtimeConfig: RuntimeConfig = {
       type: "ssh",
       host: "devbox",
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     };
 
     const result = await withWindow(createMockWindow(calls), () =>
@@ -112,7 +112,7 @@ describe("openInEditor", () => {
     const runtimeConfig: RuntimeConfig = {
       type: "docker",
       image: "node:20",
-      containerName: "mux-workspace-123",
+      containerName: "unix-workspace-123",
     };
 
     const result = await withWindow(createMockWindow(calls), () =>

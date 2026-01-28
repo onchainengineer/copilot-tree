@@ -20,7 +20,7 @@ describe("Init display after cleanup changes", () => {
     // Simulate init start
     aggregator.handleMessage({
       type: "init-start",
-      hookPath: "/test/.mux/init",
+      hookPath: "/test/.unix/init",
       timestamp: Date.now(),
     });
 
@@ -91,7 +91,7 @@ describe("Init display after cleanup changes", () => {
 
     aggregator.handleMessage({
       type: "init-start",
-      hookPath: "/test/.mux/init",
+      hookPath: "/test/.unix/init",
       timestamp: Date.now(),
     });
 
@@ -126,7 +126,7 @@ describe("Init display after cleanup changes", () => {
 
     aggregator.handleMessage({
       type: "init-start",
-      hookPath: "/test/.mux/init",
+      hookPath: "/test/.unix/init",
       timestamp: Date.now(),
     });
 

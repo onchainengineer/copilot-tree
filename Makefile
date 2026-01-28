@@ -1,6 +1,6 @@
 # Build System
 # ============
-# This Makefile orchestrates the mux build process.
+# This Makefile orchestrates the unix build process.
 #
 # Quick Start:
 #   make help          - Show all available targets
@@ -27,7 +27,7 @@
 # Telemetry in Development:
 #   Telemetry is enabled by default in dev mode (same as production).
 #   It is automatically disabled in CI, test environments, and automation contexts.
-#   To manually disable telemetry, set MUX_DISABLE_TELEMETRY=1.
+#   To manually disable telemetry, set UNIX_DISABLE_TELEMETRY=1.
 
 # Use PATH-resolved bash for portability across different systems.
 # - Windows: /usr/bin/bash doesn't exist in Chocolatey's make environment or GitHub Actions
@@ -60,7 +60,7 @@ include fmt.mk
 .PHONY: docs-server check-docs-links
 .PHONY: storybook storybook-build test-storybook chromatic
 .PHONY: benchmark-terminal
-.PHONY: ensure-deps rebuild-native mux
+.PHONY: ensure-deps rebuild-native unix
 .PHONY: check-eager-imports check-bundle-size check-startup
 
 # Build tools
@@ -118,12 +118,12 @@ rebuild-native: node_modules/.installed ## Rebuild native modules (node-pty) for
 	@echo "Native modules rebuilt successfully"
 
 # Run compiled CLI with trailing arguments (builds only if missing)
-mux: ## Run the compiled mux CLI (e.g., make mux server --port 3000)
+unix: ## Run the compiled unix CLI (e.g., make unix server --port 3000)
 	@test -f dist/cli/index.js -a -f dist/cli/api.mjs || $(MAKE) build-main
 	@node dist/cli/index.js $(filter-out $@,$(MAKECMDGOALS))
 
-# Catch unknown targets passed to mux (prevents "No rule to make target" errors)
-ifneq ($(filter mux,$(MAKECMDGOALS)),)
+# Catch unknown targets passed to unix (prevents "No rule to make target" errors)
+ifneq ($(filter unix,$(MAKECMDGOALS)),)
 %:
 	@:
 endif
@@ -166,7 +166,7 @@ dev-server: node_modules/.installed build-main ## Start server mode with hot rel
 		"nodemon --watch src --watch tsconfig.main.json --watch tsconfig.json --ext ts,tsx,json --ignore dist --ignore node_modules scripts/build-main-watch.js" \
 		'npx esbuild src/cli/api.ts $(ESBUILD_CLI_FLAGS) --watch' \
 		"set NODE_ENV=development&& nodemon --watch dist/cli/index.js --watch dist/cli/server.js --delay 500ms dist/cli/index.js server --host $(or $(BACKEND_HOST),127.0.0.1) --port $(or $(BACKEND_PORT),3000)" \
-		"set MUX_VITE_HOST=$(or $(VITE_HOST),127.0.0.1)&& set MUX_VITE_PORT=$(or $(VITE_PORT),5173)&& set MUX_VITE_ALLOWED_HOSTS=$(VITE_ALLOWED_HOSTS)&& set MUX_BACKEND_PORT=$(or $(BACKEND_PORT),3000)&& vite"
+		"set UNIX_VITE_HOST=$(or $(VITE_HOST),127.0.0.1)&& set UNIX_VITE_PORT=$(or $(VITE_PORT),5173)&& set UNIX_VITE_ALLOWED_HOSTS=$(VITE_ALLOWED_HOSTS)&& set UNIX_BACKEND_PORT=$(or $(BACKEND_PORT),3000)&& vite"
 else
 dev-server: node_modules/.installed build-main ## Start server mode with hot reload (backend :3000 + frontend :5173). Use VITE_HOST=0.0.0.0 VITE_ALLOWED_HOSTS=<public-host> for remote access
 	@echo "Starting dev-server..."
@@ -178,15 +178,15 @@ dev-server: node_modules/.installed build-main ## Start server mode with hot rel
 		"bun x concurrently \"$(TSGO) -w -p tsconfig.main.json\" \"bun x tsc-alias -w -p tsconfig.main.json\"" \
 		'bun x esbuild src/cli/api.ts $(ESBUILD_CLI_FLAGS) --watch' \
 		"bun x nodemon --watch dist/cli/index.js --watch dist/cli/server.js --delay 500ms --exec 'NODE_ENV=development node dist/cli/index.js server --host $(or $(BACKEND_HOST),127.0.0.1) --port $(or $(BACKEND_PORT),3000)'" \
-		"MUX_VITE_HOST=$(or $(VITE_HOST),127.0.0.1) MUX_VITE_PORT=$(or $(VITE_PORT),5173) MUX_VITE_ALLOWED_HOSTS=$(VITE_ALLOWED_HOSTS) MUX_BACKEND_PORT=$(or $(BACKEND_PORT),3000) vite"
+		"UNIX_VITE_HOST=$(or $(VITE_HOST),127.0.0.1) UNIX_VITE_PORT=$(or $(VITE_PORT),5173) UNIX_VITE_ALLOWED_HOSTS=$(VITE_ALLOWED_HOSTS) UNIX_BACKEND_PORT=$(or $(BACKEND_PORT),3000) vite"
 endif
 
 
 
 
-dev-desktop-sandbox: ## Start an isolated Electron dev instance (fresh MUX_ROOT + free ports)
+dev-desktop-sandbox: ## Start an isolated Electron dev instance (fresh UNIX_ROOT + free ports)
 	@bun scripts/dev-desktop-sandbox.ts
-dev-server-sandbox: ## Start an isolated dev-server instance (fresh MUX_ROOT + free ports)
+dev-server-sandbox: ## Start an isolated dev-server instance (fresh UNIX_ROOT + free ports)
 	@bun scripts/dev-server-sandbox.ts
 
 start: node_modules/.installed build-main build-preload build-static ## Build and start Electron app
@@ -352,7 +352,7 @@ test-coverage: ## Run tests with coverage
 smoke-test: build ## Run smoke test on npm package
 	@echo "Building npm package tarball..."
 	@npm pack
-	@TARBALL=$$(ls mux-*.tgz | head -1); \
+	@TARBALL=$$(ls unix-*.tgz | head -1); \
 	echo "Running smoke test on $$TARBALL..."; \
 	PACKAGE_TARBALL="$$TARBALL" ./scripts/smoke-test.sh; \
 	EXIT_CODE=$$?; \
@@ -361,7 +361,7 @@ smoke-test: build ## Run smoke test on npm package
 
 test-e2e: ## Run end-to-end tests
 	@$(MAKE) build
-	@MUX_E2E_LOAD_DIST=1 MUX_E2E_SKIP_BUILD=1 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 bun x playwright test --project=electron $(PLAYWRIGHT_ARGS)
+	@UNIX_E2E_LOAD_DIST=1 UNIX_E2E_SKIP_BUILD=1 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 bun x playwright test --project=electron $(PLAYWRIGHT_ARGS)
 
 ## Distribution
 dist: build ## Build distributable packages
@@ -393,10 +393,10 @@ dist-mac-arm64: build ## Build macOS arm64 distributable only
 	@bun x electron-builder --mac --arm64 --publish never
 
 install-mac-arm64: dist-mac-arm64 ## Build and install macOS arm64 app to /Applications
-	@echo "Installing mux.app to /Applications..."
-	@rm -rf /Applications/mux.app
-	@cp -R release/mac-arm64/mux.app /Applications/
-	@echo "Installed mux.app to /Applications"
+	@echo "Installing unix.app to /Applications..."
+	@rm -rf /Applications/unix.app
+	@cp -R release/mac-arm64/unix.app /Applications/
+	@echo "Installed unix.app to /Applications"
 
 dist-win: build ## Build Windows distributable
 	@bun x electron-builder --win --publish never
@@ -455,10 +455,10 @@ benchmark-terminal: ## Run Terminal-Bench 2.0 with Harbor (use TB_DATASET/TB_CON
 	fi; \
 	echo "Using timeout: $$TB_TIMEOUT seconds"; \
 	echo "Running Terminal-Bench with dataset $$TB_DATASET (concurrency: $$TB_CONCURRENCY)"; \
-	export MUX_TIMEOUT_MS=$$((TB_TIMEOUT * 1000)); \
+	export UNIX_TIMEOUT_MS=$$((TB_TIMEOUT * 1000)); \
 	uvx harbor run \
 		--dataset "$$TB_DATASET" \
-		--agent-import-path benchmarks.terminal_bench.mux_agent:MuxAgent \
+		--agent-import-path benchmarks.terminal_bench.unix_agent:UnixAgent \
 		--agent-kwarg timeout=$$TB_TIMEOUT \
 		--n-concurrent $$TB_CONCURRENCY \
 		$$ENV_FLAG \

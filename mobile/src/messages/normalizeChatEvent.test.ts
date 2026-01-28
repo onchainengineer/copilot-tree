@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import { createChatEventExpander } from "./normalizeChatEvent";
 import type { WorkspaceChatEvent } from "../types";
 
@@ -105,10 +105,10 @@ describe("createChatEventExpander", () => {
     });
   });
 
-  it("emits displayable entries for mux messages replayed from history", () => {
+  it("emits displayable entries for unix messages replayed from history", () => {
     const expander = createChatEventExpander();
 
-    const userMuxMessage: MuxMessage = {
+    const userUnixMessage: UnixMessage = {
       id: "user-history-1",
       role: "user",
       parts: [
@@ -123,7 +123,7 @@ describe("createChatEventExpander", () => {
       },
     };
 
-    const assistantMuxMessage: MuxMessage = {
+    const assistantUnixMessage: UnixMessage = {
       id: "assistant-history-1",
       role: "assistant",
       parts: [
@@ -140,7 +140,7 @@ describe("createChatEventExpander", () => {
 
     const userEvents = expander.expand({
       type: "message",
-      ...userMuxMessage,
+      ...userUnixMessage,
     } as unknown as WorkspaceChatEvent);
     expect(userEvents).toHaveLength(1);
     expect(userEvents[0]).toMatchObject({
@@ -151,7 +151,7 @@ describe("createChatEventExpander", () => {
 
     const assistantEvents = expander.expand({
       type: "message",
-      ...assistantMuxMessage,
+      ...assistantUnixMessage,
     } as unknown as WorkspaceChatEvent);
     expect(assistantEvents).toHaveLength(1);
     expect(assistantEvents[0]).toMatchObject({

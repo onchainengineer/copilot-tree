@@ -25,7 +25,7 @@ describe("agentSkillsService", () => {
     using project = new DisposableTempDir("agent-skills-project");
     using global = new DisposableTempDir("agent-skills-global");
 
-    const projectSkillsRoot = path.join(project.path, ".mux", "skills");
+    const projectSkillsRoot = path.join(project.path, ".unix", "skills");
     const globalSkillsRoot = global.path;
 
     await writeSkill(globalSkillsRoot, "foo", "from global");
@@ -38,7 +38,7 @@ describe("agentSkillsService", () => {
     const skills = await discoverAgentSkills(runtime, project.path, { roots });
 
     // Should include project/global skills plus built-in skills
-    expect(skills.map((s) => s.name)).toEqual(["bar", "foo", "init", "mux-docs"]);
+    expect(skills.map((s) => s.name)).toEqual(["bar", "foo", "init", "unix-docs"]);
 
     const foo = skills.find((s) => s.name === "foo");
     expect(foo).toBeDefined();
@@ -54,7 +54,7 @@ describe("agentSkillsService", () => {
     using project = new DisposableTempDir("agent-skills-project");
     using global = new DisposableTempDir("agent-skills-global");
 
-    const projectSkillsRoot = path.join(project.path, ".mux", "skills");
+    const projectSkillsRoot = path.join(project.path, ".unix", "skills");
     const globalSkillsRoot = global.path;
 
     await writeSkill(globalSkillsRoot, "foo", "from global");
@@ -74,42 +74,42 @@ describe("agentSkillsService", () => {
     using project = new DisposableTempDir("agent-skills-project");
     using global = new DisposableTempDir("agent-skills-global");
 
-    const projectSkillsRoot = path.join(project.path, ".mux", "skills");
+    const projectSkillsRoot = path.join(project.path, ".unix", "skills");
     const globalSkillsRoot = global.path;
 
     const roots = { projectRoot: projectSkillsRoot, globalRoot: globalSkillsRoot };
     const runtime = new LocalRuntime(project.path);
 
-    const name = SkillNameSchema.parse("mux-docs");
+    const name = SkillNameSchema.parse("unix-docs");
     const resolved = await readAgentSkill(runtime, project.path, name, { roots });
 
     expect(resolved.package.scope).toBe("built-in");
-    expect(resolved.package.frontmatter.name).toBe("mux-docs");
-    expect(resolved.skillDir).toBe("<built-in:mux-docs>");
+    expect(resolved.package.frontmatter.name).toBe("unix-docs");
+    expect(resolved.skillDir).toBe("<built-in:unix-docs>");
   });
 
   test("project/global skills override built-in skills", async () => {
     using project = new DisposableTempDir("agent-skills-project");
     using global = new DisposableTempDir("agent-skills-global");
 
-    const projectSkillsRoot = path.join(project.path, ".mux", "skills");
+    const projectSkillsRoot = path.join(project.path, ".unix", "skills");
     const globalSkillsRoot = global.path;
 
-    // Override the built-in mux-docs skill with a project-local version
-    await writeSkill(projectSkillsRoot, "mux-docs", "custom docs from project");
+    // Override the built-in unix-docs skill with a project-local version
+    await writeSkill(projectSkillsRoot, "unix-docs", "custom docs from project");
 
     const roots = { projectRoot: projectSkillsRoot, globalRoot: globalSkillsRoot };
     const runtime = new LocalRuntime(project.path);
 
     const skills = await discoverAgentSkills(runtime, project.path, { roots });
-    const muxDocs = skills.find((s) => s.name === "mux-docs");
+    const muxDocs = skills.find((s) => s.name === "unix-docs");
 
     expect(muxDocs).toBeDefined();
     expect(muxDocs!.scope).toBe("project");
     expect(muxDocs!.description).toBe("custom docs from project");
 
     // readAgentSkill should also return the project version
-    const name = SkillNameSchema.parse("mux-docs");
+    const name = SkillNameSchema.parse("unix-docs");
     const resolved = await readAgentSkill(runtime, project.path, name, { roots });
     expect(resolved.package.scope).toBe("project");
   });

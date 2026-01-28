@@ -7,9 +7,9 @@ import {
   cleanupTempGitRepo,
 } from "./helpers";
 import type { WorkspaceChatMessage } from "@/common/orpc/types";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import { HistoryService } from "@/node/services/historyService";
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 
 /**
  * Integration test for WebSocket history replay bug
@@ -67,7 +67,7 @@ describe("WebSocket history replay", () => {
         // Directly write a test message to history file
 
         const historyService = new HistoryService(env.config);
-        const testMessage = createMuxMessage("test-msg-2", "user", "Test message for getHistory");
+        const testMessage = createUnixMessage("test-msg-2", "user", "Test message for getHistory");
         await historyService.appendToHistory(workspaceId, testMessage);
 
         // Wait for file write

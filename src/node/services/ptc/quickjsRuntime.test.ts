@@ -137,15 +137,15 @@ describe("QuickJSRuntime", () => {
 
   describe("registered objects", () => {
     it("calls methods on registered objects", async () => {
-      runtime.registerObject("mux", {
+      runtime.registerObject("unix", {
         fileRead: (...args: unknown[]) => Promise.resolve({ content: `File: ${String(args[0])}` }),
         bash: (...args: unknown[]) => Promise.resolve({ output: `Ran: ${String(args[0])}` }),
       });
 
       // No await needed - asyncified methods appear sync
       const result = await runtime.eval(`
-        const file = mux.fileRead("test.txt");
-        const bash = mux.bash("ls");
+        const file =unix.fileRead("test.txt");
+        const bash =unix.bash("ls");
         return { file, bash };
       `);
 
@@ -157,11 +157,11 @@ describe("QuickJSRuntime", () => {
     });
 
     it("records tool calls with full name", async () => {
-      runtime.registerObject("mux", {
+      runtime.registerObject("unix", {
         fileRead: () => Promise.resolve("content"),
       });
 
-      const result = await runtime.eval('mux.fileRead("test.txt");');
+      const result = await runtime.eval('unix.fileRead("test.txt");');
       expect(result.toolCalls).toHaveLength(1);
       expect(result.toolCalls[0].toolName).toBe("fileRead");
     });
@@ -392,7 +392,7 @@ describe("QuickJSRuntime", () => {
       const result = await runtime.eval("const env = process.env;");
       expect(result.success).toBe(false);
       expect(result.error).toContain("'process' is not available in the sandbox");
-      expect(result.error).toContain("mux.*");
+      expect(result.error).toContain("unix.*");
     });
 
     it("provides friendly error for window", async () => {
@@ -423,7 +423,7 @@ describe("QuickJSRuntime", () => {
       const result = await runtime.eval("const x = myUndefinedVar;");
       expect(result.success).toBe(false);
       // Should NOT get the friendly message since it's not a known unavailable global
-      expect(result.error).not.toContain("mux.*");
+      expect(result.error).not.toContain("unix.*");
       expect(result.error).toContain("not defined");
     });
   });

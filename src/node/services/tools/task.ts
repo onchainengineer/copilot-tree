@@ -53,10 +53,10 @@ export const createTaskTool: ToolFactory = (config: ToolConfiguration) => {
       }
 
       const modelString =
-        config.muxEnv && typeof config.muxEnv.MUX_MODEL_STRING === "string"
-          ? config.muxEnv.MUX_MODEL_STRING
+        config.muxEnv && typeof config.muxEnv.UNIX_MODEL_STRING === "string"
+          ? config.muxEnv.UNIX_MODEL_STRING
           : undefined;
-      const thinkingLevel = coerceThinkingLevel(config.muxEnv?.MUX_THINKING_LEVEL);
+      const thinkingLevel = coerceThinkingLevel(config.muxEnv?.UNIX_THINKING_LEVEL);
 
       const created = await taskService.create({
         parentWorkspaceId: workspaceId,

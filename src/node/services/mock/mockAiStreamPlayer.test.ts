@@ -1,17 +1,17 @@
 import { describe, expect, test } from "bun:test";
 import { EventEmitter } from "events";
 import { MockAiStreamPlayer } from "./mockAiStreamPlayer";
-import { createMuxMessage, type MuxMessage } from "@/common/types/message";
+import { createUnixMessage, type UnixMessage } from "@/common/types/message";
 import { Ok } from "@/common/types/result";
 import type { HistoryService } from "@/node/services/historyService";
 import type { AIService } from "@/node/services/aiService";
 
 class InMemoryHistoryService {
-  public appended: Array<{ workspaceId: string; message: MuxMessage }> = [];
-  public messages = new Map<string, MuxMessage[]>();
+  public appended: Array<{ workspaceId: string; message: UnixMessage }> = [];
+  public messages = new Map<string, UnixMessage[]>();
   private nextSequence = 0;
 
-  appendToHistory(workspaceId: string, message: MuxMessage) {
+  appendToHistory(workspaceId: string, message: UnixMessage) {
     message.metadata ??= {};
 
     if (message.metadata.historySequence === undefined) {
@@ -58,7 +58,7 @@ describe("MockAiStreamPlayer", () => {
 
     const workspaceId = "workspace-1";
 
-    const firstTurnUser = createMuxMessage(
+    const firstTurnUser = createUnixMessage(
       "user-1",
       "user",
       "[mock:list-languages] List 3 programming languages",
@@ -73,7 +73,7 @@ describe("MockAiStreamPlayer", () => {
 
     const historyBeforeSecondTurn = historyStub.appended.map((entry) => entry.message);
 
-    const secondTurnUser = createMuxMessage(
+    const secondTurnUser = createUnixMessage(
       "user-2",
       "user",
       "[mock:error:api] Trigger API error",
@@ -110,12 +110,12 @@ describe("MockAiStreamPlayer", () => {
         this.appendGateResolve = resolve;
       });
 
-      private appendedMessageResolve?: (message: MuxMessage) => void;
-      public appendedMessage = new Promise<MuxMessage>((resolve) => {
+      private appendedMessageResolve?: (message: UnixMessage) => void;
+      public appendedMessage = new Promise<UnixMessage>((resolve) => {
         this.appendedMessageResolve = resolve;
       });
 
-      override appendToHistory(workspaceId: string, message: MuxMessage) {
+      override appendToHistory(workspaceId: string, message: UnixMessage) {
         void super.appendToHistory(workspaceId, message);
         this.appendedMessageResolve?.(message);
         return this.appendGate;
@@ -136,7 +136,7 @@ describe("MockAiStreamPlayer", () => {
 
     const workspaceId = "workspace-abort-startup";
 
-    const userMessage = createMuxMessage(
+    const userMessage = createUnixMessage(
       "user-1",
       "user",
       "[mock:list-languages] List 3 programming languages",
@@ -202,7 +202,7 @@ describe("MockAiStreamPlayer", () => {
       });
     });
 
-    const forceTurnUser = createMuxMessage("user-force", "user", "[force] keep streaming", {
+    const forceTurnUser = createUnixMessage("user-force", "user", "[force] keep streaming", {
       timestamp: Date.now(),
     });
 

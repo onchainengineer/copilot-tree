@@ -81,7 +81,7 @@ describe("getSubcommand", () => {
 
   test("packaged: gets arg at index 1", () => {
     const env = detectCliEnvironment({ electron: "33.0.0" }, undefined);
-    expect(getSubcommand(["mux", "server", "-p", "3001"], env)).toBe("server");
+    expect(getSubcommand(["unix", "server", "-p", "3001"], env)).toBe("server");
   });
 
   test("returns undefined when no subcommand", () => {
@@ -111,8 +111,8 @@ describe("getArgsAfterSplice", () => {
 
   test("packaged electron: returns args after firstArgIndex", () => {
     const env = detectCliEnvironment({ electron: "33.0.0" }, undefined);
-    // Simulates: ./mux api --help -> after splice -> ./mux --help
-    const argvAfterSplice = ["./mux", "--help"];
+    // Simulates: ./unix api --help -> after splice -> ./unix --help
+    const argvAfterSplice = ["./unix", "--help"];
     expect(getArgsAfterSplice(argvAfterSplice, env)).toEqual(["--help"]);
   });
 

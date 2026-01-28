@@ -3,20 +3,20 @@
  * Start an isolated `make dev-server` instance.
  *
  * Why:
- * - `make dev-server` starts the mux backend server which uses a lockfile at:
- *     <muxHome>/server.lock
- *   (default muxHome is ~/.mux-dev in development)
+ * - `make dev-server` starts the unix backend server which uses a lockfile at:
+ *     <unixHome>/server.lock
+ *   (default unixHome is ~/.unix-dev in development)
  * - This prevents running multiple dev servers concurrently.
  *
- * This script creates a fresh temporary mux root dir, copies over the user's
+ * This script creates a fresh temporary unix root dir, copies over the user's
  * provider config + project list, picks free ports, then launches `make dev-server`.
  *
  * Usage:
  *   make dev-server-sandbox
  *
  * Optional env vars:
- *   - SEED_MUX_ROOT=/path/to/mux/home   # where to copy providers.jsonc/config.json from
- *   - KEEP_SANDBOX=1                   # don't delete temp MUX_ROOT on exit
+ *   - SEED_UNIX_ROOT=/path/to/unix/home   # where to copy providers.jsonc/config.json from
+ *   - KEEP_SANDBOX=1                   # don't delete temp UNIX_ROOT on exit
  *   - BACKEND_PORT=3001                # override picked backend port
  *   - VITE_PORT=5174                   # override picked Vite port
  *   - MAKE=gmake                       # override make binary
@@ -40,7 +40,7 @@ async function main(): Promise<number> {
   const makeCmd = process.env.MAKE ?? "make";
 
   // Do any validation that might throw *before* creating the temp root so we
-  // don't leave behind stale `mux-dev-server-*` directories for simple mistakes.
+  // don't leave behind stale `unix-dev-server-*` directories for simple mistakes.
   const seedMuxRoot = chooseSeedMuxRoot();
 
   const backendPortOverride = parseOptionalPort(process.env.BACKEND_PORT);
@@ -77,7 +77,7 @@ async function main(): Promise<number> {
     }
   }
 
-  const muxRoot = fs.mkdtempSync(path.join(os.tmpdir(), "mux-dev-server-"));
+  const muxRoot = fs.mkdtempSync(path.join(os.tmpdir(), "unix-dev-server-"));
 
   try {
     const seedProvidersPath = seedMuxRoot ? path.join(seedMuxRoot, "providers.jsonc") : null;
@@ -90,8 +90,8 @@ async function main(): Promise<number> {
       ? copyFileIfExists(seedConfigPath, path.join(muxRoot, "config.json"))
       : false;
 
-    console.log("\nStarting mux dev-server sandbox...");
-    console.log(`  MUX_ROOT:        ${muxRoot}`);
+    console.log("\nStarting unix dev-server sandbox...");
+    console.log(`  UNIX_ROOT:        ${muxRoot}`);
     if (seedMuxRoot) {
       console.log(`  Seeded from:     ${seedMuxRoot}`);
       console.log(`  Copied config:   ${copiedConfig ? "yes" : "no"}`);
@@ -114,10 +114,10 @@ async function main(): Promise<number> {
 
           // Allow access via reverse proxies / port-forwarding domains.
           // This sets the Makefile's `VITE_ALLOWED_HOSTS`, which is forwarded to
-          // `MUX_VITE_ALLOWED_HOSTS` and then consumed by `vite.config.ts`.
+          // `UNIX_VITE_ALLOWED_HOSTS` and then consumed by `vite.config.ts`.
           VITE_ALLOWED_HOSTS: process.env.VITE_ALLOWED_HOSTS ?? "all",
 
-          MUX_ROOT: muxRoot,
+          UNIX_ROOT: muxRoot,
           BACKEND_PORT: String(backendPort),
           VITE_PORT: String(vitePort),
         },
@@ -161,7 +161,7 @@ async function main(): Promise<number> {
       try {
         fs.rmSync(muxRoot, { recursive: true, force: true });
       } catch (err) {
-        console.error(`Failed to remove sandbox MUX_ROOT at ${muxRoot}:`, err);
+        console.error(`Failed to remove sandbox UNIX_ROOT at ${muxRoot}:`, err);
       }
     }
   }

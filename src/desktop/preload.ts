@@ -31,22 +31,22 @@ contextBridge.exposeInMainWorld("api", {
     chrome: process.versions.chrome,
     electron: process.versions.electron,
   },
-  isE2E: process.env.MUX_E2E === "1",
-  enableTelemetryInDev: process.env.MUX_ENABLE_TELEMETRY_IN_DEV === "1",
+  isE2E: process.env.UNIX_E2E === "1",
+  enableTelemetryInDev: process.env.UNIX_ENABLE_TELEMETRY_IN_DEV === "1",
   // Note: When debugging LLM requests, we also want to see synthetic/request-only
   // messages in the chat history so the UI matches what was sent to the provider.
-  debugLlmRequest: process.env.MUX_DEBUG_LLM_REQUEST === "1",
+  debugLlmRequest: process.env.UNIX_DEBUG_LLM_REQUEST === "1",
   // NOTE: This is intentionally async so the preload script does not rely on Node builtins
   // like `child_process` (which can break in hardened/sandboxed environments).
-  getIsRosetta: () => ipcRenderer.invoke("mux:get-is-rosetta"),
-  getIsWindowsWslShell: () => ipcRenderer.invoke("mux:get-is-windows-wsl-shell"),
+  getIsRosetta: () => ipcRenderer.invoke("unix:get-is-rosetta"),
+  getIsWindowsWslShell: () => ipcRenderer.invoke("unix:get-is-windows-wsl-shell"),
   // Register a callback for notification clicks (navigates to workspace)
   // Returns an unsubscribe function.
   onNotificationClicked: (callback: (data: { workspaceId: string }) => void) => {
     const listener = (_event: unknown, data: { workspaceId: string }) => callback(data);
-    ipcRenderer.on("mux:notification-clicked", listener);
+    ipcRenderer.on("unix:notification-clicked", listener);
     return () => {
-      ipcRenderer.off("mux:notification-clicked", listener);
+      ipcRenderer.off("unix:notification-clicked", listener);
     };
   },
 });

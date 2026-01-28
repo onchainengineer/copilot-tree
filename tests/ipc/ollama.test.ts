@@ -213,11 +213,11 @@ describeOllama("Ollama integration", () => {
       const fileReadCall = toolCallStarts.find((e: any) => e.toolName === "file_read");
       expect(fileReadCall).toBeDefined();
 
-      // Verify response mentions README content (mux heading or similar)
+      // Verify response mentions README content (unix heading or similar)
       const deltas = collector.getDeltas();
       const responseText = extractTextFromEvents(deltas).toLowerCase();
 
-      expect(responseText).toMatch(/mux|readme|heading/i);
+      expect(responseText).toMatch(/unix|readme|heading/i);
     } finally {
       collector.stop();
       await cleanup();

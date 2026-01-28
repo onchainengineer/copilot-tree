@@ -41,7 +41,7 @@ if (shouldRunIntegrationTests()) {
 }
 
 /**
- * Create a temp git repo with a .mux/init hook that writes to stdout/stderr and exits with a given code
+ * Create a temp git repo with a .unix/init hook that writes to stdout/stderr and exits with a given code
  */
 async function createTempGitRepoWithInitHook(options: {
   exitCode: number;
@@ -53,7 +53,7 @@ async function createTempGitRepoWithInitHook(options: {
   const execAsync = promisify(exec);
 
   // Use mkdtemp to avoid race conditions
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-init-hook-"));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-init-hook-"));
 
   // Initialize git repo
   await execAsync(`git init`, { cwd: tempDir });
@@ -64,12 +64,12 @@ async function createTempGitRepoWithInitHook(options: {
     cwd: tempDir,
   });
 
-  // Create .mux directory
-  const muxDir = path.join(tempDir, ".mux");
-  await fs.mkdir(muxDir, { recursive: true });
+  // Create .unix directory
+  const unixDir = path.join(tempDir, ".unix");
+  await fs.mkdir(unixDir, { recursive: true });
 
   // Create init hook script
-  const hookPath = path.join(muxDir, "init");
+  const hookPath = path.join(unixDir, "init");
 
   let scriptContent: string;
   if (options.customScript) {
@@ -149,7 +149,7 @@ describeIntegration("Workspace init hook", () => {
         const startEvent = initEvents.find((e) => isInitStart(e));
         expect(startEvent).toBeDefined();
         if (startEvent && isInitStart(startEvent)) {
-          // Hook path should be the project path (where .mux/init exists)
+          // Hook path should be the project path (where .unix/init exists)
           expect(startEvent.hookPath).toBeTruthy();
         }
 
@@ -262,10 +262,10 @@ describeIntegration("Workspace init hook", () => {
     "should not emit meta events when no init hook exists",
     async () => {
       const env = await createTestEnvironment();
-      // Create repo without .mux/init hook
+      // Create repo without .unix/init hook
       const execAsync = promisify(exec);
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-test-no-hook-"));
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-test-no-hook-"));
 
       try {
         // Initialize git repo without hook

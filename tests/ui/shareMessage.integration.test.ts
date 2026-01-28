@@ -1,28 +1,28 @@
 /**
- * Integration tests for the mux.md message sharing feature.
+ * Integration tests for the unix.md message sharing feature.
  *
  * Tests cover:
- * - End-to-end encrypted upload to mux.md
+ * - End-to-end encrypted upload to unix.md
  * - URL format validation
  * - Content can be retrieved and decrypted
  * - Delete functionality
  */
 
 import { shouldRunIntegrationTests } from "../testUtils";
-import { uploadToMuxMd, deleteFromMuxMd } from "../../src/common/lib/muxMd";
+import { uploadToUnixMd, deleteFromUnixMd } from "../../src/common/lib/unixMd";
 
 const describeIntegration = shouldRunIntegrationTests() ? describe : describe.skip;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MUX.MD UPLOAD TESTS
+// UNIX.MD UPLOAD TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describeIntegration("mux.md sharing (upload integration)", () => {
+describeIntegration("unix.md sharing (upload integration)", () => {
   test("should upload encrypted content and return valid URL", async () => {
     const testContent =
       "# Test Message\n\nThis is a test message for sharing.\n\n```typescript\nconst x = 42;\n```";
 
-    const result = await uploadToMuxMd(testContent, {
+    const result = await uploadToUnixMd(testContent, {
       name: "message.md",
       type: "text/markdown",
       size: new TextEncoder().encode(testContent).length,
@@ -30,8 +30,8 @@ describeIntegration("mux.md sharing (upload integration)", () => {
       thinking: "medium",
     });
 
-    // Verify the URL format: https://mux.md/{id}#{key}
-    expect(result.url).toMatch(/^https:\/\/mux\.md\/[A-Za-z0-9]+#[A-Za-z0-9_-]+$/);
+    // Verify the URL format: https://unix.md/{id}#{key}
+    expect(result.url).toMatch(/^https:\/\/unix\.md\/[A-Za-z0-9]+#[A-Za-z0-9_-]+$/);
     expect(result.id).toMatch(/^[A-Za-z0-9]+$/);
     expect(result.key).toMatch(/^[A-Za-z0-9_-]+$/);
     expect(result.mutateKey).toBeTruthy();
@@ -44,13 +44,13 @@ describeIntegration("mux.md sharing (upload integration)", () => {
   test("should generate unique URLs for each upload", async () => {
     const content = "Test content for uniqueness check";
 
-    const result1 = await uploadToMuxMd(content, {
+    const result1 = await uploadToUnixMd(content, {
       name: "message.md",
       type: "text/markdown",
       size: content.length,
     });
 
-    const result2 = await uploadToMuxMd(content, {
+    const result2 = await uploadToUnixMd(content, {
       name: "message.md",
       type: "text/markdown",
       size: content.length,
@@ -71,19 +71,19 @@ Markdown: **bold** _italic_ [link](https://example.com)
 HTML entities: &amp; &lt; &gt;
 `;
 
-    const result = await uploadToMuxMd(contentWithSpecialChars, {
+    const result = await uploadToUnixMd(contentWithSpecialChars, {
       name: "special.md",
       type: "text/markdown",
       size: new TextEncoder().encode(contentWithSpecialChars).length,
     });
 
-    expect(result.url).toMatch(/^https:\/\/mux\.md\/[A-Za-z0-9]+#[A-Za-z0-9_-]+$/);
+    expect(result.url).toMatch(/^https:\/\/unix\.md\/[A-Za-z0-9]+#[A-Za-z0-9_-]+$/);
   }, 30_000);
 
   test("should include model metadata in upload", async () => {
     const content = "Test with model metadata";
 
-    const result = await uploadToMuxMd(content, {
+    const result = await uploadToUnixMd(content, {
       name: "message.md",
       type: "text/markdown",
       size: content.length,
@@ -100,7 +100,7 @@ HTML entities: &amp; &lt; &gt;
     const content = "Content to be deleted";
 
     // Upload first
-    const result = await uploadToMuxMd(content, {
+    const result = await uploadToUnixMd(content, {
       name: "delete-test.md",
       type: "text/markdown",
       size: content.length,
@@ -110,10 +110,10 @@ HTML entities: &amp; &lt; &gt;
     expect(result.mutateKey).toBeTruthy();
 
     // Delete should complete without throwing
-    await expect(deleteFromMuxMd(result.id, result.mutateKey)).resolves.not.toThrow();
+    await expect(deleteFromUnixMd(result.id, result.mutateKey)).resolves.not.toThrow();
 
     // Verify the content is no longer accessible (fetch returns 404)
-    const response = await fetch(`https://mux.md/${result.id}`);
+    const response = await fetch(`https://unix.md/${result.id}`);
     expect(response.status).toBe(404);
   }, 30_000);
 });

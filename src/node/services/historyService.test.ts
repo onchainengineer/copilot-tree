@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { HistoryService } from "./historyService";
 import { Config } from "@/node/config";
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import * as fs from "fs/promises";
 import * as path from "path";
 import * as os from "os";
@@ -13,7 +13,7 @@ describe("HistoryService", () => {
 
   beforeEach(async () => {
     // Create a temporary directory for test files
-    tempDir = path.join(os.tmpdir(), `mux-test-${Date.now()}-${Math.random()}`);
+    tempDir = path.join(os.tmpdir(), `unix-test-${Date.now()}-${Math.random()}`);
     await fs.mkdir(tempDir, { recursive: true });
 
     // Create a Config with the temp directory
@@ -45,8 +45,8 @@ describe("HistoryService", () => {
       const workspaceDir = config.getSessionDir(workspaceId);
       await fs.mkdir(workspaceDir, { recursive: true });
 
-      const msg1 = createMuxMessage("msg1", "user", "Hello", { historySequence: 0 });
-      const msg2 = createMuxMessage("msg2", "assistant", "Hi there", {
+      const msg1 = createUnixMessage("msg1", "user", "Hello", { historySequence: 0 });
+      const msg2 = createUnixMessage("msg2", "assistant", "Hi there", {
         historySequence: 1,
       });
 
@@ -74,7 +74,7 @@ describe("HistoryService", () => {
       const workspaceDir = config.getSessionDir(workspaceId);
       await fs.mkdir(workspaceDir, { recursive: true });
 
-      const msg1 = createMuxMessage("msg1", "user", "Hello", { historySequence: 0 });
+      const msg1 = createUnixMessage("msg1", "user", "Hello", { historySequence: 0 });
 
       const chatPath = path.join(workspaceDir, "chat.jsonl");
       await fs.writeFile(
@@ -83,7 +83,7 @@ describe("HistoryService", () => {
           "\n" +
           "invalid json line\n" +
           JSON.stringify({
-            ...createMuxMessage("msg2", "user", "World", { historySequence: 1 }),
+            ...createUnixMessage("msg2", "user", "World", { historySequence: 1 }),
             workspaceId,
           }) +
           "\n"
@@ -99,15 +99,15 @@ describe("HistoryService", () => {
       }
     });
 
-    it("hydrates legacy cmuxMetadata entries", async () => {
+    it("hydrates legacy cunixMetadata entries", async () => {
       const workspaceId = "workspace-legacy";
       const workspaceDir = config.getSessionDir(workspaceId);
       await fs.mkdir(workspaceDir, { recursive: true });
 
-      const legacyMessage = createMuxMessage("msg-legacy", "user", "legacy", {
+      const legacyMessage = createUnixMessage("msg-legacy", "user", "legacy", {
         historySequence: 0,
       });
-      (legacyMessage.metadata as Record<string, unknown>).cmuxMetadata = { type: "normal" };
+      (legacyMessage.metadata as Record<string, unknown>).cunixMetadata = { type: "normal" };
 
       const chatPath = path.join(workspaceDir, "chat.jsonl");
       await fs.writeFile(chatPath, JSON.stringify({ ...legacyMessage, workspaceId }) + "\n");
@@ -115,7 +115,7 @@ describe("HistoryService", () => {
       const result = await service.getHistory(workspaceId);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data[0].metadata?.muxMetadata?.type).toBe("normal");
+        expect(result.data[0].metadata?.unixMetadata?.type).toBe("normal");
       }
     });
     it("should handle empty lines in history file", async () => {
@@ -123,7 +123,7 @@ describe("HistoryService", () => {
       const workspaceDir = config.getSessionDir(workspaceId);
       await fs.mkdir(workspaceDir, { recursive: true });
 
-      const msg1 = createMuxMessage("msg1", "user", "Hello", { historySequence: 0 });
+      const msg1 = createUnixMessage("msg1", "user", "Hello", { historySequence: 0 });
 
       const chatPath = path.join(workspaceDir, "chat.jsonl");
       await fs.writeFile(
@@ -144,7 +144,7 @@ describe("HistoryService", () => {
   describe("appendToHistory", () => {
     it("should create workspace directory if it doesn't exist", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello");
+      const msg = createUnixMessage("msg1", "user", "Hello");
 
       const result = await service.appendToHistory(workspaceId, msg);
 
@@ -159,7 +159,7 @@ describe("HistoryService", () => {
 
     it("should assign historySequence to message without metadata", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello");
+      const msg = createUnixMessage("msg1", "user", "Hello");
 
       const result = await service.appendToHistory(workspaceId, msg);
 
@@ -173,9 +173,9 @@ describe("HistoryService", () => {
 
     it("should assign sequential historySequence numbers", async () => {
       const workspaceId = "workspace1";
-      const msg1 = createMuxMessage("msg1", "user", "Hello");
-      const msg2 = createMuxMessage("msg2", "assistant", "Hi");
-      const msg3 = createMuxMessage("msg3", "user", "How are you?");
+      const msg1 = createUnixMessage("msg1", "user", "Hello");
+      const msg2 = createUnixMessage("msg2", "assistant", "Hi");
+      const msg3 = createUnixMessage("msg3", "user", "How are you?");
 
       await service.appendToHistory(workspaceId, msg1);
       await service.appendToHistory(workspaceId, msg2);
@@ -192,7 +192,7 @@ describe("HistoryService", () => {
 
     it("should preserve existing historySequence if provided", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello", { historySequence: 5 });
+      const msg = createUnixMessage("msg1", "user", "Hello", { historySequence: 5 });
 
       const result = await service.appendToHistory(workspaceId, msg);
 
@@ -206,8 +206,8 @@ describe("HistoryService", () => {
 
     it("should update sequence counter when message has higher sequence", async () => {
       const workspaceId = "workspace1";
-      const msg1 = createMuxMessage("msg1", "user", "Hello", { historySequence: 10 });
-      const msg2 = createMuxMessage("msg2", "user", "World");
+      const msg1 = createUnixMessage("msg1", "user", "Hello", { historySequence: 10 });
+      const msg2 = createUnixMessage("msg2", "user", "World");
 
       await service.appendToHistory(workspaceId, msg1);
       await service.appendToHistory(workspaceId, msg2);
@@ -221,7 +221,7 @@ describe("HistoryService", () => {
 
     it("should preserve other metadata fields", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello", {
+      const msg = createUnixMessage("msg1", "user", "Hello", {
         timestamp: 123456,
         model: "claude-opus-4",
         providerMetadata: { test: "data" },
@@ -240,7 +240,7 @@ describe("HistoryService", () => {
 
     it("should include workspaceId in persisted message", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello");
+      const msg = createUnixMessage("msg1", "user", "Hello");
 
       await service.appendToHistory(workspaceId, msg);
 
@@ -260,15 +260,15 @@ describe("HistoryService", () => {
   describe("updateHistory", () => {
     it("should update message by historySequence", async () => {
       const workspaceId = "workspace1";
-      const msg1 = createMuxMessage("msg1", "user", "Hello");
-      const msg2 = createMuxMessage("msg2", "assistant", "Hi");
+      const msg1 = createUnixMessage("msg1", "user", "Hello");
+      const msg2 = createUnixMessage("msg2", "assistant", "Hi");
 
       await service.appendToHistory(workspaceId, msg1);
       await service.appendToHistory(workspaceId, msg2);
 
       const history = await service.getHistory(workspaceId);
       if (history.success) {
-        const updatedMsg = createMuxMessage("msg1", "user", "Updated Hello", {
+        const updatedMsg = createUnixMessage("msg1", "user", "Updated Hello", {
           historySequence: history.data[0].metadata?.historySequence,
         });
 
@@ -288,7 +288,7 @@ describe("HistoryService", () => {
 
     it("should return error if message has no historySequence", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello");
+      const msg = createUnixMessage("msg1", "user", "Hello");
 
       const result = await service.updateHistory(workspaceId, msg);
 
@@ -300,11 +300,11 @@ describe("HistoryService", () => {
 
     it("should return error if message with historySequence not found", async () => {
       const workspaceId = "workspace1";
-      const msg1 = createMuxMessage("msg1", "user", "Hello");
+      const msg1 = createUnixMessage("msg1", "user", "Hello");
 
       await service.appendToHistory(workspaceId, msg1);
 
-      const msg2 = createMuxMessage("msg2", "user", "Not found", { historySequence: 99 });
+      const msg2 = createUnixMessage("msg2", "user", "Not found", { historySequence: 99 });
       const result = await service.updateHistory(workspaceId, msg2);
 
       expect(result.success).toBe(false);
@@ -315,14 +315,14 @@ describe("HistoryService", () => {
 
     it("should preserve historySequence when updating", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello");
+      const msg = createUnixMessage("msg1", "user", "Hello");
 
       await service.appendToHistory(workspaceId, msg);
 
       const history = await service.getHistory(workspaceId);
       if (history.success) {
         const originalSequence = history.data[0].metadata?.historySequence;
-        const updatedMsg = createMuxMessage("msg1", "user", "Updated", {
+        const updatedMsg = createUnixMessage("msg1", "user", "Updated", {
           historySequence: originalSequence,
         });
 
@@ -339,9 +339,9 @@ describe("HistoryService", () => {
   describe("deleteMessage", () => {
     it("should remove only the targeted message and preserve subsequent messages", async () => {
       const workspaceId = "workspace1";
-      const msg1 = createMuxMessage("msg1", "user", "First");
-      const msg2 = createMuxMessage("msg2", "assistant", "Second");
-      const msg3 = createMuxMessage("msg3", "user", "Third");
+      const msg1 = createUnixMessage("msg1", "user", "First");
+      const msg2 = createUnixMessage("msg2", "assistant", "Second");
+      const msg3 = createUnixMessage("msg3", "user", "Third");
 
       await service.appendToHistory(workspaceId, msg1);
       await service.appendToHistory(workspaceId, msg2);
@@ -356,7 +356,7 @@ describe("HistoryService", () => {
         expect(history.data.map((message) => message.id)).toEqual(["msg1", "msg3"]);
       }
 
-      const msg4 = createMuxMessage("msg4", "assistant", "Fourth");
+      const msg4 = createUnixMessage("msg4", "assistant", "Fourth");
       await service.appendToHistory(workspaceId, msg4);
 
       const historyAfterAppend = await service.getHistory(workspaceId);
@@ -374,7 +374,7 @@ describe("HistoryService", () => {
 
     it("should return error if message not found", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello");
+      const msg = createUnixMessage("msg1", "user", "Hello");
 
       await service.appendToHistory(workspaceId, msg);
 
@@ -390,10 +390,10 @@ describe("HistoryService", () => {
   describe("truncateAfterMessage", () => {
     it("should remove message and all subsequent messages", async () => {
       const workspaceId = "workspace1";
-      const msg1 = createMuxMessage("msg1", "user", "First");
-      const msg2 = createMuxMessage("msg2", "assistant", "Second");
-      const msg3 = createMuxMessage("msg3", "user", "Third");
-      const msg4 = createMuxMessage("msg4", "assistant", "Fourth");
+      const msg1 = createUnixMessage("msg1", "user", "First");
+      const msg2 = createUnixMessage("msg2", "assistant", "Second");
+      const msg3 = createUnixMessage("msg3", "user", "Third");
+      const msg4 = createUnixMessage("msg4", "assistant", "Fourth");
 
       await service.appendToHistory(workspaceId, msg1);
       await service.appendToHistory(workspaceId, msg2);
@@ -413,9 +413,9 @@ describe("HistoryService", () => {
 
     it("should update sequence counter after truncation", async () => {
       const workspaceId = "workspace1";
-      const msg1 = createMuxMessage("msg1", "user", "First");
-      const msg2 = createMuxMessage("msg2", "assistant", "Second");
-      const msg3 = createMuxMessage("msg3", "user", "Third");
+      const msg1 = createUnixMessage("msg1", "user", "First");
+      const msg2 = createUnixMessage("msg2", "assistant", "Second");
+      const msg3 = createUnixMessage("msg3", "user", "Third");
 
       await service.appendToHistory(workspaceId, msg1);
       await service.appendToHistory(workspaceId, msg2);
@@ -424,7 +424,7 @@ describe("HistoryService", () => {
       await service.truncateAfterMessage(workspaceId, "msg2");
 
       // Append a new message and check its sequence
-      const msg4 = createMuxMessage("msg4", "user", "New message");
+      const msg4 = createUnixMessage("msg4", "user", "New message");
       await service.appendToHistory(workspaceId, msg4);
 
       const history = await service.getHistory(workspaceId);
@@ -437,15 +437,15 @@ describe("HistoryService", () => {
 
     it("should reset sequence counter when truncating all messages", async () => {
       const workspaceId = "workspace1";
-      const msg1 = createMuxMessage("msg1", "user", "First");
-      const msg2 = createMuxMessage("msg2", "assistant", "Second");
+      const msg1 = createUnixMessage("msg1", "user", "First");
+      const msg2 = createUnixMessage("msg2", "assistant", "Second");
 
       await service.appendToHistory(workspaceId, msg1);
       await service.appendToHistory(workspaceId, msg2);
 
       await service.truncateAfterMessage(workspaceId, "msg1");
 
-      const msg3 = createMuxMessage("msg3", "user", "New");
+      const msg3 = createUnixMessage("msg3", "user", "New");
       await service.appendToHistory(workspaceId, msg3);
 
       const history = await service.getHistory(workspaceId);
@@ -457,7 +457,7 @@ describe("HistoryService", () => {
 
     it("should return error if message not found", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello");
+      const msg = createUnixMessage("msg1", "user", "Hello");
 
       await service.appendToHistory(workspaceId, msg);
 
@@ -473,7 +473,7 @@ describe("HistoryService", () => {
   describe("clearHistory", () => {
     it("should delete chat.jsonl file", async () => {
       const workspaceId = "workspace1";
-      const msg = createMuxMessage("msg1", "user", "Hello");
+      const msg = createUnixMessage("msg1", "user", "Hello");
 
       await service.appendToHistory(workspaceId, msg);
 
@@ -492,12 +492,12 @@ describe("HistoryService", () => {
 
     it("should reset sequence counter", async () => {
       const workspaceId = "workspace1";
-      const msg1 = createMuxMessage("msg1", "user", "Hello");
+      const msg1 = createUnixMessage("msg1", "user", "Hello");
 
       await service.appendToHistory(workspaceId, msg1);
       await service.clearHistory(workspaceId);
 
-      const msg2 = createMuxMessage("msg2", "user", "New message");
+      const msg2 = createUnixMessage("msg2", "user", "New message");
       await service.appendToHistory(workspaceId, msg2);
 
       const history = await service.getHistory(workspaceId);
@@ -519,7 +519,7 @@ describe("HistoryService", () => {
 
       await service.clearHistory(workspaceId);
 
-      const msg = createMuxMessage("msg1", "user", "First");
+      const msg = createUnixMessage("msg1", "user", "First");
       await service.appendToHistory(workspaceId, msg);
 
       const history = await service.getHistory(workspaceId);
@@ -536,8 +536,8 @@ describe("HistoryService", () => {
       await fs.mkdir(workspaceDir, { recursive: true });
 
       // Manually create history with specific sequences
-      const msg1 = createMuxMessage("msg1", "user", "Hello", { historySequence: 0 });
-      const msg2 = createMuxMessage("msg2", "assistant", "Hi", { historySequence: 1 });
+      const msg1 = createUnixMessage("msg1", "user", "Hello", { historySequence: 0 });
+      const msg2 = createUnixMessage("msg2", "assistant", "Hi", { historySequence: 1 });
 
       const chatPath = path.join(workspaceDir, "chat.jsonl");
       await fs.writeFile(
@@ -552,7 +552,7 @@ describe("HistoryService", () => {
       const newService = new HistoryService(config);
 
       // Append a new message - should get sequence 2
-      const msg3 = createMuxMessage("msg3", "user", "How are you?");
+      const msg3 = createUnixMessage("msg3", "user", "How are you?");
       await newService.appendToHistory(workspaceId, msg3);
 
       const history = await newService.getHistory(workspaceId);
@@ -564,7 +564,7 @@ describe("HistoryService", () => {
 
     it("should start from 0 for new workspace", async () => {
       const workspaceId = "new-workspace";
-      const msg = createMuxMessage("msg1", "user", "First message");
+      const msg = createUnixMessage("msg1", "user", "First message");
 
       await service.appendToHistory(workspaceId, msg);
 

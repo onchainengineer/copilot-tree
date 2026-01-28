@@ -12,7 +12,7 @@ import {
   stripOrphanedToolCalls,
 } from "./modelMessageTransform";
 import { MAX_POST_COMPACTION_INJECTION_CHARS } from "@/common/constants/attachments";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 
 describe("modelMessageTransform", () => {
   describe("transformModelMessages", () => {
@@ -451,7 +451,7 @@ describe("modelMessageTransform", () => {
 
   describe("addInterruptedSentinel", () => {
     it("should insert user message after partial assistant message", () => {
-      const messages: MuxMessage[] = [
+      const messages: UnixMessage[] = [
         {
           id: "user-1",
           role: "user",
@@ -480,7 +480,7 @@ describe("modelMessageTransform", () => {
     });
 
     it("should not insert sentinel for non-partial assistant messages", () => {
-      const messages: MuxMessage[] = [
+      const messages: UnixMessage[] = [
         {
           id: "user-1",
           role: "user",
@@ -503,7 +503,7 @@ describe("modelMessageTransform", () => {
     });
 
     it("should insert sentinel for reasoning-only partial messages", () => {
-      const messages: MuxMessage[] = [
+      const messages: UnixMessage[] = [
         {
           id: "user-1",
           role: "user",
@@ -527,7 +527,7 @@ describe("modelMessageTransform", () => {
     });
 
     it("should handle multiple partial messages", () => {
-      const messages: MuxMessage[] = [
+      const messages: UnixMessage[] = [
         {
           id: "user-1",
           role: "user",
@@ -568,7 +568,7 @@ describe("modelMessageTransform", () => {
     });
 
     it("should skip sentinel when user message follows partial", () => {
-      const messages: MuxMessage[] = [
+      const messages: UnixMessage[] = [
         {
           id: "user-1",
           role: "user",
@@ -862,7 +862,7 @@ describe("stripOrphanedToolCalls", () => {
 
 describe("injectAgentTransition", () => {
   it("should inject transition message when agent changes", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -903,7 +903,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should not inject transition when agent is the same", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -932,7 +932,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should not inject transition when no previous agent exists", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -949,7 +949,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should not inject transition when no agent specified", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -978,7 +978,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should handle conversation with no user messages", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "assistant-1",
         role: "assistant",
@@ -995,7 +995,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should include tool names in transition message when provided", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1032,7 +1032,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should handle agent transition without tools parameter (backward compatibility)", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1064,7 +1064,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should handle agent transition with empty tool list", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1096,7 +1096,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should include plan content when transitioning from plan to exec", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1118,7 +1118,7 @@ describe("injectAgentTransition", () => {
     ];
 
     const planContent = "# My Plan\n\n## Step 1\nDo something\n\n## Step 2\nDo more";
-    const planFilePath = "~/.mux/plans/demo/ws-123.md";
+    const planFilePath = "~/.unix/plans/demo/ws-123.md";
     const result = injectAgentTransition(messages, "exec", undefined, planContent, planFilePath);
 
     expect(result.length).toBe(4);
@@ -1141,7 +1141,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should NOT include plan content when transitioning from exec to plan", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1177,7 +1177,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should NOT include plan content when no plan content provided", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1212,7 +1212,7 @@ describe("injectAgentTransition", () => {
   });
 
   it("should include both tools and plan content in transition message", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1249,7 +1249,7 @@ describe("injectAgentTransition", () => {
 
 describe("filterEmptyAssistantMessages", () => {
   it("should filter out assistant messages with only reasoning when preserveReasoningOnly=false", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1272,7 +1272,7 @@ describe("filterEmptyAssistantMessages", () => {
   });
 
   it("should filter out assistant messages with empty parts array (placeholder messages)", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1304,7 +1304,7 @@ describe("filterEmptyAssistantMessages", () => {
   });
 
   it("should preserve assistant messages with only reasoning when preserveReasoningOnly=true", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1328,7 +1328,7 @@ describe("filterEmptyAssistantMessages", () => {
   });
 
   it("should preserve assistant messages with text content regardless of preserveReasoningOnly", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "assistant-1",
         role: "assistant",
@@ -1352,7 +1352,7 @@ describe("filterEmptyAssistantMessages", () => {
   });
 
   it("should filter out assistant messages with only incomplete tool calls (input-available)", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1388,7 +1388,7 @@ describe("filterEmptyAssistantMessages", () => {
   });
 
   it("should preserve assistant messages with completed tool calls (output-available)", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1416,7 +1416,7 @@ describe("filterEmptyAssistantMessages", () => {
     expect(result.map((m) => m.id)).toEqual(["user-1", "assistant-1"]);
   });
   it("should filter out assistant messages with only empty text regardless of preserveReasoningOnly", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "assistant-1",
         role: "assistant",
@@ -1436,7 +1436,7 @@ describe("filterEmptyAssistantMessages", () => {
 
   it("should preserve messages interrupted during thinking phase when preserveReasoningOnly=true", () => {
     // Simulates an interrupted stream during Extended Thinking
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1466,7 +1466,7 @@ describe("filterEmptyAssistantMessages", () => {
 
 describe("injectFileChangeNotifications", () => {
   it("should return messages unchanged when no file attachments provided", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1483,7 +1483,7 @@ describe("injectFileChangeNotifications", () => {
   });
 
   it("should append synthetic user message with file change notification", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1526,7 +1526,7 @@ describe("injectFileChangeNotifications", () => {
   });
 
   it("should handle multiple file changes", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "user-1",
         role: "user",
@@ -1561,7 +1561,7 @@ describe("injectFileChangeNotifications", () => {
 
 describe("injectPostCompactionAttachments", () => {
   it("inserts after the compaction summary and enforces a size budget", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       {
         id: "compaction-summary",
         role: "assistant",

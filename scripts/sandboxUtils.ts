@@ -28,18 +28,18 @@ export function expandTilde(input: string): string {
 }
 
 export function chooseSeedMuxRoot(): string | null {
-  if (process.env.SEED_MUX_ROOT) {
-    const explicit = expandTilde(process.env.SEED_MUX_ROOT);
+  if (process.env.SEED_UNIX_ROOT) {
+    const explicit = expandTilde(process.env.SEED_UNIX_ROOT);
     if (!dirExists(explicit)) {
-      throw new Error(`SEED_MUX_ROOT does not exist or is not a directory: ${explicit}`);
+      throw new Error(`SEED_UNIX_ROOT does not exist or is not a directory: ${explicit}`);
     }
     return explicit;
   }
 
   const candidates = [
-    process.env.MUX_ROOT ? expandTilde(process.env.MUX_ROOT) : null,
-    path.join(os.homedir(), ".mux-dev"),
-    path.join(os.homedir(), ".mux"),
+    process.env.UNIX_ROOT ? expandTilde(process.env.UNIX_ROOT) : null,
+    path.join(os.homedir(), ".unix-dev"),
+    path.join(os.homedir(), ".unix"),
   ].filter(Boolean) as string[];
 
   for (const candidate of candidates) {

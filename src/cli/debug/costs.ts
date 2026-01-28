@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { defaultConfig } from "@/node/config";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import { calculateTokenStats } from "@/common/utils/tokens/tokenStatsCalculator";
 import { defaultModel } from "@/common/utils/ai/models";
 
@@ -23,10 +23,10 @@ export async function costsCommand(workspaceId: string) {
 
   // Read and parse messages
   const data = fs.readFileSync(chatHistoryPath, "utf-8");
-  const messages: MuxMessage[] = data
+  const messages: UnixMessage[] = data
     .split("\n")
     .filter((line) => line.trim())
-    .map((line) => JSON.parse(line) as MuxMessage);
+    .map((line) => JSON.parse(line) as UnixMessage);
 
   if (messages.length === 0) {
     console.log("No messages in chat history");

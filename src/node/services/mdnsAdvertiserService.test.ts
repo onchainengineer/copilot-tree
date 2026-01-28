@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { Protocol } from "@homebridge/ciao";
 import type { NetworkInterfaceInfo } from "node:os";
-import { buildMuxMdnsServiceOptions, MUX_MDNS_SERVICE_TYPE } from "./mdnsAdvertiserService";
+import { buildUnixMdnsServiceOptions, UNIX_MDNS_SERVICE_TYPE } from "./mdnsAdvertiserService";
 
-describe("buildMuxMdnsServiceOptions", () => {
+describe("buildUnixMdnsServiceOptions", () => {
   test("0.0.0.0 disables IPv6 and avoids advertising loopback addresses", () => {
     const networkInterfaces: NodeJS.Dict<NetworkInterfaceInfo[]> = {
       lo0: [
@@ -28,16 +28,16 @@ describe("buildMuxMdnsServiceOptions", () => {
       ],
     };
 
-    const serviceOptions = buildMuxMdnsServiceOptions({
+    const serviceOptions = buildUnixMdnsServiceOptions({
       bindHost: "0.0.0.0",
       port: 3000,
-      instanceName: "mux-test",
+      instanceName: "unix-test",
       version: "0.0.0-test",
       authRequired: true,
       networkInterfaces,
     });
 
-    expect(serviceOptions.type).toBe(MUX_MDNS_SERVICE_TYPE);
+    expect(serviceOptions.type).toBe(UNIX_MDNS_SERVICE_TYPE);
     expect(serviceOptions.protocol).toBe(Protocol.TCP);
     expect(serviceOptions.disabledIpv6).toBe(true);
     expect(serviceOptions.restrictedAddresses).toEqual(["en0"]);
@@ -80,10 +80,10 @@ describe("buildMuxMdnsServiceOptions", () => {
       ],
     };
 
-    const serviceOptions = buildMuxMdnsServiceOptions({
+    const serviceOptions = buildUnixMdnsServiceOptions({
       bindHost: "::",
       port: 3000,
-      instanceName: "mux-test",
+      instanceName: "unix-test",
       version: "0.0.0-test",
       authRequired: false,
       networkInterfaces,
@@ -94,22 +94,22 @@ describe("buildMuxMdnsServiceOptions", () => {
   });
 
   test("sanitizes dots in instanceName so DNS-SD clients can browse/resolve", () => {
-    const serviceOptions = buildMuxMdnsServiceOptions({
+    const serviceOptions = buildUnixMdnsServiceOptions({
       bindHost: "192.168.1.10",
       port: 3000,
-      instanceName: "mux-host.home",
+      instanceName: "unix-host.home",
       version: "0.0.0-test",
       authRequired: false,
     });
 
-    expect(serviceOptions.name).toBe("mux-host-home");
+    expect(serviceOptions.name).toBe("unix-host-home");
   });
 
   test("specific IP restricts addresses", () => {
-    const serviceOptions = buildMuxMdnsServiceOptions({
+    const serviceOptions = buildUnixMdnsServiceOptions({
       bindHost: "192.168.1.10",
       port: 3000,
-      instanceName: "mux-test",
+      instanceName: "unix-test",
       version: "0.0.0-test",
       authRequired: false,
     });

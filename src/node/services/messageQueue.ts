@@ -47,12 +47,12 @@ function hasReviews(meta: unknown): meta is MetadataWithReviews {
  *
  * Stores:
  * - Message texts (accumulated)
- * - First muxMetadata (preserved - never overwritten by subsequent adds)
+ * - First unixMetadata (preserved - never overwritten by subsequent adds)
  * - Latest options (model, etc. - updated on each add)
  * - File parts (accumulated across all messages)
  *
  * IMPORTANT:
- * - Compaction requests must preserve their muxMetadata even when follow-up messages are queued.
+ * - Compaction requests must preserve their unixMetadata even when follow-up messages are queued.
  * - Agent-skill invocations cannot be batched with other messages; otherwise the skill metadata would
  *   “leak” onto later queued sends.
  *
@@ -63,7 +63,7 @@ function hasReviews(meta: unknown): meta is MetadataWithReviews {
  */
 export class MessageQueue {
   private messages: string[] = [];
-  private firstMuxMetadata?: unknown;
+  private firstUnixMetadata?: unknown;
   private latestOptions?: SendMessageOptions;
   private accumulatedFileParts: FilePart[] = [];
   private dedupeKeys: Set<string> = new Set<string>();
@@ -72,12 +72,12 @@ export class MessageQueue {
    * Check if the queue currently contains a compaction request.
    */
   hasCompactionRequest(): boolean {
-    return isCompactionMetadata(this.firstMuxMetadata);
+    return isCompactionMetadata(this.firstUnixMetadata);
   }
 
   /**
    * Add a message to the queue.
-   * Preserves muxMetadata from first message, updates other options.
+   * Preserves unixMetadata from first message, updates other options.
    * Accumulates file parts.
    *
    * @throws Error if trying to add a compaction request when queue already has messages
@@ -118,10 +118,10 @@ export class MessageQueue {
       return false;
     }
 
-    const incomingIsCompaction = isCompactionMetadata(options?.muxMetadata);
-    const incomingIsAgentSkill = isAgentSkillMetadata(options?.muxMetadata);
+    const incomingIsCompaction = isCompactionMetadata(options?.unixMetadata);
+    const incomingIsAgentSkill = isAgentSkillMetadata(options?.unixMetadata);
     const queueHasMessages = !this.isEmpty();
-    const queueHasAgentSkill = isAgentSkillMetadata(this.firstMuxMetadata);
+    const queueHasAgentSkill = isAgentSkillMetadata(this.firstUnixMetadata);
 
     // Avoid leaking agent-skill metadata to later queued messages.
     // A skill invocation must be sent alone (or the user should restore/edit the queued message).
@@ -157,9 +157,9 @@ export class MessageQueue {
     if (options) {
       const { fileParts, ...restOptions } = options;
 
-      // Preserve first muxMetadata (see class docblock for rationale)
-      if (options.muxMetadata !== undefined && this.firstMuxMetadata === undefined) {
-        this.firstMuxMetadata = options.muxMetadata;
+      // Preserve first unixMetadata (see class docblock for rationale)
+      if (options.unixMetadata !== undefined && this.firstUnixMetadata === undefined) {
+        this.firstUnixMetadata = options.unixMetadata;
       }
       this.latestOptions = restOptions;
 
@@ -186,14 +186,14 @@ export class MessageQueue {
    */
   getDisplayText(): string {
     // Only show rawCommand for single compaction request
-    if (this.messages.length === 1 && isCompactionMetadata(this.firstMuxMetadata)) {
-      return this.firstMuxMetadata.rawCommand;
+    if (this.messages.length === 1 && isCompactionMetadata(this.firstUnixMetadata)) {
+      return this.firstUnixMetadata.rawCommand;
     }
 
     // Only show rawCommand for a single agent-skill invocation.
     // (Batching agent-skill with other messages is disallowed.)
-    if (this.messages.length <= 1 && isAgentSkillMetadata(this.firstMuxMetadata)) {
-      return this.firstMuxMetadata.rawCommand;
+    if (this.messages.length <= 1 && isAgentSkillMetadata(this.firstUnixMetadata)) {
+      return this.firstUnixMetadata.rawCommand;
     }
 
     return this.messages.join("\n");
@@ -210,8 +210,8 @@ export class MessageQueue {
    * Get reviews from metadata for display.
    */
   getReviews(): ReviewNoteData[] | undefined {
-    if (hasReviews(this.firstMuxMetadata) && this.firstMuxMetadata.reviews?.length) {
-      return this.firstMuxMetadata.reviews;
+    if (hasReviews(this.firstUnixMetadata) && this.firstUnixMetadata.reviews?.length) {
+      return this.firstUnixMetadata.reviews;
     }
     return undefined;
   }
@@ -225,14 +225,14 @@ export class MessageQueue {
   } {
     const joinedMessages = this.messages.join("\n");
     // First metadata takes precedence (preserves compaction + agent-skill invocations)
-    const muxMetadata =
-      this.firstMuxMetadata !== undefined
-        ? this.firstMuxMetadata
-        : (this.latestOptions?.muxMetadata as unknown);
+    const unixMetadata =
+      this.firstUnixMetadata !== undefined
+        ? this.firstUnixMetadata
+        : (this.latestOptions?.unixMetadata as unknown);
     const options = this.latestOptions
       ? {
           ...this.latestOptions,
-          muxMetadata,
+          unixMetadata,
           fileParts: this.accumulatedFileParts.length > 0 ? this.accumulatedFileParts : undefined,
         }
       : undefined;
@@ -245,7 +245,7 @@ export class MessageQueue {
    */
   clear(): void {
     this.messages = [];
-    this.firstMuxMetadata = undefined;
+    this.firstUnixMetadata = undefined;
     this.latestOptions = undefined;
     this.accumulatedFileParts = [];
     this.dedupeKeys.clear();

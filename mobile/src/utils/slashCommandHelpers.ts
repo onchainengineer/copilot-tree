@@ -1,4 +1,4 @@
-import { buildContinueMessage, type MuxFrontendMetadata } from "@/common/types/message";
+import { buildContinueMessage, type UnixFrontendMetadata } from "@/common/types/message";
 import type { ParsedCommand, SlashSuggestion } from "@/browser/utils/slashCommands/types";
 import type { InferClientInputs } from "@orpc/client";
 import type { ORPCClient } from "../orpc/client";
@@ -38,7 +38,7 @@ export function filterSuggestionsForMobile(
 
 export interface MobileCompactionPayload {
   messageText: string;
-  metadata: MuxFrontendMetadata;
+  metadata: UnixFrontendMetadata;
   sendOptions: SendMessageOptions;
 }
 
@@ -56,7 +56,7 @@ export function buildMobileCompactionPayload(
     messageText += `\n\nThe user wants to continue with: ${parsed.continueMessage}`;
   }
 
-  const metadata: MuxFrontendMetadata = {
+  const metadata: UnixFrontendMetadata = {
     type: "compaction-request",
     rawCommand: formatCompactionCommand(parsed),
     parsed: {

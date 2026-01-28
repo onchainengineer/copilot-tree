@@ -4,26 +4,26 @@ import { tool } from "ai";
 
 import type { ToolConfiguration, ToolFactory } from "@/common/utils/tools/tools";
 import { TOOL_DEFINITIONS } from "@/common/utils/tools/toolDefinitions";
-import { MUX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/muxChat";
+import { UNIX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/unixChat";
 import { FILE_EDIT_DIFF_OMITTED_MESSAGE } from "@/common/types/tools";
 import { generateDiff } from "./fileCommon";
 
-function getMuxHomeFromWorkspaceSessionDir(config: ToolConfiguration): string {
+function getUnixHomeFromWorkspaceSessionDir(config: ToolConfiguration): string {
   if (!config.workspaceSessionDir) {
-    throw new Error("mux_global_agents_write requires workspaceSessionDir");
+    throw new Error("unix_global_agents_write requires workspaceSessionDir");
   }
 
-  // workspaceSessionDir = <muxHome>/sessions/<workspaceId>
+  // workspaceSessionDir = <unixHome>/sessions/<workspaceId>
   const sessionsDir = path.dirname(config.workspaceSessionDir);
   return path.dirname(sessionsDir);
 }
 
-export interface MuxGlobalAgentsWriteToolArgs {
+export interface UnixGlobalAgentsWriteToolArgs {
   newContent: string;
   confirm: boolean;
 }
 
-export interface MuxGlobalAgentsWriteToolResult {
+export interface UnixGlobalAgentsWriteToolResult {
   success: true;
   diff: string;
   ui_only?: {
@@ -33,29 +33,29 @@ export interface MuxGlobalAgentsWriteToolResult {
   };
 }
 
-export interface MuxGlobalAgentsWriteToolError {
+export interface UnixGlobalAgentsWriteToolError {
   success: false;
   error: string;
 }
 
-export type MuxGlobalAgentsWriteToolOutput =
-  | MuxGlobalAgentsWriteToolResult
-  | MuxGlobalAgentsWriteToolError;
+export type UnixGlobalAgentsWriteToolOutput =
+  | UnixGlobalAgentsWriteToolResult
+  | UnixGlobalAgentsWriteToolError;
 
-export const createMuxGlobalAgentsWriteTool: ToolFactory = (config: ToolConfiguration) => {
+export const createUnixGlobalAgentsWriteTool: ToolFactory = (config: ToolConfiguration) => {
   return tool({
-    description: TOOL_DEFINITIONS.mux_global_agents_write.description,
-    inputSchema: TOOL_DEFINITIONS.mux_global_agents_write.schema,
+    description: TOOL_DEFINITIONS.unix_global_agents_write.description,
+    inputSchema: TOOL_DEFINITIONS.unix_global_agents_write.schema,
     execute: async (
-      args: MuxGlobalAgentsWriteToolArgs,
+      args: UnixGlobalAgentsWriteToolArgs,
       { abortSignal: _abortSignal }
-    ): Promise<MuxGlobalAgentsWriteToolOutput> => {
+    ): Promise<UnixGlobalAgentsWriteToolOutput> => {
       try {
-        if (config.workspaceId !== MUX_HELP_CHAT_WORKSPACE_ID) {
+        if (config.workspaceId !== UNIX_HELP_CHAT_WORKSPACE_ID) {
           return {
             success: false,
             error:
-              "mux_global_agents_write is only available in the Chat with Mux system workspace",
+              "unix_global_agents_write is only available in the Chat with Unix system workspace",
           };
         }
 
@@ -66,12 +66,12 @@ export const createMuxGlobalAgentsWriteTool: ToolFactory = (config: ToolConfigur
           };
         }
 
-        const muxHome = getMuxHomeFromWorkspaceSessionDir(config);
-        await fsPromises.mkdir(muxHome, { recursive: true });
+        const unixHome = getUnixHomeFromWorkspaceSessionDir(config);
+        await fsPromises.mkdir(unixHome, { recursive: true });
 
-        // Canonicalize muxHome before constructing the file path.
-        const muxHomeReal = await fsPromises.realpath(muxHome);
-        const agentsPath = path.join(muxHomeReal, "AGENTS.md");
+        // Canonicalize unixHome before constructing the file path.
+        const unixHomeReal = await fsPromises.realpath(unixHome);
+        const agentsPath = path.join(unixHomeReal, "AGENTS.md");
 
         let originalContent = "";
         try {
@@ -84,7 +84,7 @@ export const createMuxGlobalAgentsWriteTool: ToolFactory = (config: ToolConfigur
           }
           originalContent = await fsPromises.readFile(agentsPath, "utf-8");
 
-          // If the file exists, ensure its resolved path matches the resolved muxHome target.
+          // If the file exists, ensure its resolved path matches the resolved unixHome target.
           const agentsPathReal = await fsPromises.realpath(agentsPath);
           if (agentsPathReal !== agentsPath) {
             return {

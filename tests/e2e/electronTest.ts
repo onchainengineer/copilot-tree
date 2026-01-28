@@ -21,9 +21,9 @@ interface ElectronFixtures {
 }
 
 const appRoot = path.resolve(__dirname, "..", "..");
-const defaultTestRoot = path.join(appRoot, "tests", "e2e", "tmp", "mux-root");
-const BASE_DEV_SERVER_PORT = Number(process.env.MUX_E2E_DEVSERVER_PORT_BASE ?? "5173");
-const shouldLoadDist = process.env.MUX_E2E_LOAD_DIST === "1";
+const defaultTestRoot = path.join(appRoot, "tests", "e2e", "tmp", "unix-root");
+const BASE_DEV_SERVER_PORT = Number(process.env.UNIX_E2E_DEVSERVER_PORT_BASE ?? "5173");
+const shouldLoadDist = process.env.UNIX_E2E_LOAD_DIST === "1";
 
 const REQUIRED_DIST_FILES = [
   path.join(appRoot, "dist", "index.html"),
@@ -70,7 +70,7 @@ function sanitizeForPath(value: string): string {
 }
 
 function shouldSkipBuild(): boolean {
-  return process.env.MUX_E2E_SKIP_BUILD === "1";
+  return process.env.UNIX_E2E_SKIP_BUILD === "1";
 }
 
 export function parseEnvVarFromPsCommand(command: string, name: string): string | undefined {
@@ -154,23 +154,23 @@ function buildTarget(target: string): void {
 
 export const electronTest = base.extend<ElectronFixtures>({
   workspace: async ({}, use, testInfo) => {
-    const originalMuxRoot = process.env.MUX_ROOT;
+    const originalMuxRoot = process.env.UNIX_ROOT;
     const envRoot = originalMuxRoot ?? "";
     const baseRoot = envRoot || defaultTestRoot;
     const uniqueTestId = testInfo.testId || testInfo.title || `test-${Date.now()}`;
 
     // Always isolate each test run under its own root directory.
     //
-    // Even when MUX_ROOT is set (often for debugging), Playwright runs tests in parallel.
+    // Even when UNIX_ROOT is set (often for debugging), Playwright runs tests in parallel.
     // A shared root would cause cross-test interference when we reset the filesystem.
     const testRoot = path.join(baseRoot, sanitizeForPath(uniqueTestId));
 
     const shouldCleanup = !envRoot;
 
-    // Ensure the Electron process sees our per-test MUX_ROOT even if Playwright's electron.launch({ env }) is ignored.
+    // Ensure the Electron process sees our per-test UNIX_ROOT even if Playwright's electron.launch({ env }) is ignored.
     //
     // This is especially important when running Playwright under Bun.
-    process.env.MUX_ROOT = testRoot;
+    process.env.UNIX_ROOT = testRoot;
 
     try {
       await fsPromises.mkdir(path.dirname(testRoot), { recursive: true });
@@ -191,9 +191,9 @@ export const electronTest = base.extend<ElectronFixtures>({
       }
     } finally {
       if (originalMuxRoot === undefined) {
-        delete process.env.MUX_ROOT;
+        delete process.env.UNIX_ROOT;
       } else {
-        process.env.MUX_ROOT = originalMuxRoot;
+        process.env.UNIX_ROOT = originalMuxRoot;
       }
     }
   },
@@ -221,7 +221,7 @@ export const electronTest = base.extend<ElectronFixtures>({
           ...process.env,
           NODE_ENV: "development",
           VITE_DISABLE_MERMAID: "1",
-          MUX_VITE_PORT: String(devServerPort),
+          UNIX_VITE_PORT: String(devServerPort),
         },
       });
 
@@ -261,7 +261,7 @@ export const electronTest = base.extend<ElectronFixtures>({
     try {
       let devHost = "127.0.0.1";
       if (shouldStartDevServer) {
-        devHost = process.env.MUX_DEVSERVER_HOST ?? "127.0.0.1";
+        devHost = process.env.UNIX_DEVSERVER_HOST ?? "127.0.0.1";
         await waitForServerReady(`http://${devHost}:${devServerPort}`);
         const exitCode = devServer?.exitCode;
         if (exitCode !== null && exitCode !== undefined) {
@@ -279,15 +279,15 @@ export const electronTest = base.extend<ElectronFixtures>({
         }
       }
       electronEnv.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
-      electronEnv.MUX_MOCK_AI = electronEnv.MUX_MOCK_AI ?? "1";
-      electronEnv.MUX_ROOT = configRoot;
-      electronEnv.MUX_E2E = "1";
-      electronEnv.MUX_E2E_LOAD_DIST = shouldLoadDist ? "1" : "0";
+      electronEnv.UNIX_MOCK_AI = electronEnv.UNIX_MOCK_AI ?? "1";
+      electronEnv.UNIX_ROOT = configRoot;
+      electronEnv.UNIX_E2E = "1";
+      electronEnv.UNIX_E2E_LOAD_DIST = shouldLoadDist ? "1" : "0";
       electronEnv.VITE_DISABLE_MERMAID = "1";
 
       if (shouldStartDevServer) {
-        electronEnv.MUX_DEVSERVER_PORT = String(devServerPort);
-        electronEnv.MUX_DEVSERVER_HOST = devHost;
+        electronEnv.UNIX_DEVSERVER_PORT = String(devServerPort);
+        electronEnv.UNIX_DEVSERVER_HOST = devHost;
         electronEnv.NODE_ENV = electronEnv.NODE_ENV ?? "development";
       } else {
         electronEnv.NODE_ENV = electronEnv.NODE_ENV ?? "production";
@@ -309,15 +309,15 @@ export const electronTest = base.extend<ElectronFixtures>({
         },
       });
 
-      // Sanity check: ensure we are not accidentally reading/writing the developer's real ~/.mux state.
+      // Sanity check: ensure we are not accidentally reading/writing the developer's real ~/.unix state.
       const pid = electronApp.process().pid;
       if (!pid) {
         throw new Error("Electron launch returned no pid");
       }
-      const electronMuxRoot = readEnvVarFromProcess(pid, "MUX_ROOT");
+      const electronMuxRoot = readEnvVarFromProcess(pid, "UNIX_ROOT");
       if (electronMuxRoot !== configRoot) {
         throw new Error(
-          `E2E harness bug: Electron process MUX_ROOT mismatch. Expected ${configRoot}, got ${electronMuxRoot ?? "<unset>"}`
+          `E2E harness bug: Electron process UNIX_ROOT mismatch. Expected ${configRoot}, got ${electronMuxRoot ?? "<unset>"}`
         );
       }
 
@@ -337,7 +337,7 @@ export const electronTest = base.extend<ElectronFixtures>({
               await fsPromises.mkdir(videosDir, { recursive: true });
               const orderedFiles = [...videoFiles].sort();
               const baseName = sanitizeForPath(
-                testInfo.testId || testInfo.title || "mux-e2e-video"
+                testInfo.testId || testInfo.title || "unix-e2e-video"
               );
               for (const [index, file] of orderedFiles.entries()) {
                 const ext = path.extname(file) || ".webm";

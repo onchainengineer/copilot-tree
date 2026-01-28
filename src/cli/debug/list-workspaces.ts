@@ -1,7 +1,7 @@
 import { defaultConfig } from "@/node/config";
 import { PlatformPaths } from "@/common/utils/paths";
 import * as fs from "fs";
-import { getMuxSessionsDir } from "@/common/constants/paths";
+import { getUnixSessionsDir } from "@/common/constants/paths";
 
 export function listWorkspacesCommand() {
   const config = defaultConfig.loadConfigOrDefault();
@@ -32,7 +32,7 @@ export function listWorkspacesCommand() {
   console.log("\n=== Testing findWorkspace ===\n");
 
   // Test finding specific workspaces by ID
-  const testCases = ["mux-colors", "mux-main", "mux-fix", "mux-markdown"];
+  const testCases = ["unix-colors", "unix-main", "unix-fix", "unix-markdown"];
 
   for (const workspaceId of testCases) {
     const result = defaultConfig.findWorkspace(workspaceId);
@@ -47,7 +47,7 @@ export function listWorkspacesCommand() {
   }
 
   console.log("\n=== Sessions Directory ===\n");
-  const sessionsDir = getMuxSessionsDir();
+  const sessionsDir = getUnixSessionsDir();
   if (fs.existsSync(sessionsDir)) {
     const sessions = fs.readdirSync(sessionsDir);
     console.log(`Sessions in ${sessionsDir}:`);

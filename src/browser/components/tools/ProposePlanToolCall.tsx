@@ -19,7 +19,7 @@ import { Button } from "../ui/button";
 import { IconActionButton, type ButtonConfig } from "../Messages/MessageWindow";
 import { formatKeybind, KEYBINDS } from "@/browser/utils/ui/keybinds";
 import { useStartHere } from "@/browser/hooks/useStartHere";
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import { useCopyToClipboard } from "@/browser/hooks/useCopyToClipboard";
 import { cn } from "@/common/lib/utils";
 import { useAPI } from "@/browser/contexts/API";
@@ -326,7 +326,7 @@ export const ProposePlanToolCall: React.FC<ProposePlanToolCallProps> = (props) =
 
       if (shouldReplaceChatHistory) {
         try {
-          const summaryMessage = createMuxMessage(
+          const summaryMessage = createUnixMessage(
             `start-here-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
             "assistant",
             startHereContent,

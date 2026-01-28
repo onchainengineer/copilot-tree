@@ -58,8 +58,8 @@ export function buildWrapperScript(options: WrapperScriptOptions): string {
   // and will break the surrounding double quotes.
   //
   // Instead, assign the (quoted) path to a variable and reference it from the trap.
-  parts.push(`__MUX_EXIT_CODE_PATH=${shellQuote(options.exitCodePath)}`);
-  parts.push(`trap 'echo $? > "$__MUX_EXIT_CODE_PATH"' EXIT`);
+  parts.push(`__UNIX_EXIT_CODE_PATH=${shellQuote(options.exitCodePath)}`);
+  parts.push(`trap 'echo $? > "$__UNIX_EXIT_CODE_PATH"' EXIT`);
 
   // Change to working directory
   parts.push(`cd ${shellQuote(options.cwd)}`);

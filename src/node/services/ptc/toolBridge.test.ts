@@ -107,7 +107,7 @@ describe("ToolBridge", () => {
   });
 
   describe("register", () => {
-    it("registers tools under mux namespace", () => {
+    it("registers tools under unix namespace", () => {
       const mockRegisterObject = mock(
         (_name: string, _obj: Record<string, () => Promise<unknown>>) => undefined
       );
@@ -123,7 +123,7 @@ describe("ToolBridge", () => {
       expect(mockRegisterObject).toHaveBeenCalledTimes(1);
       const call = mockRegisterObject.mock.calls[0] as unknown as [string, Record<string, unknown>];
       const [name, obj] = call;
-      expect(name).toBe("mux");
+      expect(name).toBe("unix");
       expect(typeof obj).toBe("object");
       expect(typeof obj.file_read).toBe("function");
     });
@@ -141,7 +141,7 @@ describe("ToolBridge", () => {
       let registeredMux: Record<string, (...args: unknown[]) => Promise<unknown>> = {};
       const mockRegisterObject = mock(
         (name: string, obj: Record<string, (...args: unknown[]) => Promise<unknown>>) => {
-          if (name === "mux") registeredMux = obj;
+          if (name === "unix") registeredMux = obj;
           return undefined;
         }
       );
@@ -180,7 +180,7 @@ describe("ToolBridge", () => {
       let registeredMux: Record<string, (...args: unknown[]) => Promise<unknown>> = {};
       const mockRegisterObject = mock(
         (name: string, obj: Record<string, () => Promise<unknown>>) => {
-          if (name === "mux") registeredMux = obj;
+          if (name === "unix") registeredMux = obj;
           return undefined;
         }
       );
@@ -204,7 +204,7 @@ describe("ToolBridge", () => {
       let registeredMux: Record<string, (...args: unknown[]) => Promise<unknown>> = {};
       const mockRegisterObject = mock(
         (name: string, obj: Record<string, () => Promise<unknown>>) => {
-          if (name === "mux") registeredMux = obj;
+          if (name === "unix") registeredMux = obj;
           return undefined;
         }
       );
@@ -233,7 +233,7 @@ describe("ToolBridge", () => {
       let registeredMux: Record<string, (...args: unknown[]) => Promise<unknown>> = {};
       const mockRegisterObject = mock(
         (name: string, obj: Record<string, (...args: unknown[]) => Promise<unknown>>) => {
-          if (name === "mux") registeredMux = obj;
+          if (name === "unix") registeredMux = obj;
           return undefined;
         }
       );

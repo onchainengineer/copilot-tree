@@ -56,7 +56,7 @@ function buildFollowUpFromSource(
     text: source.content,
     fileParts: source.fileParts,
     reviews: source.reviews,
-    muxMetadata: source.agentSkill
+    unixMetadata: source.agentSkill
       ? buildAgentSkillMetadata({
           rawCommand: source.content,
           skillName: source.agentSkill.skillName,

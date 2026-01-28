@@ -139,7 +139,7 @@ describe("Loaded skills tracking", () => {
     const skillDefs = [
       { name: "tests", description: "Testing skill", scope: "project" as const },
       { name: "pull-requests", description: "PR guidelines", scope: "project" as const },
-      { name: "mux-docs", description: "Documentation", scope: "built-in" as const },
+      { name: "unix-docs", description: "Documentation", scope: "built-in" as const },
     ];
 
     for (const [i, skill] of skillDefs.entries()) {
@@ -178,7 +178,7 @@ describe("Loaded skills tracking", () => {
 
     const skills = agg.getLoadedSkills();
     expect(skills).toHaveLength(3);
-    expect(skills.map((s) => s.name).sort()).toEqual(["mux-docs", "pull-requests", "tests"]);
+    expect(skills.map((s) => s.name).sort()).toEqual(["unix-docs", "pull-requests", "tests"]);
   });
 
   it("ignores failed agent_skill_read calls", () => {

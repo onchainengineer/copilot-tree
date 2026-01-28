@@ -1,5 +1,5 @@
 /**
- * Unified logging for mux (backend + CLI)
+ * Unified logging for unix (backend + CLI)
  *
  * Features:
  * - Log levels: error, warn, info, debug (hierarchical)
@@ -8,8 +8,8 @@
  * - Colored output in TTY
  *
  * Log level selection (in priority order):
- * 1. MUX_LOG_LEVEL env var (error|warn|info|debug)
- * 2. MUX_DEBUG=1 → debug level
+ * 1. UNIX_LOG_LEVEL env var (error|warn|info|debug)
+ * 2. UNIX_DEBUG=1 → debug level
  * 3. CLI mode (no Electron) → error level (quiet by default)
  * 4. Desktop mode → info level
  *
@@ -20,12 +20,12 @@ import * as fs from "fs";
 import * as path from "path";
 import chalk from "chalk";
 import { parseBoolEnv } from "@/common/utils/env";
-import { getMuxHome } from "@/common/constants/paths";
+import { getUnixHome } from "@/common/constants/paths";
 
 // Lazy-initialized to avoid circular dependency with config.ts
 let _debugObjDir: string | null = null;
 function getDebugObjDir(): string {
-  _debugObjDir ??= path.join(getMuxHome(), "debug_obj");
+  _debugObjDir ??= path.join(getUnixHome(), "debug_obj");
   return _debugObjDir;
 }
 
@@ -58,13 +58,13 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
  */
 function getDefaultLogLevel(): LogLevel {
   // Explicit env var takes priority
-  const envLevel = process.env.MUX_LOG_LEVEL?.toLowerCase();
+  const envLevel = process.env.UNIX_LOG_LEVEL?.toLowerCase();
   if (envLevel && envLevel in LOG_LEVEL_PRIORITY) {
     return envLevel as LogLevel;
   }
 
-  // MUX_DEBUG=1 enables debug level
-  if (parseBoolEnv(process.env.MUX_DEBUG)) {
+  // UNIX_DEBUG=1 enables debug level
+  if (parseBoolEnv(process.env.UNIX_DEBUG)) {
     return "debug";
   }
 
@@ -164,7 +164,7 @@ function getCallerLocation(): string {
     if (match) {
       const [, filePath, lineNum] = match;
       // Strip the full path to just show relative path from project root
-      const relativePath = filePath.replace(/^.*\/mux\//, "");
+      const relativePath = filePath.replace(/^.*\/unix\//, "");
       return `${relativePath}:${lineNum}`;
     }
   }
@@ -350,7 +350,7 @@ function createLogger(boundFields?: LogFields): Logger {
 }
 
 /**
- * Unified logging interface for mux
+ * Unified logging interface for unix
  *
  * Log levels (hierarchical - each includes all levels above it):
  * - error: Critical failures only
@@ -361,8 +361,8 @@ function createLogger(boundFields?: LogFields): Logger {
  * Default levels:
  * - CLI mode: error (quiet by default)
  * - Desktop mode: info
- * - MUX_DEBUG=1: debug
- * - MUX_LOG_LEVEL=<level>: explicit override
+ * - UNIX_DEBUG=1: debug
+ * - UNIX_LOG_LEVEL=<level>: explicit override
  *
  * Use log.withFields({ workspaceId }) to create a sub-logger that
  * automatically includes fields in every log entry.

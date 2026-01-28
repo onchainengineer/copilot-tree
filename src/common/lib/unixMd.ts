@@ -1,7 +1,7 @@
 /**
- * mux.md Client Library
+ * unix.md Client Library
  *
- * Thin wrapper around @coder/mux-md-client for Mux app integration.
+ * Thin wrapper around @coder/mux-md-client for Unix app integration.
  * Re-exports types and provides convenience functions with default base URL.
  */
 
@@ -20,27 +20,27 @@ import {
 // Re-export types from package
 export type { FileInfo, SignOptions, SignatureEnvelope, UploadResult };
 
-export const MUX_MD_BASE_URL = "https://mux.md";
-export const MUX_MD_HOST = "mux.md";
+export const UNIX_MD_BASE_URL = "https://unix.md";
+export const UNIX_MD_HOST = "unix.md";
 
 // --- URL utilities ---
 
 /**
- * Check if URL is a mux.md share link with encryption key in fragment
+ * Check if URL is a unix.md share link with encryption key in fragment
  */
-export function isMuxMdUrl(url: string): boolean {
+export function isUnixMdUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return parsed.host === MUX_MD_HOST && parseUrl(url) !== null;
+    return parsed.host === UNIX_MD_HOST && parseUrl(url) !== null;
   } catch {
     return false;
   }
 }
 
 /**
- * Parse mux.md URL to extract ID and key
+ * Parse unix.md URL to extract ID and key
  */
-export function parseMuxMdUrl(url: string): { id: string; key: string } | null {
+export function parseUnixMdUrl(url: string): { id: string; key: string } | null {
   return parseUrl(url);
 }
 
@@ -52,22 +52,22 @@ export interface UploadOptions {
    * Takes precedence over `sign`.
    */
   signature?: SignatureEnvelope;
-  /** Sign options for native signing via mux-md-client */
+  /** Sign options for native signing via unix-md-client */
   sign?: SignOptions;
 }
 
 // --- Public API ---
 
 /**
- * Upload content to mux.md with end-to-end encryption.
+ * Upload content to unix.md with end-to-end encryption.
  */
-export async function uploadToMuxMd(
+export async function uploadToUnixMd(
   content: string,
   fileInfo: FileInfo,
   options: UploadOptions = {}
 ): Promise<UploadResult> {
   return upload(new TextEncoder().encode(content), fileInfo, {
-    baseUrl: MUX_MD_BASE_URL,
+    baseUrl: UNIX_MD_BASE_URL,
     expiresAt: options.expiresAt,
     signature: options.signature,
     sign: options.sign,
@@ -75,21 +75,21 @@ export async function uploadToMuxMd(
 }
 
 /**
- * Delete a shared file from mux.md.
+ * Delete a shared file from unix.md.
  */
-export async function deleteFromMuxMd(id: string, mutateKey: string): Promise<void> {
-  await deleteFile(id, mutateKey, { baseUrl: MUX_MD_BASE_URL });
+export async function deleteFromUnixMd(id: string, mutateKey: string): Promise<void> {
+  await deleteFile(id, mutateKey, { baseUrl: UNIX_MD_BASE_URL });
 }
 
 /**
- * Update expiration of a shared file on mux.md.
+ * Update expiration of a shared file on unix.md.
  */
-export async function updateMuxMdExpiration(
+export async function updateUnixMdExpiration(
   id: string,
   mutateKey: string,
   expiresAt: Date | string
 ): Promise<number | undefined> {
-  const result = await setExpiration(id, mutateKey, expiresAt, { baseUrl: MUX_MD_BASE_URL });
+  const result = await setExpiration(id, mutateKey, expiresAt, { baseUrl: UNIX_MD_BASE_URL });
   return result.expiresAt;
 }
 
@@ -103,14 +103,14 @@ export interface DownloadResult {
 }
 
 /**
- * Download and decrypt content from mux.md.
+ * Download and decrypt content from unix.md.
  */
-export async function downloadFromMuxMd(
+export async function downloadFromUnixMd(
   id: string,
   keyMaterial: string,
   _signal?: AbortSignal
 ): Promise<DownloadResult> {
-  const result = await download(id, keyMaterial, { baseUrl: MUX_MD_BASE_URL });
+  const result = await download(id, keyMaterial, { baseUrl: UNIX_MD_BASE_URL });
   return {
     content: new TextDecoder().decode(result.data),
     fileInfo: result.info,

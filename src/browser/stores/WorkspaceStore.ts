@@ -1,5 +1,5 @@
 import assert from "@/common/utils/assert";
-import type { MuxMessage, DisplayedMessage, QueuedMessage } from "@/common/types/message";
+import type { UnixMessage, DisplayedMessage, QueuedMessage } from "@/common/types/message";
 import type { FrontendWorkspaceMetadata } from "@/common/types/workspace";
 import type { WorkspaceChatMessage, WorkspaceStatsSnapshot } from "@/common/orpc/types";
 import type { RouterClient } from "@orpc/server";
@@ -20,7 +20,7 @@ import {
   isStreamError,
   isDeleteMessage,
   isBashOutputEvent,
-  isMuxMessage,
+  isUnixMessage,
   isQueuedMessageChanged,
   isRestoreToInput,
 } from "@/common/orpc/types";
@@ -57,7 +57,7 @@ export interface WorkspaceState {
   isStreamStarting: boolean;
   awaitingUserQuestion: boolean;
   loading: boolean;
-  muxMessages: MuxMessage[];
+  muxMessages: UnixMessage[];
   currentModel: string | null;
   recencyTimestamp: number | null;
   todos: TodoItem[];
@@ -213,7 +213,7 @@ export interface WorkspaceConsumersState {
 
 interface WorkspaceChatTransientState {
   caughtUp: boolean;
-  historicalMessages: MuxMessage[];
+  historicalMessages: UnixMessage[];
   pendingStreamEvents: WorkspaceChatMessage[];
   replayingHistory: boolean;
   queuedMessage: QueuedMessage | null;
@@ -298,7 +298,7 @@ function calculateOnChatBackoffMs(attempt: number): number {
   return Math.min(ON_CHAT_RETRY_BASE_MS * 2 ** attempt, ON_CHAT_RETRY_MAX_MS);
 }
 
-function getMaxHistorySequence(messages: MuxMessage[]): number | undefined {
+function getMaxHistorySequence(messages: UnixMessage[]): number | undefined {
   let max: number | undefined;
   for (const message of messages) {
     const seq = message.metadata?.historySequence;
@@ -1989,12 +1989,12 @@ export class WorkspaceStore {
       return;
     }
 
-    // Regular messages (MuxMessage without type field)
-    if (isMuxMessage(data)) {
+    // Regular messages (UnixMessage without type field)
+    if (isUnixMessage(data)) {
       const transient = this.assertChatTransientState(workspaceId);
 
       if (!transient.caughtUp) {
-        // Buffer historical MuxMessages
+        // Buffer historical UnixMessages
         transient.historicalMessages.push(data);
       } else {
         // Process live events immediately (after history loaded)
@@ -2189,7 +2189,7 @@ export function showAllMessages(workspaceId: string): void {
  * Add an ephemeral message to a workspace and trigger a re-render.
  * Used for displaying frontend-only messages like /plan output.
  */
-export function addEphemeralMessage(workspaceId: string, message: MuxMessage): void {
+export function addEphemeralMessage(workspaceId: string, message: UnixMessage): void {
   const store = getStoreInstance();
   const aggregator = store.getAggregator(workspaceId);
   if (aggregator) {

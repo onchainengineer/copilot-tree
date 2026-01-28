@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@/common/lib/utils";
 import { isDesktopMode } from "@/browser/hooks/useDesktopTitlebar";
-import MuxLogoDark from "@/browser/assets/logos/mux-logo-dark.svg?react";
-import MuxLogoLight from "@/browser/assets/logos/mux-logo-light.svg?react";
+import UnixLogoDark from "@/browser/assets/logos/unix-logo-dark.svg?react";
+import UnixLogoLight from "@/browser/assets/logos/unix-logo-light.svg?react";
 import { useTheme } from "@/browser/contexts/ThemeContext";
 import type { FrontendWorkspaceMetadata } from "@/common/types/workspace";
 import { usePersistedState } from "@/browser/hooks/usePersistedState";
@@ -40,7 +40,7 @@ import { WorkspaceStatusIndicator } from "./WorkspaceStatusIndicator";
 import { RenameProvider } from "@/browser/contexts/WorkspaceRenameContext";
 import { useProjectContext } from "@/browser/contexts/ProjectContext";
 import { ChevronRight, CircleHelp, KeyRound } from "lucide-react";
-import { MUX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/muxChat";
+import { UNIX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/unixChat";
 import { useWorkspaceContext } from "@/browser/contexts/WorkspaceContext";
 import { usePopoverError } from "@/browser/hooks/usePopoverError";
 import { PopoverError } from "./PopoverError";
@@ -60,14 +60,14 @@ export type { WorkspaceSelection } from "./WorkspaceListItem";
 // which forces React to unmount/remount the subtree. That led to hover flicker and high CPU.
 
 /**
- * Compact button for opening Chat with Mux, showing an unread dot when there are
+ * Compact button for opening Chat with Unix, showing an unread dot when there are
  * new messages since the user last viewed the workspace.
  */
-const MuxChatHelpButton: React.FC<{
+const UnixChatHelpButton: React.FC<{
   onClick: () => void;
   isSelected: boolean;
 }> = ({ onClick, isSelected }) => {
-  const { isUnread: hasUnread } = useWorkspaceUnread(MUX_HELP_CHAT_WORKSPACE_ID);
+  const { isUnread: hasUnread } = useWorkspaceUnread(UNIX_HELP_CHAT_WORKSPACE_ID);
   const isUnread = hasUnread && !isSelected;
 
   return (
@@ -76,7 +76,7 @@ const MuxChatHelpButton: React.FC<{
         <button
           onClick={onClick}
           className="text-muted hover:text-primary relative flex shrink-0 cursor-pointer items-center border-none bg-transparent p-0 transition-colors"
-          aria-label="Open Chat with Mux"
+          aria-label="Open Chat with Unix"
         >
           <CircleHelp className="h-3.5 w-3.5" />
           {isUnread && (
@@ -87,7 +87,7 @@ const MuxChatHelpButton: React.FC<{
           )}
         </button>
       </TooltipTrigger>
-      <TooltipContent side="bottom">Chat with Mux</TooltipContent>
+      <TooltipContent side="bottom">Chat with Unix</TooltipContent>
     </Tooltip>
   );
 };
@@ -279,7 +279,7 @@ const ProjectSidebarInner: React.FC<ProjectSidebarProps> = ({
 
   // Theme for logo variant
   const { theme } = useTheme();
-  const MuxLogo = theme === "dark" || theme.endsWith("-dark") ? MuxLogoDark : MuxLogoLight;
+  const UnixLogo = theme === "dark" || theme.endsWith("-dark") ? UnixLogoDark : UnixLogoLight;
 
   // Mobile breakpoint for auto-closing sidebar
   const MOBILE_BREAKPOINT = 768;
@@ -306,8 +306,8 @@ const ProjectSidebarInner: React.FC<ProjectSidebarProps> = ({
     [onAddWorkspace, collapsed, onToggleCollapsed]
   );
 
-  const handleOpenMuxChat = useCallback(() => {
-    const meta = workspaceMetadata.get(MUX_HELP_CHAT_WORKSPACE_ID);
+  const handleOpenUnixChat = useCallback(() => {
+    const meta = workspaceMetadata.get(UNIX_HELP_CHAT_WORKSPACE_ID);
 
     handleSelectWorkspace(
       meta
@@ -319,9 +319,9 @@ const ProjectSidebarInner: React.FC<ProjectSidebarProps> = ({
           }
         : {
             // Fallback: navigate by ID; metadata will fill in once refreshed.
-            workspaceId: MUX_HELP_CHAT_WORKSPACE_ID,
+            workspaceId: UNIX_HELP_CHAT_WORKSPACE_ID,
             projectPath: "",
-            projectName: "Mux",
+            projectName: "Unix",
             namedWorkspacePath: "",
           }
     );
@@ -476,7 +476,7 @@ const ProjectSidebarInner: React.FC<ProjectSidebarProps> = ({
   };
 
   // UI preference: project order persists in localStorage
-  const [projectOrder, setProjectOrder] = usePersistedState<string[]>("mux:projectOrder", []);
+  const [projectOrder, setProjectOrder] = usePersistedState<string[]>("unix:projectOrder", []);
 
   // Build a stable signature of the project keys so effects don't fire on Map identity churn
   const projectPathsSignature = React.useMemo(() => {
@@ -513,16 +513,16 @@ const ProjectSidebarInner: React.FC<ProjectSidebarProps> = ({
     [projectPathsSignature, projectOrder]
   );
 
-  // Hide the built-in Chat with Mux system project from the normal projects list.
-  // We still render the mux-chat workspace as a dedicated pinned row above projects.
-  const muxChatMetadata = workspaceMetadata.get(MUX_HELP_CHAT_WORKSPACE_ID);
-  const muxChatProjectPath = muxChatMetadata?.projectPath ?? null;
+  // Hide the built-in Chat with Unix system project from the normal projects list.
+  // We still render the unix-chat workspace as a dedicated pinned row above projects.
+  const unixChatMetadata = workspaceMetadata.get(UNIX_HELP_CHAT_WORKSPACE_ID);
+  const unixChatProjectPath = unixChatMetadata?.projectPath ?? null;
   const visibleProjectPaths = React.useMemo(
     () =>
-      muxChatProjectPath
-        ? sortedProjectPaths.filter((projectPath) => projectPath !== muxChatProjectPath)
+      unixChatProjectPath
+        ? sortedProjectPaths.filter((projectPath) => projectPath !== unixChatProjectPath)
         : sortedProjectPaths,
-    [sortedProjectPaths, muxChatProjectPath]
+    [sortedProjectPaths, unixChatProjectPath]
   );
 
   const handleReorder = useCallback(
@@ -539,7 +539,7 @@ const ProjectSidebarInner: React.FC<ProjectSidebarProps> = ({
       // Create new workspace for the project of the selected workspace
       if (matchesKeybind(e, KEYBINDS.NEW_WORKSPACE) && selectedWorkspace) {
         e.preventDefault();
-        if (selectedWorkspace.workspaceId === MUX_HELP_CHAT_WORKSPACE_ID) {
+        if (selectedWorkspace.workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID) {
           return;
         }
         handleAddWorkspace(selectedWorkspace.projectPath);
@@ -573,19 +573,19 @@ const ProjectSidebarInner: React.FC<ProjectSidebarProps> = ({
               <div className="border-dark flex items-center justify-between border-b py-3 pr-3 pl-4">
                 <div className="flex min-w-0 items-center gap-2">
                   <button
-                    onClick={handleOpenMuxChat}
+                    onClick={handleOpenUnixChat}
                     className="shrink-0 cursor-pointer border-none bg-transparent p-0"
-                    aria-label="Open Chat with Mux"
+                    aria-label="Open Chat with Unix"
                   >
-                    <MuxLogo className="h-5 w-[44px]" aria-hidden="true" />
+                    <UnixLogo className="h-5 w-[44px]" aria-hidden="true" />
                   </button>
-                  {muxChatMetadata && (
+                  {unixChatMetadata && (
                     <>
-                      <MuxChatHelpButton
-                        onClick={handleOpenMuxChat}
-                        isSelected={selectedWorkspace?.workspaceId === MUX_HELP_CHAT_WORKSPACE_ID}
+                      <UnixChatHelpButton
+                        onClick={handleOpenUnixChat}
+                        isSelected={selectedWorkspace?.workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID}
                       />
-                      <WorkspaceStatusIndicator workspaceId={MUX_HELP_CHAT_WORKSPACE_ID} />
+                      <WorkspaceStatusIndicator workspaceId={UNIX_HELP_CHAT_WORKSPACE_ID} />
                     </>
                   )}
                 </div>

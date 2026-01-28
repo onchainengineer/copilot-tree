@@ -1,12 +1,12 @@
 /**
- * API CLI subcommand - delegates to a running mux server via HTTP.
+ * API CLI subcommand - delegates to a running unix server via HTTP.
  *
  * This module is loaded lazily to avoid pulling in ESM-only dependencies
  * (trpc-cli) when running other commands like the desktop app.
  *
  * Server discovery priority:
- * 1. MUX_SERVER_URL env var (explicit override)
- * 2. Lockfile at ~/.mux/server.lock (running Electron or mux server)
+ * 1. UNIX_SERVER_URL env var (explicit override)
+ * 2. Lockfile at ~/.unix/server.lock (running Electron or unix server)
  * 3. Fallback to http://localhost:3000
  */
 
@@ -14,7 +14,7 @@ import { createCli } from "trpc-cli";
 import { router } from "@/node/orpc/router";
 import { proxifyOrpc } from "./proxifyOrpc";
 import { ServerLockfile } from "@/node/services/serverLockfile";
-import { getMuxHome } from "@/common/constants/paths";
+import { getUnixHome } from "@/common/constants/paths";
 import { getArgsAfterSplice } from "./argv";
 
 // index.ts already splices "api" from argv before importing this module,
@@ -28,16 +28,16 @@ interface ServerDiscovery {
 
 async function discoverServer(): Promise<ServerDiscovery> {
   // Priority 1: Explicit env vars override everything
-  if (process.env.MUX_SERVER_URL) {
+  if (process.env.UNIX_SERVER_URL) {
     return {
-      baseUrl: process.env.MUX_SERVER_URL,
-      authToken: process.env.MUX_SERVER_AUTH_TOKEN,
+      baseUrl: process.env.UNIX_SERVER_URL,
+      authToken: process.env.UNIX_SERVER_AUTH_TOKEN,
     };
   }
 
-  // Priority 2: Try lockfile discovery (running Electron or mux server)
+  // Priority 2: Try lockfile discovery (running Electron or unix server)
   try {
-    const lockfile = new ServerLockfile(getMuxHome());
+    const lockfile = new ServerLockfile(getUnixHome());
     const data = await lockfile.read();
     if (data) {
       return {
@@ -52,7 +52,7 @@ async function discoverServer(): Promise<ServerDiscovery> {
   // Priority 3: Default fallback (standalone server on default port)
   return {
     baseUrl: "http://localhost:3000",
-    authToken: process.env.MUX_SERVER_AUTH_TOKEN,
+    authToken: process.env.UNIX_SERVER_AUTH_TOKEN,
   };
 }
 
@@ -66,8 +66,8 @@ async function discoverServer(): Promise<ServerDiscovery> {
   // run() sets exitOverride on root, uses parseAsync, and handles process exit properly
   const { run } = createCli({
     router: proxiedRouter,
-    name: "mux api",
-    description: "Interact with the mux API via a running server",
+    name: "unix api",
+    description: "Interact with the unix API via a running server",
   });
 
   try {

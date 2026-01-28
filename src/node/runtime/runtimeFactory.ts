@@ -82,7 +82,7 @@ function shouldUseSSH2Runtime(): boolean {
 
 /**
  * Error thrown when a workspace has an incompatible runtime configuration,
- * typically from a newer version of mux that added new runtime types.
+ * typically from a newer version of unix that added new runtime types.
  */
 export class IncompatibleRuntimeError extends Error {
   constructor(message: string) {
@@ -127,8 +127,8 @@ export function createRuntime(config: RuntimeConfig, options?: CreateRuntimeOpti
   // Check for incompatible configs from newer versions
   if (isIncompatibleRuntimeConfig(config)) {
     throw new IncompatibleRuntimeError(
-      `This workspace uses a runtime configuration from a newer version of mux. ` +
-        `Please upgrade mux to use this workspace.`
+      `This workspace uses a runtime configuration from a newer version ofunix. ` +
+        `Please upgrade unix to use this workspace.`
     );
   }
 
@@ -191,7 +191,7 @@ export function createRuntime(config: RuntimeConfig, options?: CreateRuntimeOpti
 
     case "devcontainer": {
       // Devcontainer uses worktrees on host + container exec
-      // srcBaseDir sourced from config to honor MUX_ROOT and dev-mode suffixes
+      // srcBaseDir sourced from config to honor UNIX_ROOT and dev-mode suffixes
       const runtime = new DevcontainerRuntime({
         srcBaseDir: new Config().srcDir,
         configPath: config.configPath,

@@ -12,7 +12,7 @@ describe("TodoListReminderSource", () => {
   let workspaceSessionDir: string;
 
   beforeEach(async () => {
-    workspaceSessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-todos-"));
+    workspaceSessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-todos-"));
     await setTodosForSessionDir(workspaceId, workspaceSessionDir, [
       { content: "Completed", status: "completed" },
       { content: "In progress", status: "in_progress" },
@@ -76,7 +76,7 @@ describe("TodoListReminderSource", () => {
   });
 
   test("suppresses reminder when todo list is empty", async () => {
-    const emptyDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-todos-empty-"));
+    const emptyDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-todos-empty-"));
     const source = new TodoListReminderSource({ workspaceSessionDir: emptyDir });
 
     try {

@@ -2,7 +2,7 @@
  * Telemetry ORPC schemas
  *
  * Defines input/output schemas for backend telemetry endpoints.
- * Telemetry is controlled by MUX_DISABLE_TELEMETRY env var on the backend.
+ * Telemetry is controlled by UNIX_DISABLE_TELEMETRY env var on the backend.
  */
 
 import { z } from "zod";
@@ -279,7 +279,7 @@ export const telemetry = {
     output: z.object({
       /** True if telemetry is actively running (false in dev mode) */
       enabled: z.boolean(),
-      /** True only if user explicitly set MUX_DISABLE_TELEMETRY=1 */
+      /** True only if user explicitly set UNIX_DISABLE_TELEMETRY=1 */
       explicit: z.boolean(),
     }),
   },

@@ -55,7 +55,7 @@ const SQL_WITH_DOUBLE_UNDERSCORE = `👍 Glad it's working. For reference, the f
 SELECT
   TIMESTAMP_TRUNC(timestamp, DAY) as time,
   COUNT(DISTINCT distinct_id) as dau
-FROM \`mux-telemetry.posthog.events\`
+FROM \`unix-telemetry.posthog.events\`
 WHERE
   event NOT LIKE "$%"
   AND $__timeFilter(timestamp)
@@ -67,7 +67,7 @@ ORDER BY time
 const SINGLE_LINE_CODE = `Here's a one-liner:
 
 \`\`\`bash
-npm install mux
+npm install unix
 \`\`\`
 
 And another:
@@ -325,7 +325,7 @@ const reallyLongVariableName = someFunction(argumentOne, argumentTwo, argumentTh
 ## Short Code Block
 
 \`\`\`
-npm install mux
+npm install unix
 \`\`\`
 
 ## Short TypeScript Block

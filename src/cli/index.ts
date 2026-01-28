@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Mux CLI entry point.
+ * Unix CLI entry point.
  *
  * LAZY LOADING REQUIREMENT:
  * We manually route subcommands before calling program.parse() to avoid
@@ -17,7 +17,7 @@
  *
  * ARGV OFFSET:
  * In development (`electron .`), argv = [electron, ".", ...args] so first arg is at index 2.
- * In packaged apps (`./mux.AppImage`), argv = [app, ...args] so first arg is at index 1.
+ * In packaged apps (`./unix.AppImage`), argv = [app, ...args] so first arg is at index 1.
  * process.defaultApp is true in dev mode and undefined in packaged apps.
  */
 import { Command } from "commander";
@@ -43,11 +43,11 @@ function launchDesktop(): void {
 
 if (subcommand === "run") {
   if (!isCommandAvailable("run", env)) {
-    console.error("The 'run' command is only available via the CLI (bun mux run).");
+    console.error("The 'run' command is only available via the CLI (bun unix run).");
     console.error("It is not bundled in Electron.");
     process.exit(1);
   }
-  process.argv.splice(env.firstArgIndex, 1); // Remove "run" since run.ts defines .name("mux run")
+  process.argv.splice(env.firstArgIndex, 1); // Remove "run" since run.ts defines .name("unix run")
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("./run");
 } else if (subcommand === "server") {
@@ -65,7 +65,7 @@ if (subcommand === "run") {
   subcommand === "desktop" ||
   (env.isElectron && (subcommand === undefined || isElectronLaunchArg(subcommand, env)))
 ) {
-  // Explicit `mux desktop`, or Electron runtime with no subcommand / Electron launch args
+  // Explicit `unix desktop`, or Electron runtime with no subcommand / Electron launch args
   if (!isCommandAvailable("desktop", env)) {
     console.error("The 'desktop' command requires Electron to be installed.");
     console.error("When installed via npm, use the packaged desktop app instead.");
@@ -88,8 +88,8 @@ if (subcommand === "run") {
   // Global flags are defined in CLI_GLOBAL_FLAGS (argv.ts) for routing logic.
   // Commander auto-adds --help/-h. We define --version/-v below.
   program
-    .name("mux")
-    .description("Mux - AI agent orchestration")
+    .name("unix")
+    .description("Unix - AI agent orchestration")
     .version(`${gitDescribe} (${gitCommit})`, "-v, --version");
 
   // Sanity check: ensure version flags match CLI_GLOBAL_FLAGS
@@ -108,7 +108,7 @@ if (subcommand === "run") {
     program.command("run").description("Run a one-off agent task");
   }
   program.command("server").description("Start the HTTP/WebSocket ORPC server");
-  program.command("api").description("Interact with the mux API via a running server");
+  program.command("api").description("Interact with the unix API via a running server");
   if (isCommandAvailable("desktop", env)) {
     program
       .command("desktop")

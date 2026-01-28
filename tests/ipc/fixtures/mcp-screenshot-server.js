@@ -17,7 +17,7 @@ function send(message) {
   process.stdout.write(`${JSON.stringify(message)}\n`);
 }
 
-const SERVER_INFO = { name: "mux-test-screenshot-mcp", version: "0.0.0" };
+const SERVER_INFO = { name: "unix-test-screenshot-mcp", version: "0.0.0" };
 
 const TOOLS = [
   {

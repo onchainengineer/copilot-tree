@@ -17,7 +17,7 @@ import {
 } from "./helpers";
 import { detectDefaultTrunkBranch } from "../../src/node/git";
 import { HistoryService } from "../../src/node/services/historyService";
-import { createMuxMessage } from "../../src/common/types/message";
+import { createUnixMessage } from "../../src/common/types/message";
 
 // Skip all tests if TEST_INTEGRATION is not set
 const describeIntegration = shouldRunIntegrationTests() ? describe : describe.skip;
@@ -131,8 +131,8 @@ describeIntegration("Workspace fork", () => {
         const historyService = new HistoryService(env.config);
         const uniqueWord = `testword-${Date.now()}`;
         const historyMessages = [
-          createMuxMessage("msg-1", "user", `Remember this word: ${uniqueWord}`, {}),
-          createMuxMessage("msg-2", "assistant", `I will remember the word "${uniqueWord}".`, {}),
+          createUnixMessage("msg-1", "user", `Remember this word: ${uniqueWord}`, {}),
+          createUnixMessage("msg-2", "assistant", `I will remember the word "${uniqueWord}".`, {}),
         ];
 
         for (const msg of historyMessages) {
@@ -450,8 +450,8 @@ describeIntegration("Workspace fork", () => {
         const historyService = new HistoryService(env.config);
         const uniqueWord = `localtest-${Date.now()}`;
         const historyMessages = [
-          createMuxMessage("msg-1", "user", `Remember this local word: ${uniqueWord}`, {}),
-          createMuxMessage(
+          createUnixMessage("msg-1", "user", `Remember this local word: ${uniqueWord}`, {}),
+          createUnixMessage(
             "msg-2",
             "assistant",
             `I will remember the local word "${uniqueWord}".`,
@@ -548,7 +548,7 @@ describeIntegration("Workspace fork", () => {
         expect(forkedWorkspace!.runtimeConfig.type).toBe("local");
         expect("srcBaseDir" in forkedWorkspace!.runtimeConfig).toBe(false);
 
-        // Verify namedWorkspacePath is the project path (not ~/.mux/src/...) for local workspaces
+        // Verify namedWorkspacePath is the project path (not ~/.unix/src/...) for local workspaces
         // This ensures Open-in-Editor and path display work correctly after reload
         expect(forkedWorkspace!.namedWorkspacePath).toBe(tempGitRepo);
         expect(forkResult.metadata.namedWorkspacePath).toBe(tempGitRepo);

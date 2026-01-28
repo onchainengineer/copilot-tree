@@ -26,7 +26,7 @@ describe("stub utility functions", () => {
   });
 
   test("isGatewayFormat always returns false", () => {
-    expect(isGatewayFormat("mux-gateway:anthropic/claude-sonnet-4-5")).toBe(false);
+    expect(isGatewayFormat("unix-gateway:anthropic/claude-sonnet-4-5")).toBe(false);
   });
 
   test("isProviderSupported always returns false", () => {

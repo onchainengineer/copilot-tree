@@ -2,8 +2,8 @@ import { EventEmitter } from "events";
 import * as path from "path";
 import * as fsPromises from "fs/promises";
 import assert from "@/common/utils/assert";
-import { MUX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/muxChat";
-import { getMuxHelpChatProjectPath } from "@/node/constants/muxChat";
+import { UNIX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/unixChat";
+import { getUnixHelpChatProjectPath } from "@/node/constants/unixChat";
 import type { Config } from "@/node/config";
 import type { Result } from "@/common/types/result";
 import { Ok, Err } from "@/common/types/result";
@@ -56,7 +56,7 @@ import {
   AskUserQuestionToolResultSchema,
 } from "@/common/utils/tools/toolDefinitions";
 import type { UIMode } from "@/common/types/mode";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import type { RuntimeConfig } from "@/common/types/runtime";
 import {
   hasSrcBaseDir,
@@ -494,11 +494,11 @@ export class WorkspaceService extends EventEmitter {
     }
 
     const runtime = createRuntimeForWorkspace(metadata);
-    const muxHome = runtime.getMuxHome();
-    const planPath = getPlanFilePath(metadata.name, metadata.projectName, muxHome);
+    const unixHome = runtime.getUnixHome();
+    const planPath = getPlanFilePath(metadata.name, metadata.projectName, unixHome);
     // For local/SSH: expand tilde for comparison with message history paths
-    // For Docker: paths are already absolute (/var/mux/...), no expansion needed
-    const expandedPlanPath = muxHome.startsWith("~") ? expandTilde(planPath) : planPath;
+    // For Docker: paths are already absolute (/var/unix/...), no expansion needed
+    const expandedPlanPath = unixHome.startsWith("~") ? expandTilde(planPath) : planPath;
     // Legacy plan path (stored by workspace ID) for filtering
     const legacyPlanPath = getLegacyPlanFilePath(workspaceId);
     const expandedLegacyPlanPath = expandTilde(legacyPlanPath);
@@ -619,9 +619,9 @@ export class WorkspaceService extends EventEmitter {
     runtimeConfig?: RuntimeConfig,
     sectionId?: string
   ): Promise<Result<{ metadata: FrontendWorkspaceMetadata }>> {
-    // Chat with Mux is a built-in system workspace; it cannot host additional workspaces.
-    if (projectPath === getMuxHelpChatProjectPath(this.config.rootDir)) {
-      return Err("Cannot create workspaces in the Chat with Mux system project");
+    // Chat with Unix is a built-in system workspace; it cannot host additional workspaces.
+    if (projectPath === getUnixHelpChatProjectPath(this.config.rootDir)) {
+      return Err("Cannot create workspaces in the Chat with Unix system project");
     }
 
     // Validate workspace name
@@ -812,8 +812,8 @@ export class WorkspaceService extends EventEmitter {
   }
 
   async remove(workspaceId: string, force = false): Promise<Result<void>> {
-    if (workspaceId === MUX_HELP_CHAT_WORKSPACE_ID) {
-      return Err("Cannot remove the Chat with Mux system workspace");
+    if (workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID) {
+      return Err("Cannot remove the Chat with Unix system workspace");
     }
 
     // Idempotent: if already removing, return success to prevent race conditions
@@ -928,7 +928,7 @@ export class WorkspaceService extends EventEmitter {
         const parentWorkspaceId = metadata.parentWorkspaceId;
 
         // If this workspace is a sub-agent/task, roll its accumulated timing into the parent BEFORE
-        // deleting ~/.mux/sessions/<workspaceId>/session-timing.json.
+        // deleting ~/.unix/sessions/<workspaceId>/session-timing.json.
         if (parentWorkspaceId && this.sessionTimingService) {
           try {
             // Flush any last timing write (e.g. from stream-abort) before reading.
@@ -944,7 +944,7 @@ export class WorkspaceService extends EventEmitter {
         }
 
         // If this workspace is a sub-agent/task, roll its accumulated usage into the parent BEFORE
-        // deleting ~/.mux/sessions/<workspaceId>/session-usage.json.
+        // deleting ~/.unix/sessions/<workspaceId>/session-usage.json.
         if (parentWorkspaceId && this.sessionUsageService) {
           try {
             const childUsage = await this.sessionUsageService.getSessionUsage(workspaceId);
@@ -1236,8 +1236,8 @@ export class WorkspaceService extends EventEmitter {
    * but can be viewed on the project page. Safe and reversible.
    */
   async archive(workspaceId: string): Promise<Result<void>> {
-    if (workspaceId === MUX_HELP_CHAT_WORKSPACE_ID) {
-      return Err("Cannot archive the Chat with Mux system workspace");
+    if (workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID) {
+      return Err("Cannot archive the Chat with Unix system workspace");
     }
 
     try {
@@ -1296,8 +1296,8 @@ export class WorkspaceService extends EventEmitter {
    * Unarchive a workspace. Restores it to the main sidebar view.
    */
   async unarchive(workspaceId: string): Promise<Result<void>> {
-    if (workspaceId === MUX_HELP_CHAT_WORKSPACE_ID) {
-      return Err("Cannot unarchive the Chat with Mux system workspace");
+    if (workspaceId === UNIX_HELP_CHAT_WORKSPACE_ID) {
+      return Err("Cannot unarchive the Chat with Unix system workspace");
     }
 
     try {
@@ -1543,8 +1543,8 @@ export class WorkspaceService extends EventEmitter {
     newName: string
   ): Promise<Result<{ metadata: FrontendWorkspaceMetadata; projectPath: string }>> {
     try {
-      if (sourceWorkspaceId === MUX_HELP_CHAT_WORKSPACE_ID) {
-        return Err("Cannot fork the Chat with Mux system workspace");
+      if (sourceWorkspaceId === UNIX_HELP_CHAT_WORKSPACE_ID) {
+        return Err("Cannot fork the Chat with Unix system workspace");
       }
 
       const validation = validateWorkspaceName(newName);
@@ -1776,9 +1776,9 @@ export class WorkspaceService extends EventEmitter {
       const session = this.getOrCreateSession(workspaceId);
 
       // Skip recency update for idle compaction - preserve original "last used" time
-      const muxMeta = options?.muxMetadata as { type?: string; source?: string } | undefined;
+      const unixMeta = options?.unixMetadata as { type?: string; source?: string } | undefined;
       const isIdleCompaction =
-        muxMeta?.type === "compaction-request" && muxMeta?.source === "idle-compaction";
+        unixMeta?.type === "compaction-request" && unixMeta?.source === "idle-compaction";
       // Use current time for recency - this matches the timestamp used on the message
       // in agentSession.sendMessage(). Keeps ExtensionMetadata in sync with chat.jsonl.
       const messageTimestamp = Date.now();
@@ -2029,8 +2029,8 @@ export class WorkspaceService extends EventEmitter {
       try {
         // Helper: update a message in-place if it contains this ask_user_question tool call.
         const tryFinalizeMessage = (
-          msg: MuxMessage
-        ): Result<{ updated: MuxMessage; output: AskUserQuestionToolSuccessResult }> => {
+          msg: UnixMessage
+        ): Result<{ updated: UnixMessage; output: AskUserQuestionToolSuccessResult }> => {
           let foundToolCall = false;
           let output: AskUserQuestionToolSuccessResult | null = null;
           let errorMessage: string | null = null;
@@ -2130,7 +2130,7 @@ export class WorkspaceService extends EventEmitter {
         }
 
         // Find the newest message containing this tool call.
-        let best: MuxMessage | null = null;
+        let best: UnixMessage | null = null;
         let bestSeq = -Infinity;
         for (const msg of historyResult.data) {
           const seq = msg.metadata?.historySequence;
@@ -2215,16 +2215,16 @@ export class WorkspaceService extends EventEmitter {
     workspaceId: string,
     metadata: FrontendWorkspaceMetadata
   ): Promise<void> {
-    // Create runtime to get correct muxHome (Docker uses /var/mux, others use ~/.mux)
+    // Create runtime to get correct unixHome (Docker uses /var/unix, others use ~/.unix)
     const runtime = createRuntimeForWorkspace(metadata);
-    const muxHome = runtime.getMuxHome();
-    const planPath = getPlanFilePath(metadata.name, metadata.projectName, muxHome);
+    const unixHome = runtime.getUnixHome();
+    const planPath = getPlanFilePath(metadata.name, metadata.projectName, unixHome);
     const legacyPlanPath = getLegacyPlanFilePath(workspaceId);
 
     const isDocker = isDockerRuntime(metadata.runtimeConfig);
     const isSSH = isSSHRuntime(metadata.runtimeConfig);
 
-    // For Docker: paths are already absolute (/var/mux/...), just quote
+    // For Docker: paths are already absolute (/var/unix/...), just quote
     // For SSH: use $HOME expansion so the runtime shell resolves to the runtime home directory
     // For local: expand tilde locally since shellQuote prevents shell expansion
     const quotedPlanPath = isDocker
@@ -2319,7 +2319,7 @@ export class WorkspaceService extends EventEmitter {
 
   async replaceHistory(
     workspaceId: string,
-    summaryMessage: MuxMessage,
+    summaryMessage: UnixMessage,
     options?: { deletePlanFile?: boolean }
   ): Promise<Result<void>> {
     // Support both new enum ("user"|"idle") and legacy boolean (true)
@@ -2356,7 +2356,7 @@ export class WorkspaceService extends EventEmitter {
         }
       }
 
-      // Add type: "message" for discriminated union (MuxMessage doesn't have it)
+      // Add type: "message" for discriminated union (UnixMessage doesn't have it)
       const typedSummaryMessage = { ...summaryMessage, type: "message" as const };
       if (session) {
         session.emitChatEvent(typedSummaryMessage);
@@ -2391,7 +2391,7 @@ export class WorkspaceService extends EventEmitter {
       return {};
     }
   }
-  async getChatHistory(workspaceId: string): Promise<MuxMessage[]> {
+  async getChatHistory(workspaceId: string): Promise<UnixMessage[]> {
     try {
       const history = await this.historyService.getHistory(workspaceId);
       return history.success ? history.data : [];
@@ -2530,7 +2530,7 @@ export class WorkspaceService extends EventEmitter {
       const projectSecrets = this.config.getProjectSecrets(metadata.projectPath);
 
       // Create scoped temp directory for this IPC call
-      using tempDir = new DisposableTempDir("mux-ipc-bash");
+      using tempDir = new DisposableTempDir("unix-ipc-bash");
 
       // Create runtime and compute workspace path
       const runtime = createRuntime(metadata.runtimeConfig, {

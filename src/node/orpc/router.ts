@@ -210,21 +210,21 @@ export const router = (authToken?: string) => {
             return config;
           });
 
-          if (process.env.MUX_NO_API_SERVER !== "1") {
+          if (process.env.UNIX_NO_API_SERVER !== "1") {
             const authToken = context.serverService.getApiAuthToken();
             if (!authToken) {
               throw new Error("API server auth token not initialized");
             }
 
-            const envPort = process.env.MUX_SERVER_PORT
-              ? Number.parseInt(process.env.MUX_SERVER_PORT, 10)
+            const envPort = process.env.UNIX_SERVER_PORT
+              ? Number.parseInt(process.env.UNIX_SERVER_PORT, 10)
               : undefined;
             const portToUse = envPort ?? port ?? 0;
             const hostToUse = bindHost ?? "127.0.0.1";
 
             try {
               await context.serverService.startServer({
-                muxHome: context.config.rootDir,
+                unixHome: context.config.rootDir,
                 context,
                 authToken,
                 serveStatic: serveWebUi === true,
@@ -245,7 +245,7 @@ export const router = (authToken?: string) => {
 
                 try {
                   await context.serverService.startServer({
-                    muxHome: context.config.rootDir,
+                    unixHome: context.config.rootDir,
                     context,
                     serveStatic: prevServeWebUi === true,
                     authToken,

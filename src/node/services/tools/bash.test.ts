@@ -1299,19 +1299,19 @@ describe("zombie process cleanup", () => {
 });
 
 describe("muxEnv environment variables", () => {
-  it("should inject MUX_ environment variables when muxEnv is provided", async () => {
-    using tempDir = new TestTempDir("test-mux-env");
+  it("should inject UNIX_ environment variables when muxEnv is provided", async () => {
+    using tempDir = new TestTempDir("test-unix-env");
     const config = createTestToolConfig(process.cwd());
     config.runtimeTempDir = tempDir.path;
     config.muxEnv = {
-      MUX_PROJECT_PATH: "/test/project/path",
-      MUX_RUNTIME: "worktree",
-      MUX_WORKSPACE_NAME: "feature-branch",
+      UNIX_PROJECT_PATH: "/test/project/path",
+      UNIX_RUNTIME: "worktree",
+      UNIX_WORKSPACE_NAME: "feature-branch",
     };
     const tool = createBashTool(config);
 
     const args: BashToolArgs = {
-      script: 'echo "PROJECT:$MUX_PROJECT_PATH RUNTIME:$MUX_RUNTIME WORKSPACE:$MUX_WORKSPACE_NAME"',
+      script: 'echo "PROJECT:$UNIX_PROJECT_PATH RUNTIME:$UNIX_RUNTIME WORKSPACE:$UNIX_WORKSPACE_NAME"',
       timeout_secs: 5,
       display_name: "test",
     };
@@ -1327,12 +1327,12 @@ describe("muxEnv environment variables", () => {
   });
 
   it("should allow secrets to override muxEnv", async () => {
-    using tempDir = new TestTempDir("test-mux-env-override");
+    using tempDir = new TestTempDir("test-unix-env-override");
     const config = createTestToolConfig(process.cwd());
     config.runtimeTempDir = tempDir.path;
     config.muxEnv = {
-      MUX_PROJECT_PATH: "/mux/path",
-      CUSTOM_VAR: "from-mux",
+      UNIX_PROJECT_PATH: "/unix/path",
+      CUSTOM_VAR: "from-unix",
     };
     config.secrets = {
       CUSTOM_VAR: "from-secrets",
@@ -1340,7 +1340,7 @@ describe("muxEnv environment variables", () => {
     const tool = createBashTool(config);
 
     const args: BashToolArgs = {
-      script: 'echo "MUX:$MUX_PROJECT_PATH CUSTOM:$CUSTOM_VAR"',
+      script: 'echo "UNIX:$UNIX_PROJECT_PATH CUSTOM:$CUSTOM_VAR"',
       timeout_secs: 5,
       display_name: "test",
     };
@@ -1349,8 +1349,8 @@ describe("muxEnv environment variables", () => {
 
     expect(result.success).toBe(true);
     if (result.success) {
-      // MUX_PROJECT_PATH from muxEnv should be present
-      expect(result.output).toContain("MUX:/mux/path");
+      // UNIX_PROJECT_PATH from muxEnv should be present
+      expect(result.output).toContain("UNIX:/unix/path");
       // Secrets should override muxEnv when there's a conflict
       expect(result.output).toContain("CUSTOM:from-secrets");
     }
@@ -1428,18 +1428,18 @@ describe("SSH runtime redundant cd detection", () => {
 });
 
 describe("bash tool - tool_env", () => {
-  it("should source .mux/tool_env before running script", async () => {
+  it("should source .unix/tool_env before running script", async () => {
     using tempDir = new TestTempDir("test-bash-tool-env");
-    const muxDir = `${tempDir.path}/.mux`;
-    fs.mkdirSync(muxDir, { recursive: true });
-    fs.writeFileSync(`${muxDir}/tool_env`, "export MUX_TEST_VAR=from_tool_env");
+    const unixDir = `${tempDir.path}/.unix`;
+    fs.mkdirSync(unixDir, { recursive: true });
+    fs.writeFileSync(`${unixDir}/tool_env`, "export UNIX_TEST_VAR=from_tool_env");
 
     const config = createTestToolConfig(tempDir.path);
     config.runtimeTempDir = tempDir.path;
     const tool = createBashTool(config);
 
     const args: BashToolArgs = {
-      script: "echo $MUX_TEST_VAR",
+      script: "echo $UNIX_TEST_VAR",
       timeout_secs: 5,
       run_in_background: false,
       display_name: "test",
@@ -1453,10 +1453,10 @@ describe("bash tool - tool_env", () => {
 
   it("should fail with clear error if tool_env sourcing fails", async () => {
     using tempDir = new TestTempDir("test-bash-tool-env-fail");
-    const muxDir = `${tempDir.path}/.mux`;
-    fs.mkdirSync(muxDir, { recursive: true });
+    const unixDir = `${tempDir.path}/.unix`;
+    fs.mkdirSync(unixDir, { recursive: true });
     // Fail `source` without terminating the parent shell.
-    fs.writeFileSync(`${muxDir}/tool_env`, "return 1");
+    fs.writeFileSync(`${unixDir}/tool_env`, "return 1");
 
     const config = createTestToolConfig(tempDir.path);
     config.runtimeTempDir = tempDir.path;
@@ -1517,7 +1517,7 @@ describe("bash tool - background execution", () => {
   });
 
   it("should accept timeout with background mode for auto-termination", async () => {
-    const manager = new BackgroundProcessManager("/tmp/mux-test-bg");
+    const manager = new BackgroundProcessManager("/tmp/unix-test-bg");
 
     const tempDir = new TestTempDir("test-bash-bg");
     const config = createTestToolConfig(tempDir.path);
@@ -1544,7 +1544,7 @@ describe("bash tool - background execution", () => {
   });
 
   it("should start background process and return process ID", async () => {
-    const manager = new BackgroundProcessManager("/tmp/mux-test-bg");
+    const manager = new BackgroundProcessManager("/tmp/unix-test-bg");
 
     const tempDir = new TestTempDir("test-bash-bg");
     const config = createTestToolConfig(tempDir.path);
@@ -1574,22 +1574,22 @@ describe("bash tool - background execution", () => {
   });
 
   it("should inject muxEnv environment variables in background mode", async () => {
-    const manager = new BackgroundProcessManager("/tmp/mux-test-bg");
+    const manager = new BackgroundProcessManager("/tmp/unix-test-bg");
 
-    const tempDir = new TestTempDir("test-bash-bg-mux-env");
+    const tempDir = new TestTempDir("test-bash-bg-unix-env");
     const config = createTestToolConfig(tempDir.path);
     config.backgroundProcessManager = manager;
     config.muxEnv = {
-      MUX_MODEL_STRING: "openai:gpt-5.2",
-      MUX_THINKING_LEVEL: "medium",
+      UNIX_MODEL_STRING: "openai:gpt-5.2",
+      UNIX_THINKING_LEVEL: "medium",
     };
 
     const tool = createBashTool(config);
     const args: BashToolArgs = {
-      script: 'echo "MODEL:$MUX_MODEL_STRING THINKING:$MUX_THINKING_LEVEL"',
+      script: 'echo "MODEL:$UNIX_MODEL_STRING THINKING:$UNIX_THINKING_LEVEL"',
       timeout_secs: 5,
       run_in_background: true,
-      display_name: "test-mux-env-bg",
+      display_name: "test-unix-env-bg",
     };
 
     const result = (await tool.execute!(args, mockToolCallOptions)) as BashToolResult;

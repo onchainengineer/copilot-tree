@@ -86,7 +86,7 @@ const ToolOutputUiOnlyFieldSchema = {
 export const AskUserQuestionToolArgsSchema = z
   .object({
     questions: z.array(AskUserQuestionQuestionSchema).min(1).max(4),
-    // Optional prefilled answers (Claude Code supports this, though Mux typically won't use it)
+    // Optional prefilled answers (Claude Code supports this, though Unix typically won't use it)
     answers: z.record(z.string(), z.string()).optional(),
   })
   .strict()
@@ -510,14 +510,14 @@ export const TOOL_DEFINITIONS = {
         .describe("Number of lines to return from offset (optional, returns all if not specified)"),
     }),
   },
-  mux_global_agents_read: {
+  unix_global_agents_read: {
     description:
-      "Read the global AGENTS.md file (mux-wide agent instructions) from the mux home directory.",
+      "Read the global AGENTS.md file (unix-wide agent instructions) from the unix home directory.",
     schema: z.object({}).strict(),
   },
-  mux_global_agents_write: {
+  unix_global_agents_write: {
     description:
-      "Write the global AGENTS.md file (mux-wide agent instructions) in the mux home directory. " +
+      "Write the global AGENTS.md file (unix-wide agent instructions) in the unix home directory. " +
       "Requires explicit confirmation via confirm: true.",
     schema: z
       .object({
@@ -533,7 +533,7 @@ export const TOOL_DEFINITIONS = {
   agent_skill_read: {
     description:
       "Load an Agent Skill's SKILL.md (YAML frontmatter + markdown body) by name. " +
-      "Skills are discovered from <projectRoot>/.mux/skills/<name>/SKILL.md and ~/.mux/skills/<name>/SKILL.md.",
+      "Skills are discovered from <projectRoot>/.unix/skills/<name>/SKILL.md and ~/.unix/skills/<name>/SKILL.md.",
     schema: z
       .object({
         name: SkillNameSchema.describe("Skill name (directory name under the skills root)"),
@@ -700,7 +700,7 @@ export const TOOL_DEFINITIONS = {
   },
   system1_keep_ranges: {
     description:
-      "Internal tool used by mux to record which line ranges to keep when filtering large bash output.",
+      "Internal tool used by unix to record which line ranges to keep when filtering large bash output.",
     schema: z
       .object({
         keep_ranges: z
@@ -871,7 +871,7 @@ export const TOOL_DEFINITIONS = {
   web_fetch: {
     description:
       `Fetch a web page and extract its main content as clean markdown. ` +
-      `Uses the workspace's network context (requests originate from the workspace, not Mux host). ` +
+      `Uses the workspace's network context (requests originate from the workspace, not Unix host). ` +
       `Requires curl to be installed in the workspace. ` +
       `Output is truncated to ${Math.floor(WEB_FETCH_MAX_OUTPUT_BYTES / 1024)}KB.`,
     schema: z.object({
@@ -880,7 +880,7 @@ export const TOOL_DEFINITIONS = {
   },
   code_execution: {
     description:
-      "Execute JavaScript code in a sandboxed environment with access to Mux tools. " +
+      "Execute JavaScript code in a sandboxed environment with access to Unix tools. " +
       "Available for multi-tool workflows when PTC experiment is enabled.",
     schema: z.object({
       code: z.string().min(1).describe("JavaScript code to execute in the PTC sandbox"),
@@ -1032,9 +1032,9 @@ export const BashBackgroundTerminateResultSchema = z.union([
 ]);
 
 /**
- * mux_global_agents_read tool result.
+ * unix_global_agents_read tool result.
  */
-export const MuxGlobalAgentsReadToolResultSchema = z.union([
+export const UnixGlobalAgentsReadToolResultSchema = z.union([
   z.object({
     success: z.literal(true),
     content: z.string(),
@@ -1046,9 +1046,9 @@ export const MuxGlobalAgentsReadToolResultSchema = z.union([
 ]);
 
 /**
- * mux_global_agents_write tool result.
+ * unix_global_agents_write tool result.
  */
-export const MuxGlobalAgentsWriteToolResultSchema = z.union([
+export const UnixGlobalAgentsWriteToolResultSchema = z.union([
   z
     .object({
       success: z.literal(true),
@@ -1231,7 +1231,7 @@ export function getToolSchemas(): Record<string, ToolSchema> {
  */
 export function getAvailableTools(
   modelString: string,
-  options?: { enableAgentReport?: boolean; enableMuxGlobalAgentsTools?: boolean }
+  options?: { enableAgentReport?: boolean; enableUnixGlobalAgentsTools?: boolean }
 ): string[] {
   const [provider] = modelString.split(":");
   const enableAgentReport = options?.enableAgentReport ?? true;
@@ -1239,8 +1239,8 @@ export function getAvailableTools(
   // Base tools available for all models
   // Note: Tool availability is controlled by agent tool policy (allowlist), not mode checks here.
   const baseTools = [
-    ...(options?.enableMuxGlobalAgentsTools
-      ? ["mux_global_agents_read", "mux_global_agents_write"]
+    ...(options?.enableUnixGlobalAgentsTools
+      ? ["unix_global_agents_read", "unix_global_agents_write"]
       : []),
     "file_read",
     "agent_skill_read",

@@ -22,7 +22,7 @@ import { validateFileSize } from "@/node/services/tools/fileCommon";
 import { AgentSkillParseError, parseSkillMarkdown } from "./parseSkillMarkdown";
 import { getBuiltInSkillByName, getBuiltInSkillDescriptors } from "./builtInSkillDefinitions";
 
-const GLOBAL_SKILLS_ROOT = "~/.mux/skills";
+const GLOBAL_SKILLS_ROOT = "~/.unix/skills";
 
 export interface AgentSkillsRoots {
   projectRoot: string;
@@ -38,7 +38,7 @@ export function getDefaultAgentSkillsRoots(
   }
 
   return {
-    projectRoot: runtime.normalizePath(".mux/skills", workspacePath),
+    projectRoot: runtime.normalizePath(".unix/skills", workspacePath),
     globalRoot: GLOBAL_SKILLS_ROOT,
   };
 }

@@ -15,10 +15,10 @@ describeIntegration("Window title IPC", () => {
 
         // Call setTitle via IPC
         const client = resolveOrpcClient(env);
-        await client.window.setTitle({ title: "test-workspace - test-project - mux" });
+        await client.window.setTitle({ title: "test-workspace - test-project - unix" });
 
         // Verify setTitle was called on the window
-        expect(env.mockWindow.setTitle).toHaveBeenCalledWith("test-workspace - test-project - mux");
+        expect(env.mockWindow.setTitle).toHaveBeenCalledWith("test-workspace - test-project - unix");
       } finally {
         await cleanupTestEnvironment(env);
       }
@@ -34,10 +34,10 @@ describeIntegration("Window title IPC", () => {
       try {
         // Set to default title
         const client = resolveOrpcClient(env);
-        await client.window.setTitle({ title: "mux" });
+        await client.window.setTitle({ title: "unix" });
 
         // Verify setTitle was called with default
-        expect(env.mockWindow.setTitle).toHaveBeenCalledWith("mux");
+        expect(env.mockWindow.setTitle).toHaveBeenCalledWith("unix");
       } finally {
         await cleanupTestEnvironment(env);
       }

@@ -12,7 +12,7 @@ describe("SSHRuntime constructor", () => {
   it("should accept tilde in srcBaseDir", () => {
     // Tildes are now allowed - they will be resolved via resolvePath()
     expect(() => {
-      const config = { host: "example.com", srcBaseDir: "~/mux" };
+      const config = { host: "example.com", srcBaseDir: "~/unix" };
       new SSHRuntime(config, createSSHTransport(config, false));
     }).not.toThrow();
   });
@@ -27,7 +27,7 @@ describe("SSHRuntime constructor", () => {
 
   it("should accept absolute paths in srcBaseDir", () => {
     expect(() => {
-      const config = { host: "example.com", srcBaseDir: "/home/user/mux" };
+      const config = { host: "example.com", srcBaseDir: "/home/user/unix" };
       new SSHRuntime(config, createSSHTransport(config, false));
     }).not.toThrow();
   });

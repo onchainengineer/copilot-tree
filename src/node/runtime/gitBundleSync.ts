@@ -26,7 +26,7 @@ async function getOriginUrlForBundle(
     const { stdout } = await proc.result;
     const url = stdout.trim();
 
-    if (url && !url.includes(".bundle") && !url.includes(".mux-bundle")) {
+    if (url && !url.includes(".bundle") && !url.includes(".unix-bundle")) {
       return { originUrl: url };
     }
 

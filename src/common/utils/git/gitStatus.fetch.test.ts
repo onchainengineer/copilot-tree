@@ -7,7 +7,7 @@ import { GIT_FETCH_SCRIPT } from "./gitStatus";
 
 describe("GIT_FETCH_SCRIPT", () => {
   test("fetches when remote ref moves to a commit already present locally", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "mux-git-fetch-"));
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "unix-git-fetch-"));
     const originDir = path.join(tempDir, "origin.git");
     const workspaceDir = path.join(tempDir, "workspace");
 

@@ -28,11 +28,11 @@ import { CopyIcon } from "@/browser/components/icons/CopyIcon";
 import { copyToClipboard } from "@/browser/utils/clipboard";
 
 import {
-  uploadToMuxMd,
-  deleteFromMuxMd,
-  updateMuxMdExpiration,
+  uploadToUnixMd,
+  deleteFromUnixMd,
+  updateUnixMdExpiration,
   type SignatureEnvelope,
-} from "@/common/lib/muxMd";
+} from "@/common/lib/unixMd";
 import {
   getShareData,
   setShareData,
@@ -392,7 +392,7 @@ export const ShareMessagePopover: React.FC<ShareMessagePopoverProps> = ({
       const ms = expirationToMs(preferred);
       const expiresAt = ms ? new Date(Date.now() + ms) : undefined;
 
-      // Request a mux.md signature envelope from the backend when signing is enabled.
+      // Request a unix.md signature envelope from the backend when signing is enabled.
       let signature: SignatureEnvelope | undefined;
       if (signingEnabled && signingCapabilities?.publicKey && api) {
         try {
@@ -403,7 +403,7 @@ export const ShareMessagePopover: React.FC<ShareMessagePopoverProps> = ({
         }
       }
 
-      const result = await uploadToMuxMd(
+      const result = await uploadToUnixMd(
         content,
         {
           name: getFileName(),
@@ -450,7 +450,7 @@ export const ShareMessagePopover: React.FC<ShareMessagePopoverProps> = ({
     try {
       const ms = expirationToMs(value);
       const expiresAt = ms ? new Date(Date.now() + ms) : "never";
-      const newExpiration = await updateMuxMdExpiration(data.id, data.mutateKey, expiresAt);
+      const newExpiration = await updateUnixMdExpiration(data.id, data.mutateKey, expiresAt);
 
       // Update cache
       updateShareExpiration(content, newExpiration);
@@ -482,7 +482,7 @@ export const ShareMessagePopover: React.FC<ShareMessagePopoverProps> = ({
     setError(null);
 
     try {
-      await deleteFromMuxMd(shareData.id, shareData.mutateKey);
+      await deleteFromUnixMd(shareData.id, shareData.mutateKey);
 
       // Remove from cache
       removeShareData(content);
@@ -510,10 +510,10 @@ export const ShareMessagePopover: React.FC<ShareMessagePopoverProps> = ({
 
       try {
         // Delete the old share
-        await deleteFromMuxMd(shareData.id, shareData.mutateKey);
+        await deleteFromUnixMd(shareData.id, shareData.mutateKey);
         removeShareData(content);
 
-        // Request a mux.md signature envelope from the backend if signing is now enabled.
+        // Request a unix.md signature envelope from the backend if signing is now enabled.
         let signature: SignatureEnvelope | undefined;
         if (newSigningEnabled && signingCapabilities?.publicKey && api) {
           try {
@@ -528,7 +528,7 @@ export const ShareMessagePopover: React.FC<ShareMessagePopoverProps> = ({
         const ms = expirationToMs(preferred);
         const expiresAt = ms ? new Date(Date.now() + ms) : undefined;
 
-        const result = await uploadToMuxMd(
+        const result = await uploadToUnixMd(
           content,
           {
             name: getFileName(),

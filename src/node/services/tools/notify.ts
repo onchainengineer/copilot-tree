@@ -56,7 +56,7 @@ async function sendElectronNotification(
   }
 
   try {
-    // eslint-disable-next-line no-restricted-syntax -- Electron is unavailable in `mux server`; avoid top-level import
+    // eslint-disable-next-line no-restricted-syntax -- Electron is unavailable in `unix server`; avoid top-level import
     const { Notification, BrowserWindow } = await import("electron");
 
     if (!Notification.isSupported()) {
@@ -85,7 +85,7 @@ async function sendElectronNotification(
 
         // Send IPC message to renderer to navigate to workspace
         if (workspaceId) {
-          mainWindow.webContents.send("mux:notification-clicked", { workspaceId });
+          mainWindow.webContents.send("unix:notification-clicked", { workspaceId });
         }
       }
     });

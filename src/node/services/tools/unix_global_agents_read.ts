@@ -4,50 +4,50 @@ import { tool } from "ai";
 
 import type { ToolConfiguration, ToolFactory } from "@/common/utils/tools/tools";
 import { TOOL_DEFINITIONS } from "@/common/utils/tools/toolDefinitions";
-import { MUX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/muxChat";
+import { UNIX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/unixChat";
 
-function getMuxHomeFromWorkspaceSessionDir(config: ToolConfiguration): string {
+function getUnixHomeFromWorkspaceSessionDir(config: ToolConfiguration): string {
   if (!config.workspaceSessionDir) {
-    throw new Error("mux_global_agents_read requires workspaceSessionDir");
+    throw new Error("unix_global_agents_read requires workspaceSessionDir");
   }
 
-  // workspaceSessionDir = <muxHome>/sessions/<workspaceId>
+  // workspaceSessionDir = <unixHome>/sessions/<workspaceId>
   const sessionsDir = path.dirname(config.workspaceSessionDir);
   return path.dirname(sessionsDir);
 }
 
-export interface MuxGlobalAgentsReadToolResult {
+export interface UnixGlobalAgentsReadToolResult {
   success: true;
   content: string;
 }
 
-export interface MuxGlobalAgentsReadToolError {
+export interface UnixGlobalAgentsReadToolError {
   success: false;
   error: string;
 }
 
-export type MuxGlobalAgentsReadToolOutput =
-  | MuxGlobalAgentsReadToolResult
-  | MuxGlobalAgentsReadToolError;
+export type UnixGlobalAgentsReadToolOutput =
+  | UnixGlobalAgentsReadToolResult
+  | UnixGlobalAgentsReadToolError;
 
-export const createMuxGlobalAgentsReadTool: ToolFactory = (config: ToolConfiguration) => {
+export const createUnixGlobalAgentsReadTool: ToolFactory = (config: ToolConfiguration) => {
   return tool({
-    description: TOOL_DEFINITIONS.mux_global_agents_read.description,
-    inputSchema: TOOL_DEFINITIONS.mux_global_agents_read.schema,
+    description: TOOL_DEFINITIONS.unix_global_agents_read.description,
+    inputSchema: TOOL_DEFINITIONS.unix_global_agents_read.schema,
     execute: async (
       _args,
       { abortSignal: _abortSignal }
-    ): Promise<MuxGlobalAgentsReadToolOutput> => {
+    ): Promise<UnixGlobalAgentsReadToolOutput> => {
       try {
-        if (config.workspaceId !== MUX_HELP_CHAT_WORKSPACE_ID) {
+        if (config.workspaceId !== UNIX_HELP_CHAT_WORKSPACE_ID) {
           return {
             success: false,
-            error: "mux_global_agents_read is only available in the Chat with Mux system workspace",
+            error: "unix_global_agents_read is only available in the Chat with Unix system workspace",
           };
         }
 
-        const muxHome = getMuxHomeFromWorkspaceSessionDir(config);
-        const agentsPath = path.join(muxHome, "AGENTS.md");
+        const unixHome = getUnixHomeFromWorkspaceSessionDir(config);
+        const agentsPath = path.join(unixHome, "AGENTS.md");
 
         try {
           const stat = await fsPromises.lstat(agentsPath);

@@ -9,7 +9,7 @@ import {
 } from "@/common/constants/storage";
 import type { SendMessageOptions } from "@/common/orpc/types";
 import { coerceThinkingLevel, type ThinkingLevel } from "@/common/types/thinking";
-import type { MuxProviderOptions } from "@/common/types/providerOptions";
+import type { UnixProviderOptions } from "@/common/types/providerOptions";
 import { getSendOptionsFromStorage } from "@/browser/utils/messages/sendOptions";
 import { useProviderOptions } from "./useProviderOptions";
 import { useExperimentOverrideValue } from "./useExperiments";
@@ -31,7 +31,7 @@ function constructSendMessageOptions(
   agentId: string,
   thinkingLevel: ThinkingLevel,
   preferredModel: string | null | undefined,
-  providerOptions: MuxProviderOptions,
+  providerOptions: UnixProviderOptions,
   fallbackModel: string,
   experimentValues: ExperimentValues,
   system1Model: string | undefined,

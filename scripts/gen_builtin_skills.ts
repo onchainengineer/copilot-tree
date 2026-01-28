@@ -17,7 +17,7 @@ import * as yaml from "yaml";
 
 const ARGS = new Set(process.argv.slice(2));
 const MODE = ARGS.has("check") ? "check" : "write";
-const SYNC_MUX_DOCS_SKILL = ARGS.has("--sync-mux-docs-skill");
+const SYNC_UNIX_DOCS_SKILL = ARGS.has("--sync-unix-docs-skill");
 
 const PROJECT_ROOT = path.join(import.meta.dir, "..");
 const BUILTIN_SKILLS_DIR = path.join(PROJECT_ROOT, "src", "node", "builtinSkills");
@@ -213,7 +213,7 @@ function resolveDocsPageFilePath(page: string): string {
     // macOS and Windows filesystems are commonly case-insensitive. `fs.existsSync()` will return
     // true even when the requested path casing does not match what's actually on disk.
     //
-    // This matters for mux docs generation because the docs tree is indexed by exact page IDs
+    // This matters for unix docs generation because the docs tree is indexed by exact page IDs
     // (e.g. "agents" vs "AGENTS"). If we accept case-insensitive matches, we can accidentally
     // resolve the wrong file (and produce platform-dependent output).
     let current = baseDir;
@@ -281,9 +281,9 @@ function generate(): GenerateResult {
       "SKILL.md": skillContent.split("\n"),
     };
 
-    // mux-docs: embed docs site content as progressive-disclosure reference files.
+    // unix-docs: embed docs site content as progressive-disclosure reference files.
     // Skipped - docs directory removed
-    if (skillName === "mux-docs" && fs.existsSync(DOCS_DIR)) {
+    if (skillName === "unix-docs" && fs.existsSync(DOCS_DIR)) {
       const docsConfigPath = path.join(DOCS_DIR, "docs.json");
       const docsConfigRaw = fs.readFileSync(docsConfigPath, "utf-8");
       files["references/docs/docs.json"] = readFileLines(docsConfigPath);
@@ -319,7 +319,7 @@ function generate(): GenerateResult {
       );
       files["SKILL.md"] = updatedSkillContent.split("\n");
 
-      if (SYNC_MUX_DOCS_SKILL && updatedSkillContent !== skillContent) {
+      if (SYNC_UNIX_DOCS_SKILL && updatedSkillContent !== skillContent) {
         if (MODE === "check") {
           muxDocsSkillOutOfSync = true;
         } else {
@@ -365,7 +365,7 @@ async function main(): Promise<void> {
   const current = fs.existsSync(OUTPUT_PATH) ? fs.readFileSync(OUTPUT_PATH, "utf-8") : null;
   const outputOutOfSync = current !== formatted;
 
-  const muxDocsSkillPath = path.join(BUILTIN_SKILLS_DIR, "mux-docs.md");
+  const muxDocsSkillPath = path.join(BUILTIN_SKILLS_DIR, "unix-docs.md");
 
   if (MODE === "check") {
     if (!outputOutOfSync && !muxDocsSkillOutOfSync) {

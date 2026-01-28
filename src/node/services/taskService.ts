@@ -24,7 +24,7 @@ import { Ok, Err, type Result } from "@/common/types/result";
 import type { TaskSettings } from "@/common/types/tasks";
 import { DEFAULT_TASK_SETTINGS } from "@/common/types/tasks";
 
-import { createMuxMessage, type MuxMessage } from "@/common/types/message";
+import { createUnixMessage, type UnixMessage } from "@/common/types/message";
 import { createTaskReportMessageId } from "@/node/services/utils/messageIds";
 import { defaultModel, normalizeGatewayModel } from "@/common/utils/ai/models";
 import { WORKSPACE_DEFAULTS } from "@/constants/workspaceDefaults";
@@ -338,7 +338,7 @@ export class TaskService {
 
     for (const task of runningTasks) {
       if (!task.id) continue;
-      // Best-effort: if mux restarted mid-stream, nudge the agent to continue and report.
+      // Best-effort: if unix restarted mid-stream, nudge the agent to continue and report.
       // Only do this when the task has no running descendants, to avoid duplicate spawns.
       const hasActiveDescendants = this.hasActiveDescendantAgentTasks(config, task.id);
       if (hasActiveDescendants) {
@@ -348,7 +348,7 @@ export class TaskService {
       const model = task.taskModelString ?? defaultModel;
       await this.workspaceService.sendMessage(
         task.id,
-        "Mux restarted while this task was running. Continue where you left off. " +
+        "Unix restarted while this task was running. Continue where you left off. " +
           "When you have a final answer, call agent_report exactly once.",
         {
           model,
@@ -1607,7 +1607,7 @@ export class TaskService {
 
       // If init has not yet run for this workspace, start it now (best-effort, async).
       // This is intentionally coupled to task start so queued tasks don't run init hooks
-      // (SSH sync, .mux/init scripts, etc.) until they actually begin execution.
+      // (SSH sync, .unix/init scripts, etc.) until they actually begin execution.
       if (shouldRunInit) {
         const initLogger = getInitLogger();
         taskQueueDebug("TaskService.maybeStartQueuedTasks initWorkspace starting", {
@@ -1921,7 +1921,7 @@ export class TaskService {
     return null;
   }
 
-  private concatTextParts(msg: MuxMessage): string {
+  private concatTextParts(msg: UnixMessage): string {
     let combined = "";
     for (const part of msg.parts) {
       if (!part || typeof part !== "object") continue;
@@ -2184,7 +2184,7 @@ export class TaskService {
   }
 
   private findAgentReportArgsInMessage(
-    msg: MuxMessage
+    msg: UnixMessage
   ): { reportMarkdown: string; title?: string } | null {
     return this.findAgentReportArgsInParts(msg.parts);
   }
@@ -2246,7 +2246,7 @@ export class TaskService {
     ].join("\n");
 
     const messageId = createTaskReportMessageId();
-    const reportMessage = createMuxMessage(messageId, "user", xml, {
+    const reportMessage = createUnixMessage(messageId, "user", xml, {
       timestamp: Date.now(),
       synthetic: true,
     });
@@ -2307,7 +2307,7 @@ export class TaskService {
       return false;
     }
 
-    const updated: MuxMessage = {
+    const updated: UnixMessage = {
       ...partial,
       parts: partial.parts.map((part) => {
         if (!isDynamicToolPart(part)) return part;

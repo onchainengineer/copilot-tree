@@ -13,7 +13,7 @@ import { WorktreeRuntime } from "@/node/runtime/WorktreeRuntime";
 import { createRuntime } from "@/node/runtime/runtimeFactory";
 import { Ok, Err, type Result } from "@/common/types/result";
 import type { StreamEndEvent } from "@/common/types/stream";
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import type { WorkspaceMetadata } from "@/common/types/workspace";
 import type { AIService } from "@/node/services/aiService";
 import type { WorkspaceService } from "@/node/services/workspaceService";
@@ -199,7 +199,7 @@ describe("TaskService", () => {
   let rootDir: string;
 
   beforeEach(async () => {
-    rootDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-taskService-"));
+    rootDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-taskService-"));
   });
 
   afterEach(async () => {
@@ -1660,7 +1660,7 @@ describe("TaskService", () => {
       workspaceService,
     });
 
-    const parentPartial = createMuxMessage(
+    const parentPartial = createUnixMessage(
       "assistant-parent-partial",
       "assistant",
       "Waiting on subagent…",
@@ -1678,7 +1678,7 @@ describe("TaskService", () => {
     const writeParentPartial = await partialService.writePartial(parentId, parentPartial);
     expect(writeParentPartial.success).toBe(true);
 
-    const childPartial = createMuxMessage(
+    const childPartial = createUnixMessage(
       "assistant-child-partial",
       "assistant",
       "",
@@ -1796,7 +1796,7 @@ describe("TaskService", () => {
       workspaceService,
     });
 
-    const parentHistoryMessage = createMuxMessage(
+    const parentHistoryMessage = createUnixMessage(
       "assistant-parent-history",
       "assistant",
       "Spawned subagent…",
@@ -1818,7 +1818,7 @@ describe("TaskService", () => {
     );
     expect(appendParentHistory.success).toBe(true);
 
-    const childPartial = createMuxMessage(
+    const childPartial = createUnixMessage(
       "assistant-child-partial",
       "assistant",
       "",
@@ -1938,7 +1938,7 @@ describe("TaskService", () => {
       childId
     );
 
-    const parentPartial = createMuxMessage(
+    const parentPartial = createUnixMessage(
       "assistant-parent-partial",
       "assistant",
       "Waiting on subagent…",
@@ -2051,7 +2051,7 @@ describe("TaskService", () => {
       workspaceService,
     });
 
-    const parentPartial = createMuxMessage(
+    const parentPartial = createUnixMessage(
       "assistant-parent-partial",
       "assistant",
       "Waiting on subagent…",
@@ -2069,7 +2069,7 @@ describe("TaskService", () => {
     const writeParentPartial = await partialService.writePartial(parentId, parentPartial);
     expect(writeParentPartial.success).toBe(true);
 
-    const assistantOutput = createMuxMessage(
+    const assistantOutput = createUnixMessage(
       "assistant-child-output",
       "assistant",
       "Final output without agent_report",

@@ -1,5 +1,5 @@
 import { cn } from "@/common/lib/utils";
-import type { DisplayedMessage, MuxMessage, QueuedMessage } from "@/common/types/message";
+import type { DisplayedMessage, UnixMessage, QueuedMessage } from "@/common/types/message";
 import { formatTimestamp } from "@/browser/utils/ui/dateTime";
 import { Code2Icon } from "lucide-react";
 import type { ReactNode } from "react";
@@ -22,7 +22,7 @@ export interface ButtonConfig {
 interface MessageWindowProps {
   label: ReactNode;
   variant?: "assistant" | "user";
-  message: MuxMessage | DisplayedMessage | QueuedMessage;
+  message: UnixMessage | DisplayedMessage | QueuedMessage;
   buttons?: ButtonConfig[];
   children: ReactNode;
   className?: string;

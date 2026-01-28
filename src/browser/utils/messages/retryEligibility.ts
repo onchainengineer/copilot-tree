@@ -4,7 +4,7 @@ import type { RuntimeStatusEvent, StreamAbortReasonSnapshot } from "@/common/typ
 
 /**
  * Debug flag to force all errors to be retryable
- * Set in browser console: window.__MUX_FORCE_ALL_RETRYABLE = true
+ * Set in browser console: window.__UNIX_FORCE_ALL_RETRYABLE = true
  *
  * Useful for testing retry/backoff logic without needing to simulate
  * specific network conditions or rate limits.
@@ -15,7 +15,7 @@ import type { RuntimeStatusEvent, StreamAbortReasonSnapshot } from "@/common/typ
  */
 declare global {
   interface Window {
-    __MUX_FORCE_ALL_RETRYABLE?: boolean;
+    __UNIX_FORCE_ALL_RETRYABLE?: boolean;
   }
 }
 
@@ -25,7 +25,7 @@ export const PENDING_STREAM_START_GRACE_PERIOD_MS = 15000; // 15 seconds
  * Check if the debug flag to force all errors to be retryable is enabled
  */
 function isForceAllRetryableEnabled(): boolean {
-  return typeof window !== "undefined" && window.__MUX_FORCE_ALL_RETRYABLE === true;
+  return typeof window !== "undefined" && window.__UNIX_FORCE_ALL_RETRYABLE === true;
 }
 
 /**
@@ -54,7 +54,7 @@ export function isNonRetryableSendError(error: SendMessageError): boolean {
     case "api_key_not_found": // Missing API key - user must configure
     case "provider_not_supported": // Unsupported provider - user must switch
     case "invalid_model_string": // Bad model format - user must fix
-    case "incompatible_workspace": // Workspace from newer mux version - user must upgrade
+    case "incompatible_workspace": // Workspace from newer unix version - user must upgrade
     case "runtime_not_ready": // Container doesn't exist - user must recreate workspace
       return true;
     case "runtime_start_failed": // Runtime is starting - transient, worth retrying

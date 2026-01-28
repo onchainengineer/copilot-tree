@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Icon generation script for mux.
+ * Icon generation script forunix.
  *
  * Usage:
  *   bun scripts/generate-icons.ts [commands...]
@@ -41,7 +41,7 @@ const LOGO_TARGETS = {
   // VS Code extension
   "vscode/icon.png": { size: 128 },
   // Browser asset
-  "src/browser/assets/icons/mux.svg": { size: 1024, svg: true },
+  "src/browser/assets/icons/unix.svg": { size: 1024, svg: true },
 } as const;
 
 const FAVICON_SIZES = [16, 32, 48, 64, 128, 256];

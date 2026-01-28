@@ -53,7 +53,7 @@ function expectExecuteBashSuccess(result: ExecuteBashResult, context: string) {
 }
 const INIT_HOOK_WAIT_MS = 1500; // Wait for async init hook completion (local runtime)
 const SSH_INIT_WAIT_MS = 7000; // SSH init includes sync + checkout + hook, takes longer
-const MUX_DIR = ".mux";
+const UNIX_DIR = ".unix";
 const INIT_HOOK_FILENAME = "init";
 
 // Event type constants
@@ -111,9 +111,9 @@ async function setupInitEventCapture(env: TestEnvironment, workspaceId: string) 
  * Create init hook file in git repo
  */
 async function createInitHook(repoPath: string, hookContent: string): Promise<void> {
-  const muxDir = path.join(repoPath, MUX_DIR);
-  await fs.mkdir(muxDir, { recursive: true });
-  const initHookPath = path.join(muxDir, INIT_HOOK_FILENAME);
+  const unixDir = path.join(repoPath, UNIX_DIR);
+  await fs.mkdir(unixDir, { recursive: true });
+  const initHookPath = path.join(unixDir, INIT_HOOK_FILENAME);
   await fs.writeFile(initHookPath, hookContent, { mode: 0o755 });
 }
 
@@ -377,7 +377,7 @@ describeIntegration("WORKSPACE_CREATE with both runtimes", () => {
 
       describe("Init hook execution", () => {
         test.concurrent(
-          "executes .mux/init hook when present and streams logs",
+          "executes .unix/init hook when present and streams logs",
           async () => {
             const env = await createTestEnvironment();
             const tempGitRepo = await createTempGitRepo();
@@ -908,7 +908,7 @@ exit 1
             // Should be the original origin URL, not the bundle path
             expect(remoteUrl).toBe(originUrl);
             expect(remoteUrl).not.toContain(".bundle");
-            expect(remoteUrl).not.toContain(".mux-bundle");
+            expect(remoteUrl).not.toContain(".unix-bundle");
           } finally {
             await cleanup();
           }

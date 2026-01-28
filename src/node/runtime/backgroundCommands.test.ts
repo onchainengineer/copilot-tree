@@ -42,7 +42,7 @@ describe("backgroundCommands", () => {
       });
 
       expect(result).toBe(
-        `__MUX_EXIT_CODE_PATH='/tmp/exit_code' && trap 'echo $? > "$__MUX_EXIT_CODE_PATH"' EXIT && cd '/home/user/project' && echo hello`
+        `__UNIX_EXIT_CODE_PATH='/tmp/exit_code' && trap 'echo $? > "$__UNIX_EXIT_CODE_PATH"' EXIT && cd '/home/user/project' && echo hello`
       );
     });
 
@@ -164,9 +164,9 @@ describe("backgroundCommands", () => {
 
     it("uses custom quotePath function for SSH tilde expansion", () => {
       const expandTilde = (p: string) => (p.startsWith("~/") ? `"$HOME/${p.slice(2)}"` : `"${p}"`);
-      const result = buildTerminateCommand(1234, "~/mux/exit_code", expandTilde);
+      const result = buildTerminateCommand(1234, "~/unix/exit_code", expandTilde);
 
-      expect(result).toContain('"$HOME/mux/exit_code"');
+      expect(result).toContain('"$HOME/unix/exit_code"');
     });
   });
 

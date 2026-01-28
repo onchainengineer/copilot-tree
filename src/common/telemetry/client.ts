@@ -3,7 +3,7 @@
  *
  * Forwards telemetry events to the backend via ORPC.
  * The backend decides whether to actually send events to PostHog
- * (controlled by MUX_DISABLE_TELEMETRY environment variable).
+ * (controlled by UNIX_DISABLE_TELEMETRY environment variable).
  *
  * This design avoids ad-blocker issues and centralizes control.
  * All payloads are defined in ./payload.ts for transparency.

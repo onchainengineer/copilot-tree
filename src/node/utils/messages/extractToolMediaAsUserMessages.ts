@@ -1,4 +1,4 @@
-import type { MuxFilePart, MuxMessage } from "@/common/types/message";
+import type { UnixFilePart, UnixMessage } from "@/common/types/message";
 
 /**
  * Provider-request-only rewrite to avoid sending huge base64 blobs inside tool-result JSON.
@@ -16,8 +16,8 @@ import type { MuxFilePart, MuxMessage } from "@/common/types/message";
  * NOTE: This is request-only: it should be applied to the in-memory message list right before
  * convertToModelMessages(...). Persisted history and UI still keep the original tool output.
  */
-export function extractToolMediaAsUserMessages(messages: MuxMessage[]): MuxMessage[] {
-  const result: MuxMessage[] = [];
+export function extractToolMediaAsUserMessages(messages: UnixMessage[]): UnixMessage[] {
+  const result: UnixMessage[] = [];
 
   for (const msg of messages) {
     if (msg.role !== "assistant") {
@@ -25,7 +25,7 @@ export function extractToolMediaAsUserMessages(messages: MuxMessage[]): MuxMessa
       continue;
     }
 
-    let extractedImages: MuxFilePart[] = [];
+    let extractedImages: UnixFilePart[] = [];
     let changed = false;
 
     const newParts = msg.parts.map((part) => {
@@ -44,7 +44,7 @@ export function extractToolMediaAsUserMessages(messages: MuxMessage[]): MuxMessa
       };
     });
 
-    const rewrittenMsg = changed ? ({ ...msg, parts: newParts } satisfies MuxMessage) : msg;
+    const rewrittenMsg = changed ? ({ ...msg, parts: newParts } satisfies UnixMessage) : msg;
     result.push(rewrittenMsg);
 
     if (extractedImages.length > 0) {
@@ -123,7 +123,7 @@ function isMediaPart(v: unknown): v is AISDKMediaPart {
 
 function extractImagesFromToolOutput(
   output: unknown
-): { newOutput: unknown; images: MuxFilePart[] } | null {
+): { newOutput: unknown; images: UnixFilePart[] } | null {
   if (isJsonContainer(output)) {
     const inner = extractImagesFromToolOutput(output.value);
     if (!inner) return null;
@@ -137,7 +137,7 @@ function extractImagesFromToolOutput(
     return null;
   }
 
-  const images: MuxFilePart[] = [];
+  const images: UnixFilePart[] = [];
   const newValue: AISDKContent[] = [];
 
   for (const item of output.value) {

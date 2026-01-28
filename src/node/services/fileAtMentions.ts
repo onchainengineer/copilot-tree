@@ -1,8 +1,8 @@
 import * as path from "path";
 
 import assert from "@/common/utils/assert";
-import type { MuxMessage } from "@/common/types/message";
-import { createMuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import { createFileAtMentionMessageId } from "@/node/services/utils/messageIds";
 import { extractAtMentions } from "@/common/utils/atMentions";
 import type { Runtime } from "@/node/runtime/Runtime";
@@ -144,11 +144,11 @@ function renderMuxFileBlock(options: {
   const truncatedAttr = options.truncated ? ' truncated="true"' : "";
 
   return (
-    `<mux-file path="${options.filePath}" range="${options.rangeLabel}"${truncatedAttr}>\n` +
+    `<unix-file path="${options.filePath}" range="${options.rangeLabel}"${truncatedAttr}>\n` +
     `${fence}\n` +
     `${options.content}\n` +
     `\`\`\`\n` +
-    `</mux-file>`
+    `</unix-file>`
   );
 }
 
@@ -160,7 +160,7 @@ export interface MaterializedFileMention {
   token: string;
   /** Resolved absolute path (for recordFileState). */
   resolvedPath: string;
-  /** The rendered <mux-file> block. */
+  /** The rendered <unix-file> block. */
   block: string;
   /** File content (for recordFileState). Only set for successful reads. */
   content?: string;
@@ -171,7 +171,7 @@ export interface MaterializedFileMention {
 /**
  * Materialize @file mentions from a single user message into persisted snapshot blocks.
  *
- * This reads files and produces stable <mux-file> blocks that can be persisted to history.
+ * This reads files and produces stable <unix-file> blocks that can be persisted to history.
  * Unlike injectFileAtMentions (which injects ephemeral synthetic messages), this produces
  * data suitable for persisting so that:
  * 1. Future sends don't re-read the same files (prompt-cache stability)
@@ -343,13 +343,13 @@ export async function materializeFileAtMentions(
 }
 
 export async function injectFileAtMentions(
-  messages: MuxMessage[],
+  messages: UnixMessage[],
   options: {
     runtime: Runtime;
     workspacePath: string;
     abortSignal?: AbortSignal;
   }
-): Promise<MuxMessage[]> {
+): Promise<UnixMessage[]> {
   assert(Array.isArray(messages), "messages must be an array");
   assert(options.runtime, "runtime is required");
   assert(options.workspacePath, "workspacePath is required");
@@ -585,12 +585,12 @@ export async function injectFileAtMentions(
     return messages;
   }
 
-  const result: MuxMessage[] = [];
+  const result: UnixMessage[] = [];
   for (let i = 0; i < messages.length; i++) {
     const blocks = blocksByTargetIndex.get(i);
     if (blocks && blocks.length > 0) {
       result.push(
-        createMuxMessage(createFileAtMentionMessageId(createdAt, i), "user", blocks.join("\n\n"), {
+        createUnixMessage(createFileAtMentionMessageId(createdAt, i), "user", blocks.join("\n\n"), {
           timestamp: createdAt,
           synthetic: true,
         })

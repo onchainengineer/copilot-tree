@@ -27,7 +27,7 @@ export function findCompactionRequestMessage(
   return (
     [...messages]
       .reverse()
-      .find((m) => m.role === "user" && m.metadata?.muxMetadata?.type === "compaction-request") ??
+      .find((m) => m.role === "user" && m.metadata?.unixMetadata?.type === "compaction-request") ??
     null
   );
 }
@@ -39,19 +39,19 @@ export function getCompactionCommand(aggregator: StreamingMessageAggregator): st
   const compactionMsg = findCompactionRequestMessage(aggregator);
   if (!compactionMsg) return null;
 
-  const muxMeta = compactionMsg.metadata?.muxMetadata;
-  if (muxMeta?.type !== "compaction-request") return null;
+  const unixMeta = compactionMsg.metadata?.unixMetadata;
+  if (unixMeta?.type !== "compaction-request") return null;
 
   // Support both new `followUpContent` and legacy `continueMessage` for backwards compatibility
-  const parsed = muxMeta.parsed as { followUpContent?: unknown; continueMessage?: unknown };
+  const parsed = unixMeta.parsed as { followUpContent?: unknown; continueMessage?: unknown };
   const followUpContent = (parsed.followUpContent ?? parsed.continueMessage) as Parameters<
     typeof getFollowUpContentText
   >[0];
   const followUpText = getFollowUpContentText(followUpContent);
-  if (followUpText && !muxMeta.rawCommand.includes("\n")) {
-    return `${muxMeta.rawCommand}\n${followUpText}`;
+  if (followUpText && !unixMeta.rawCommand.includes("\n")) {
+    return `${unixMeta.rawCommand}\n${followUpText}`;
   }
-  return muxMeta.rawCommand;
+  return unixMeta.rawCommand;
 }
 
 /**

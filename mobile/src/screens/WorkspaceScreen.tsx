@@ -888,7 +888,7 @@ function WorkspaceScreenInner({
 
       const runtimeConfig: RuntimeConfig | undefined =
         runtimeMode === RUNTIME_MODE.SSH
-          ? { type: "ssh" as const, host: sshHost, srcBaseDir: "~/mux" }
+          ? { type: "ssh" as const, host: sshHost, srcBaseDir: "~/unix" }
           : undefined;
 
       const identity = await client.nameGeneration.generate({

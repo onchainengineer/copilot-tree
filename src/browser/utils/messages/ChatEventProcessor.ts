@@ -2,7 +2,7 @@
  * Platform-agnostic chat event processor for streaming message accumulation.
  *
  * This module handles the core logic of accumulating streaming events into coherent
- * MuxMessage objects. It's shared between desktop and mobile implementations.
+ * UnixMessage objects. It's shared between desktop and mobile implementations.
  *
  * Responsibilities:
  * - Accumulate streaming deltas (text, reasoning, tool calls) by messageId
@@ -16,7 +16,7 @@
  * - React/DOM interactions
  */
 
-import type { MuxMessage, MuxMetadata } from "@/common/types/message";
+import type { UnixMessage, UnixMetadata } from "@/common/types/message";
 import type { WorkspaceChatMessage } from "@/common/orpc/types";
 import {
   isStreamStart,
@@ -28,7 +28,7 @@ import {
   isToolCallEnd,
   isReasoningDelta,
   isReasoningEnd,
-  isMuxMessage,
+  isUnixMessage,
   isInitStart,
   isInitOutput,
   isInitEnd,
@@ -62,12 +62,12 @@ export interface ChatEventProcessor {
   /**
    * Get all accumulated messages, ordered by historySequence.
    */
-  getMessages(): MuxMessage[];
+  getMessages(): UnixMessage[];
 
   /**
    * Get a specific message by ID.
    */
-  getMessageById(id: string): MuxMessage | undefined;
+  getMessageById(id: string): UnixMessage | undefined;
 
   /**
    * Get current init state (if any).
@@ -88,21 +88,21 @@ export interface ChatEventProcessor {
 
 type ExtendedStreamStartEvent = StreamStartEvent & {
   role?: "user" | "assistant";
-  metadata?: Partial<MuxMetadata>;
+  metadata?: Partial<UnixMetadata>;
   timestamp?: number;
 };
 
 type ExtendedStreamEndEvent = Omit<StreamEndEvent, "metadata"> & {
-  metadata: StreamEndEvent["metadata"] & Partial<MuxMetadata>;
+  metadata: StreamEndEvent["metadata"] & Partial<UnixMetadata>;
 };
 
-function createMuxMessage(
+function createUnixMessage(
   id: string,
   role: "user" | "assistant",
   content: string,
-  metadata?: MuxMetadata
-): MuxMessage {
-  const parts: MuxMessage["parts"] = content ? [{ type: "text" as const, text: content }] : [];
+  metadata?: UnixMetadata
+): UnixMessage {
+  const parts: UnixMessage["parts"] = content ? [{ type: "text" as const, text: content }] : [];
 
   return {
     id,
@@ -113,7 +113,7 @@ function createMuxMessage(
 }
 
 export function createChatEventProcessor(): ChatEventProcessor {
-  const messages = new Map<string, MuxMessage>();
+  const messages = new Map<string, UnixMessage>();
   let initState: InitState | null = null;
 
   const handleEvent = (event: WorkspaceChatMessage): void => {
@@ -169,11 +169,11 @@ export function createChatEventProcessor(): ChatEventProcessor {
     // Handle stream start
     if (isStreamStart(event)) {
       const start = event as ExtendedStreamStartEvent;
-      const message = createMuxMessage(start.messageId, start.role ?? "assistant", "", {
+      const message = createUnixMessage(start.messageId, start.role ?? "assistant", "", {
         historySequence: start.metadata?.historySequence ?? start.historySequence,
         timestamp: start.metadata?.timestamp ?? start.timestamp,
         model: start.metadata?.model ?? start.model,
-        muxMetadata: start.metadata?.muxMetadata,
+        unixMetadata: start.metadata?.unixMetadata,
         partial: true,
       });
       messages.set(start.messageId, message);
@@ -220,7 +220,7 @@ export function createChatEventProcessor(): ChatEventProcessor {
         usage: metadata.usage ?? message.metadata?.usage,
         providerMetadata: metadata.providerMetadata ?? message.metadata?.providerMetadata,
         systemMessageTokens: metadata.systemMessageTokens ?? message.metadata?.systemMessageTokens,
-        muxMetadata: metadata.muxMetadata ?? message.metadata?.muxMetadata,
+        unixMetadata: metadata.unixMetadata ?? message.metadata?.unixMetadata,
         historySequence:
           metadata.historySequence ??
           message.metadata?.historySequence ??
@@ -257,7 +257,7 @@ export function createChatEventProcessor(): ChatEventProcessor {
       return;
     }
 
-    if (isMuxMessage(event)) {
+    if (isUnixMessage(event)) {
       messages.set(event.id, event);
       return;
     }
@@ -352,7 +352,7 @@ export function createChatEventProcessor(): ChatEventProcessor {
     }
   };
 
-  const getMessages = (): MuxMessage[] => {
+  const getMessages = (): UnixMessage[] => {
     return Array.from(messages.values()).sort((a, b) => {
       const seqA = a.metadata?.historySequence ?? 0;
       const seqB = b.metadata?.historySequence ?? 0;
@@ -360,7 +360,7 @@ export function createChatEventProcessor(): ChatEventProcessor {
     });
   };
 
-  const getMessageById = (id: string): MuxMessage | undefined => {
+  const getMessageById = (id: string): UnixMessage | undefined => {
     return messages.get(id);
   };
 

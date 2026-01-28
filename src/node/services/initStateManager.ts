@@ -16,7 +16,7 @@ export interface TimedLine {
 
 /**
  * Persisted state for init hooks.
- * Stored in ~/.mux/sessions/{workspaceId}/init-status.json
+ * Stored in ~/.unix/sessions/{workspaceId}/init-status.json
  */
 export interface InitStatus {
   status: "running" | "success" | "error";

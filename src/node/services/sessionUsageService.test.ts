@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { SessionUsageService, type SessionUsageTokenStatsCacheV1 } from "./sessionUsageService";
 import type { HistoryService } from "./historyService";
 import { Config } from "@/node/config";
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import type { ChatUsageDisplay } from "@/common/utils/tokens/usageAggregator";
 import { Ok } from "@/common/types/result";
 import * as fs from "fs/promises";
@@ -10,7 +10,7 @@ import * as path from "path";
 import * as os from "os";
 
 function createMockHistoryService(
-  messages: Array<ReturnType<typeof createMuxMessage>> = []
+  messages: Array<ReturnType<typeof createUnixMessage>> = []
 ): HistoryService {
   return {
     getHistory: mock(() => Promise.resolve(Ok(messages))),
@@ -38,7 +38,7 @@ describe("SessionUsageService", () => {
   let mockHistoryService: HistoryService;
 
   beforeEach(async () => {
-    tempDir = path.join(os.tmpdir(), `mux-session-usage-test-${Date.now()}-${Math.random()}`);
+    tempDir = path.join(os.tmpdir(), `unix-session-usage-test-${Date.now()}-${Math.random()}`);
     await fs.mkdir(tempDir, { recursive: true });
     config = new Config(tempDir);
     mockHistoryService = createMockHistoryService();
@@ -55,7 +55,7 @@ describe("SessionUsageService", () => {
 
   describe("rollUpUsageIntoParent", () => {
     it("should roll up child usage into parent without changing parent's lastRequest", async () => {
-      const projectPath = "/tmp/mux-session-usage-test-project";
+      const projectPath = "/tmp/unix-session-usage-test-project";
       const model = "claude-sonnet-4-20250514";
 
       const parentWorkspaceId = "parent-workspace";
@@ -102,7 +102,7 @@ describe("SessionUsageService", () => {
     });
 
     it("should be idempotent for the same child workspace", async () => {
-      const projectPath = "/tmp/mux-session-usage-test-project";
+      const projectPath = "/tmp/unix-session-usage-test-project";
       const model = "claude-sonnet-4-20250514";
 
       const parentWorkspaceId = "parent-workspace";
@@ -188,7 +188,7 @@ describe("SessionUsageService", () => {
 
   describe("setTokenStatsCache", () => {
     it("should persist tokenStatsCache and preserve existing usage fields", async () => {
-      const projectPath = "/tmp/mux-session-usage-test-project";
+      const projectPath = "/tmp/unix-session-usage-test-project";
       const model = "claude-sonnet-4-20250514";
 
       const parentWorkspaceId = "parent-workspace";
@@ -245,11 +245,11 @@ describe("SessionUsageService", () => {
     it("should rebuild from messages when file missing (ENOENT)", async () => {
       const workspaceId = "test-workspace";
       const messages = [
-        createMuxMessage("msg1", "assistant", "Hello", {
+        createUnixMessage("msg1", "assistant", "Hello", {
           model: "claude-sonnet-4-20250514",
           usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
         }),
-        createMuxMessage("msg2", "assistant", "World", {
+        createUnixMessage("msg2", "assistant", "World", {
           model: "claude-sonnet-4-20250514",
           usage: { inputTokens: 200, outputTokens: 75, totalTokens: 275 },
         }),
@@ -272,7 +272,7 @@ describe("SessionUsageService", () => {
     it("should rebuild from messages when file is corrupted JSON", async () => {
       const workspaceId = "test-workspace";
       const messages = [
-        createMuxMessage("msg1", "assistant", "Hello", {
+        createUnixMessage("msg1", "assistant", "Hello", {
           model: "claude-sonnet-4-20250514",
           usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
         }),
@@ -297,14 +297,14 @@ describe("SessionUsageService", () => {
       const workspaceId = "test-workspace";
 
       // Create a compaction summary with historicalUsage (legacy format)
-      const compactionSummary = createMuxMessage("summary-1", "assistant", "Compacted summary", {
+      const compactionSummary = createUnixMessage("summary-1", "assistant", "Compacted summary", {
         historySequence: 1,
         compacted: true,
         model: "anthropic:claude-sonnet-4-5",
         usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
       });
 
-      // Add historicalUsage - this field was removed from MuxMetadata type
+      // Add historicalUsage - this field was removed from UnixMetadata type
       // but may still exist in persisted data from before the change
       (compactionSummary.metadata as Record<string, unknown>).historicalUsage = createUsage(
         5000,
@@ -312,7 +312,7 @@ describe("SessionUsageService", () => {
       );
 
       // Add a post-compaction message
-      const postCompactionMsg = createMuxMessage("msg2", "assistant", "New response", {
+      const postCompactionMsg = createUnixMessage("msg2", "assistant", "New response", {
         historySequence: 2,
         model: "anthropic:claude-sonnet-4-5",
         usage: { inputTokens: 200, outputTokens: 75, totalTokens: 275 },

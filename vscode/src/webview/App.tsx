@@ -2,23 +2,23 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { Pencil } from "lucide-react";
 
-import type { WorkspaceChatMessage } from "mux/common/orpc/types";
-import type { DisplayedMessage } from "mux/common/types/message";
-import { createClient } from "mux/common/orpc/client";
+import type { WorkspaceChatMessage } from "unix/common/orpc/types";
+import type { DisplayedMessage } from "unix/common/types/message";
+import { createClient } from "unix/common/orpc/client";
 
-import { ProviderOptionsProvider } from "mux/browser/contexts/ProviderOptionsContext";
-import { SettingsProvider } from "mux/browser/contexts/SettingsContext";
-import { APIProvider } from "mux/browser/contexts/API";
-import { ThemeProvider } from "mux/browser/contexts/ThemeContext";
-import { ChatHostContextProvider } from "mux/browser/contexts/ChatHostContext";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "mux/browser/components/ui/tooltip";
-import { Button } from "mux/browser/components/ui/button";
-import { matchesKeybind, KEYBINDS } from "mux/browser/utils/ui/keybinds";
-import { readPersistedState } from "mux/browser/hooks/usePersistedState";
-import { VIM_ENABLED_KEY } from "mux/common/constants/storage";
-import { useAutoScroll } from "mux/browser/hooks/useAutoScroll";
-import { applyWorkspaceChatEventToAggregator } from "mux/browser/utils/messages/applyWorkspaceChatEventToAggregator";
-import { StreamingMessageAggregator } from "mux/browser/utils/messages/StreamingMessageAggregator";
+import { ProviderOptionsProvider } from "unix/browser/contexts/ProviderOptionsContext";
+import { SettingsProvider } from "unix/browser/contexts/SettingsContext";
+import { APIProvider } from "unix/browser/contexts/API";
+import { ThemeProvider } from "unix/browser/contexts/ThemeContext";
+import { ChatHostContextProvider } from "unix/browser/contexts/ChatHostContext";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "unix/browser/components/ui/tooltip";
+import { Button } from "unix/browser/components/ui/button";
+import { matchesKeybind, KEYBINDS } from "unix/browser/utils/ui/keybinds";
+import { readPersistedState } from "unix/browser/hooks/usePersistedState";
+import { VIM_ENABLED_KEY } from "unix/common/constants/storage";
+import { useAutoScroll } from "unix/browser/hooks/useAutoScroll";
+import { applyWorkspaceChatEventToAggregator } from "unix/browser/utils/messages/applyWorkspaceChatEventToAggregator";
+import { StreamingMessageAggregator } from "unix/browser/utils/messages/StreamingMessageAggregator";
 
 import type { ExtensionToWebviewMessage, UiConnectionStatus, UiWorkspace } from "./protocol";
 import { WorkspacePicker } from "./WorkspacePicker";
@@ -317,7 +317,7 @@ export function App(props: { bridge: VscodeBridge }): JSX.Element {
                 pushNotice({
                   level: "error",
                   message:
-                    "Mux chat did not finish loading (missing caught-up). Showing a partial transcript; try Refresh if messages look incomplete.",
+                    "Unix chat did not finish loading (missing caught-up). Showing a partial transcript; try Refresh if messages look incomplete.",
                 });
               }
 
@@ -546,7 +546,7 @@ export function App(props: { bridge: VscodeBridge }): JSX.Element {
                 ))}
 
                 {!selectedWorkspaceId && notices.length === 0 ? (
-                  <div className="text-muted text-sm">Select a mux workspace to view messages.</div>
+                  <div className="text-muted text-sm">Select a unix workspace to view messages.</div>
                 ) : null}
               </div>
             </div>
@@ -557,13 +557,13 @@ export function App(props: { bridge: VscodeBridge }): JSX.Element {
                   key={selectedWorkspaceId}
                   workspaceId={selectedWorkspaceId}
                   disabled={!canChat}
-                  disabledReason={canChat ? undefined : "Chat requires mux server connection."}
+                  disabledReason={canChat ? undefined : "Chat requires unix server connection."}
                   aggregator={aggregatorRef.current}
                   onSendComplete={jumpToBottom}
                   onNotice={pushNotice}
                 />
               ) : (
-                <div className="text-muted text-sm">Select a mux workspace to chat.</div>
+                <div className="text-muted text-sm">Select a unix workspace to chat.</div>
               )}
             </div>
           </div>

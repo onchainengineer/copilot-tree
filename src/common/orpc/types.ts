@@ -30,7 +30,7 @@ export type StreamErrorMessage = z.infer<typeof schemas.StreamErrorMessageSchema
 export type DeleteMessage = z.infer<typeof schemas.DeleteMessageSchema>;
 export type WorkspaceInitEvent = z.infer<typeof schemas.WorkspaceInitEventSchema>;
 export type UpdateStatus = z.infer<typeof schemas.UpdateStatusSchema>;
-export type ChatMuxMessage = z.infer<typeof schemas.ChatMuxMessageSchema>;
+export type ChatUnixMessage = z.infer<typeof schemas.ChatUnixMessageSchema>;
 export type WorkspaceStatsSnapshot = z.infer<typeof schemas.WorkspaceStatsSnapshotSchema>;
 export type WorkspaceActivitySnapshot = z.infer<typeof schemas.WorkspaceActivitySnapshotSchema>;
 export type FrontendWorkspaceMetadataSchemaType = z.infer<
@@ -98,7 +98,7 @@ export function isUsageDelta(msg: WorkspaceChatMessage): msg is UsageDeltaEvent 
   return (msg as { type?: string }).type === "usage-delta";
 }
 
-export function isMuxMessage(msg: WorkspaceChatMessage): msg is ChatMuxMessage {
+export function isUnixMessage(msg: WorkspaceChatMessage): msg is ChatUnixMessage {
   return (msg as { type?: string }).type === "message";
 }
 

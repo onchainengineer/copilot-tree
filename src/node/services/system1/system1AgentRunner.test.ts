@@ -112,7 +112,7 @@ describe("system1AgentRunner", () => {
 
     const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "system1-runner-project-"));
     try {
-      const agentsDir = path.join(projectDir, ".mux", "agents");
+      const agentsDir = path.join(projectDir, ".unix", "agents");
       await fs.mkdir(agentsDir, { recursive: true });
       await fs.writeFile(
         path.join(agentsDir, "system1_bash.md"),

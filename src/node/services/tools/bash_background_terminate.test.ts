@@ -26,9 +26,9 @@ const TEST_WORKSPACES = ["test-workspace", "workspace-a", "workspace-b"];
 
 describe("bash_background_terminate tool", () => {
   afterEach(async () => {
-    // Clean up output directories from /tmp/mux-bashes/ to prevent test pollution
+    // Clean up output directories from /tmp/unix-bashes/ to prevent test pollution
     for (const ws of TEST_WORKSPACES) {
-      await fs.rm(`/tmp/mux-bashes/${ws}`, { recursive: true, force: true }).catch(() => undefined);
+      await fs.rm(`/tmp/unix-bashes/${ws}`, { recursive: true, force: true }).catch(() => undefined);
     }
   });
   it("should return error when manager not available", async () => {

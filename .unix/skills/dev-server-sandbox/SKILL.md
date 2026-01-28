@@ -1,17 +1,17 @@
 ---
 name: dev-server-sandbox
-description: Run multiple isolated mux dev-server instances (temp MUX_ROOT + free ports)
+description: Run multiple isolated unix dev-server instances (temp UNIX_ROOT + free ports)
 ---
 
 # `dev-server` sandbox instances
 
-`make dev-server` starts the mux backend server, which uses a lockfile at:
+`make dev-server` starts the unix backend server, which uses a lockfile at:
 
-- `<MUX_ROOT>/server.lock` (defaults to `~/.mux-dev/server.lock` in development)
+- `<UNIX_ROOT>/server.lock` (defaults to `~/.unix-dev/server.lock` in development)
 
-This means you can only run **one** dev server per mux root directory.
+This means you can only run **one** dev server per unix root directory.
 
-This skill documents the repo workflow for starting **multiple** dev-server instances in parallel (including from different git worktrees) by giving each instance its own temporary `MUX_ROOT`.
+This skill documents the repo workflow for starting **multiple** dev-server instances in parallel (including from different git worktrees) by giving each instance its own temporary `UNIX_ROOT`.
 
 ## Quick start
 
@@ -21,7 +21,7 @@ make dev-server-sandbox
 
 ## What it does
 
-- Creates a fresh temporary `MUX_ROOT` directory
+- Creates a fresh temporary `UNIX_ROOT` directory
 - Copies these files into the sandbox if present:
   - `providers.jsonc` (provider config)
   - `config.json` (project list)
@@ -32,8 +32,8 @@ make dev-server-sandbox
 ## Options
 
 ```bash
-# Use a specific root to seed from (defaults to ~/.mux-dev then ~/.mux)
-SEED_MUX_ROOT=~/.mux-dev make dev-server-sandbox
+# Use a specific root to seed from (defaults to ~/.unix-dev then ~/.unix)
+SEED_UNIX_ROOT=~/.unix-dev make dev-server-sandbox
 
 # Keep the sandbox root directory after exit (useful for debugging)
 KEEP_SANDBOX=1 make dev-server-sandbox

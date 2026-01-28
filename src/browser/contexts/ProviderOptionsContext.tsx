@@ -1,23 +1,23 @@
 import React, { createContext, useContext } from "react";
 import { usePersistedState } from "@/browser/hooks/usePersistedState";
-import type { MuxProviderOptions } from "@/common/types/providerOptions";
+import type { UnixProviderOptions } from "@/common/types/providerOptions";
 
 interface ProviderOptionsContextType {
-  options: MuxProviderOptions;
-  setAnthropicOptions: (options: MuxProviderOptions["anthropic"]) => void;
-  setGoogleOptions: (options: MuxProviderOptions["google"]) => void;
+  options: UnixProviderOptions;
+  setAnthropicOptions: (options: UnixProviderOptions["anthropic"]) => void;
+  setGoogleOptions: (options: UnixProviderOptions["google"]) => void;
 }
 
 const ProviderOptionsContext = createContext<ProviderOptionsContextType | undefined>(undefined);
 
 export function ProviderOptionsProvider({ children }: { children: React.ReactNode }) {
   const [anthropicOptions, setAnthropicOptions] = usePersistedState<
-    MuxProviderOptions["anthropic"]
+    UnixProviderOptions["anthropic"]
   >("provider_options_anthropic", {
     use1MContext: false,
   });
 
-  const [googleOptions, setGoogleOptions] = usePersistedState<MuxProviderOptions["google"]>(
+  const [googleOptions, setGoogleOptions] = usePersistedState<UnixProviderOptions["google"]>(
     "provider_options_google",
     {}
   );

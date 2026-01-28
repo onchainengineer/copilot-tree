@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 /**
- * `mux run` - First-class CLI for running agent sessions
+ * `unix run` - First-class CLI for running agent sessions
  *
  * Usage:
- *   mux run "Fix the failing tests"
- *   mux run --dir /path/to/project "Add authentication"
- *   mux run --runtime "ssh user@host" "Deploy changes"
+ *   unix run "Fix the failing tests"
+ *   unix run --dir /path/to/project "Add authentication"
+ *   unix run --runtime "ssh user@host" "Deploy changes"
  */
 
 import { Command } from "commander";
@@ -83,7 +83,7 @@ type CLIMode = "plan" | "exec";
 
 function parseRuntimeConfig(value: string | undefined, srcBaseDir: string): RuntimeConfig {
   if (!value) {
-    // Default to local for `mux run` (no worktree isolation needed for one-off)
+    // Default to local for `unix run` (no worktree isolation needed for one-off)
     return { type: "local" };
   }
 
@@ -109,7 +109,7 @@ function parseRuntimeConfig(value: string | undefined, srcBaseDir: string): Runt
 }
 
 function parseThinkingLevel(value: string | undefined): ThinkingLevel | undefined {
-  if (!value) return DEFAULT_THINKING_LEVEL; // Default for mux run
+  if (!value) return DEFAULT_THINKING_LEVEL; // Default for unix run
 
   const normalized = value.trim().toLowerCase();
   if (isThinkingLevel(normalized)) {
@@ -231,7 +231,7 @@ function collectMcpServers(value: string, previous: MCPServerEntry[]): MCPServer
 const program = new Command();
 
 program
-  .name("mux run")
+  .name("unix run")
   .description("Run an agent session in the current directory")
   .argument("[message...]", "instruction for the agent (can also be piped via stdin)")
   .option("-d, --dir <path>", "project directory", process.cwd())
@@ -253,22 +253,22 @@ program
   .option("--json", "output NDJSON for programmatic consumption")
   .option("-q, --quiet", "only output final result")
   .option("--mcp <server>", "MCP server as name=command (can be repeated)", collectMcpServers, [])
-  .option("--no-mcp-config", "ignore .mux/mcp.jsonc, use only --mcp servers")
+  .option("--no-mcp-config", "ignore .unix/mcp.jsonc, use only --mcp servers")
   .option("-e, --experiment <id>", "enable experiment (can be repeated)", collectExperiments, [])
   .option("-b, --budget <usd>", "stop when session cost exceeds budget (USD)", parseFloat)
   .addHelpText(
     "after",
     `
 Examples:
-  $ mux run "Fix the failing tests"
-  $ mux run --dir /path/to/project "Add authentication"
-  $ mux run --runtime "ssh user@host" "Deploy changes"
-  $ mux run --mode plan "Refactor the auth module"
-  $ mux run --budget 1.50 "Quick code review"
-  $ echo "Add logging" | mux run
-  $ mux run --json "List all files" | jq '.type'
-  $ mux run --mcp "memory=npx -y @modelcontextprotocol/server-memory" "Remember this"
-  $ mux run --mcp "chrome=npx chrome-devtools-mcp" --mcp "fs=npx @anthropic/mcp-fs" "Take a screenshot"
+  $ unix run "Fix the failing tests"
+  $ unix run --dir /path/to/project "Add authentication"
+  $ unix run --runtime "ssh user@host" "Deploy changes"
+  $ unix run --mode plan "Refactor the auth module"
+  $ unix run --budget 1.50 "Quick code review"
+  $ echo "Add logging" | unix run
+  $ unix run --json "List all files" | jq '.type'
+  $ unix run --mcp "memory=npx -y @modelcontextprotocol/server-memory" "Remember this"
+  $ unix run --mcp "chrome=npx chrome-devtools-mcp" --mcp "fs=npx @anthropic/mcp-fs" "Take a screenshot"
 `
   );
 
@@ -315,12 +315,12 @@ async function main(): Promise<number> {
 
   if (!message) {
     console.error("Error: No message provided. Pass as argument or pipe via stdin.");
-    console.error('Usage: mux run "Your instruction here"');
+    console.error('Usage: unix run "Your instruction here"');
     process.exit(1);
   }
 
   // Create ephemeral temp dir for session data (auto-cleaned on exit)
-  using tempDir = new DisposableTempDir("mux-run");
+  using tempDir = new DisposableTempDir("unix-run");
 
   // Use real config for providers, but ephemeral temp dir for session data
   const realConfig = new Config();
@@ -379,7 +379,7 @@ async function main(): Promise<number> {
   };
   const writeThinking = (text: string) => {
     if (suppressHumanOutput) return;
-    // Purple color matching Mux UI thinking blocks (hsl(271, 76%, 53%) = #A855F7)
+    // Purple color matching Unix UI thinking blocks (hsl(271, 76%, 53%) = #A855F7)
     const colored = stderrIsTTY ? chalk.hex("#A855F7")(text) : text;
     process.stderr.write(colored);
   };
@@ -400,7 +400,7 @@ async function main(): Promise<number> {
   const partialService = new PartialService(config, historyService);
   const initStateManager = new InitStateManager(config);
   const backgroundProcessManager = new BackgroundProcessManager(
-    path.join(os.tmpdir(), "mux-bashes")
+    path.join(os.tmpdir(), "unix-bashes")
   );
   const aiService = new AIService(
     config,
@@ -426,7 +426,7 @@ async function main(): Promise<number> {
       "Set the process exit code for this CLI session. " +
       "Use this in CI/automation to signal success (0) or failure (non-zero). " +
       "For example, exit 1 to block a PR merge when issues are found. " +
-      "Only available in `mux run` CLI mode.",
+      "Only available in `unix run` CLI mode.",
     inputSchema: setExitCodeSchema,
     execute: ({ exit_code }: z.infer<typeof setExitCodeSchema>) => {
       agentExitCode = exit_code;

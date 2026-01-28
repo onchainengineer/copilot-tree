@@ -120,7 +120,7 @@ jobs:
           fetch-depth: 0 # Required for git describe to find tags
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-mux
+      - uses: ./.github/actions/setup-unix
 
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -142,13 +142,13 @@ jobs:
           TB_ENV: ${{ inputs.env }}
           TB_TASK_NAMES: ${{ inputs.task_names }}
           TB_MODEL: ${{ inputs.model_name }}
-          MUX_MODEL: ${{ inputs.model_name }}
+          UNIX_MODEL: ${{ inputs.model_name }}
           TB_TIMEOUT: ${{ inputs.timeout }}
           TB_ARGS: >-
             ${{ inputs.thinking_level && format('--agent-kwarg thinking_level={0}', inputs.thinking_level) || '' }}
             ${{ inputs.max_tasks && format('--n-tasks {0}', inputs.max_tasks) || '' }}
             ${{ inputs.extra_args || '' }}
-          MUX_EXPERIMENTS: ${{ inputs.experiments }}
+          UNIX_EXPERIMENTS: ${{ inputs.experiments }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
@@ -225,12 +225,12 @@ jobs:
           echo "Artifact name: $ARTIFACT_NAME"
 
       - name: Upload results to BigQuery
-        if: always() && github.repository == 'coder/mux'
+        if: always() && github.repository == 'coder/unix'
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-          GCP_PROJECT_ID: mux-benchmarks
+          GCP_PROJECT_ID: unix-benchmarks
           BQ_DATASET: benchmarks
-          MUX_EXPERIMENTS: ${{ inputs.experiments }}
+          UNIX_EXPERIMENTS: ${{ inputs.experiments }}
         run: |
           if [ -z "$GCP_SA_KEY" ]; then
             echo "GCP_SA_KEY not set, skipping BigQuery upload"

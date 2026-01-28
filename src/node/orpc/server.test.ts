@@ -23,9 +23,9 @@ describe("createOrpcServer", () => {
     // Minimal context stub - router won't be exercised by this test.
     const stubContext: Partial<ORPCContext> = {};
 
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-static-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-static-"));
     const indexHtml =
-      "<!doctype html><html><head><title>mux</title></head><body><div>ok</div></body></html>";
+      "<!doctype html><html><head><title>unix</title></head><body><div>ok</div></body></html>";
 
     let server: Awaited<ReturnType<typeof createOrpcServer>> | null = null;
 
@@ -44,7 +44,7 @@ describe("createOrpcServer", () => {
       const uiRes = await fetch(`${server.baseUrl}/some/spa/route`);
       expect(uiRes.status).toBe(200);
       const uiText = await uiRes.text();
-      expect(uiText).toContain("mux");
+      expect(uiText).toContain("unix");
       expect(uiText).toContain('<base href="/"');
 
       const apiRes = await fetch(`${server.baseUrl}/api/not-a-real-route`);

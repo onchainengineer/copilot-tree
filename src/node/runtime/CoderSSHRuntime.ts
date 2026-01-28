@@ -5,7 +5,7 @@
  * - Creates Coder workspace (if not connecting to existing)
  * - Runs `coder config-ssh --yes` to set up SSH proxy
  *
- * This ensures mux workspace metadata is persisted before the long-running
+ * This ensures unix workspace metadata is persisted before the long-running
  * Coder build starts, allowing build logs to stream to init logs (like Docker).
  */
 
@@ -41,12 +41,12 @@ export interface CoderSSHRuntimeConfig extends SSHRuntimeConfig {
  * Coder workspace name regex: ^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$
  * - Must start with alphanumeric
  * - Can contain hyphens, but only between alphanumeric segments
- * - No underscores (unlike mux workspace names)
+ * - No underscores (unlike unix workspace names)
  */
 const CODER_NAME_REGEX = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
 
 /**
- * Transform a mux workspace name to be Coder-compatible.
+ * Transform a unix workspace name to be Coder-compatible.
  * - Replace underscores with hyphens
  * - Remove leading/trailing hyphens
  * - Collapse multiple consecutive hyphens
@@ -378,9 +378,9 @@ export class CoderSSHRuntime extends SSHRuntime {
     let workspaceName = coder.workspaceName?.trim() ?? "";
 
     if (!coder.existingWorkspace) {
-      // New workspace: derive name from mux workspace name if not provided
+      // New workspace: derive name from unix workspace name if not provided
       if (!workspaceName) {
-        workspaceName = `mux-${finalBranchName}`;
+        workspaceName = `unix-${finalBranchName}`;
       }
       // Transform to Coder-compatible name (handles underscores, etc.)
       workspaceName = toCoderCompatibleName(workspaceName);
@@ -443,7 +443,7 @@ export class CoderSSHRuntime extends SSHRuntime {
       return Err(
         `A Coder workspace named "${workspaceName}" already exists. ` +
           `Either switch to "Existing" mode to use it, delete/rename it in Coder, ` +
-          `or choose a different mux workspace name.`
+          `or choose a different unix workspace name.`
       );
     }
 
@@ -467,9 +467,9 @@ export class CoderSSHRuntime extends SSHRuntime {
   }
 
   /**
-   * Delete workspace: removes SSH files AND deletes Coder workspace (if Mux-managed).
+   * Delete workspace: removes SSH files AND deletes Coder workspace (if Unix-managed).
    *
-   * IMPORTANT: Only delete the Coder workspace once we're confident mux will commit
+   * IMPORTANT: Only delete the Coder workspace once we're confident unix will commit
    * the deletion. In the non-force path, WorkspaceService.remove() aborts and keeps
    * workspace metadata when runtime.deleteWorkspace() fails.
    */
@@ -479,7 +479,7 @@ export class CoderSSHRuntime extends SSHRuntime {
     force: boolean,
     abortSignal?: AbortSignal
   ): Promise<{ success: true; deletedPath: string } | { success: false; error: string }> {
-    // If this workspace is an existing Coder workspace that mux didn't create, just do SSH cleanup.
+    // If this workspace is an existing Coder workspace that unix didn't create, just do SSH cleanup.
     if (this.coderConfig.existingWorkspace) {
       return super.deleteWorkspace(projectPath, workspaceName, force, abortSignal);
     }
@@ -563,7 +563,7 @@ export class CoderSSHRuntime extends SSHRuntime {
     if (!result.success) return result;
 
     // Both workspaces now share the Coder workspace - mark as existing so
-    // deleting either mux workspace won't destroy the underlying Coder workspace
+    // deleting either unix workspace won't destroy the underlying Coder workspace
     const sharedCoderConfig = { ...this.coderConfig, existingWorkspace: true };
 
     // Update this instance's config so postCreateSetup() skips coder create
@@ -581,7 +581,7 @@ export class CoderSSHRuntime extends SSHRuntime {
 
   /**
    * Post-create setup: provision Coder workspace and configure SSH.
-   * This runs after mux persists workspace metadata, so build logs stream to UI.
+   * This runs after unix persists workspace metadata, so build logs stream to UI.
    */
   async postCreateSetup(params: WorkspaceInitParams): Promise<void> {
     const { initLogger, abortSignal } = params;

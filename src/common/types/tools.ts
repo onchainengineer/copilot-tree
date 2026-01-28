@@ -17,8 +17,8 @@ import type {
   BashToolResultSchema,
   FileEditInsertToolResultSchema,
   FileEditReplaceStringToolResultSchema,
-  MuxGlobalAgentsReadToolResultSchema,
-  MuxGlobalAgentsWriteToolResultSchema,
+  UnixGlobalAgentsReadToolResultSchema,
+  UnixGlobalAgentsWriteToolResultSchema,
   FileReadToolResultSchema,
   TaskToolResultSchema,
   TaskAwaitToolResultSchema,
@@ -83,16 +83,16 @@ export interface ToolOutputUiOnlyFields {
 // FileReadToolResult derived from Zod schema (single source of truth)
 export type FileReadToolResult = z.infer<typeof FileReadToolResultSchema>;
 
-// mux_global_agents_* tool types
-export type MuxGlobalAgentsReadToolArgs = z.infer<
-  typeof TOOL_DEFINITIONS.mux_global_agents_read.schema
+// unix_global_agents_* tool types
+export type UnixGlobalAgentsReadToolArgs = z.infer<
+  typeof TOOL_DEFINITIONS.unix_global_agents_read.schema
 >;
-export type MuxGlobalAgentsReadToolResult = z.infer<typeof MuxGlobalAgentsReadToolResultSchema>;
+export type UnixGlobalAgentsReadToolResult = z.infer<typeof UnixGlobalAgentsReadToolResultSchema>;
 
-export type MuxGlobalAgentsWriteToolArgs = z.infer<
-  typeof TOOL_DEFINITIONS.mux_global_agents_write.schema
+export type UnixGlobalAgentsWriteToolArgs = z.infer<
+  typeof TOOL_DEFINITIONS.unix_global_agents_write.schema
 >;
-export type MuxGlobalAgentsWriteToolResult = z.infer<typeof MuxGlobalAgentsWriteToolResultSchema>;
+export type UnixGlobalAgentsWriteToolResult = z.infer<typeof UnixGlobalAgentsWriteToolResultSchema>;
 
 export interface FileEditDiffSuccessBase extends ToolOutputUiOnlyFields {
   success: true;

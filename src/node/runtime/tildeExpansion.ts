@@ -9,7 +9,7 @@
  */
 
 import path from "path";
-import { getMuxHome } from "@/common/constants/paths";
+import { getUnixHome } from "@/common/constants/paths";
 import { PlatformPaths } from "@/node/utils/paths.main";
 
 /**
@@ -29,11 +29,11 @@ import { PlatformPaths } from "@/node/utils/paths.main";
  * expandTilde("/abs/path")   // => "/abs/path"
  */
 export function expandTilde(filePath: string): string {
-  // Special-case mux's own default src dir path so it respects MUX_ROOT + NODE_ENV.
+  // Special-case unix's own default src dir path so it respects UNIX_ROOT + NODE_ENV.
   //
-  // DEFAULT_RUNTIME_CONFIG uses "~/.mux/src"; if we expand "~" to the OS home directory,
-  // we lose test isolation when MUX_ROOT is set.
-  const muxPrefixes = ["~/.mux", "~\\.mux", "~/.cmux", "~\\.cmux"] as const;
+  // DEFAULT_RUNTIME_CONFIG uses "~/.unix/src"; if we expand "~" to the OS home directory,
+  // we lose test isolation when UNIX_ROOT is set.
+  const muxPrefixes = ["~/.unix", "~\\.unix", "~/.cmux", "~\\.cmux"] as const;
   for (const prefix of muxPrefixes) {
     if (!filePath.startsWith(prefix)) {
       continue;
@@ -44,10 +44,10 @@ export function expandTilde(filePath: string): string {
       continue;
     }
 
-    const muxHome = getMuxHome();
+    const unixHome = getUnixHome();
     const suffix = filePath.slice(prefix.length).replace(/^[/\\]+/, "");
     const normalizedSuffix = suffix.replace(/[/\\]+/g, path.sep);
-    return normalizedSuffix ? path.join(muxHome, normalizedSuffix) : muxHome;
+    return normalizedSuffix ? path.join(unixHome, normalizedSuffix) : unixHome;
   }
 
   return PlatformPaths.expandHome(filePath);

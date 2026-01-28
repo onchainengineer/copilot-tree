@@ -14,7 +14,7 @@ import { HistoryService } from "./historyService";
 import { PartialService } from "./partialService";
 import { InitStateManager } from "./initStateManager";
 import { Config } from "@/node/config";
-import { MUX_APP_ATTRIBUTION_TITLE, MUX_APP_ATTRIBUTION_URL } from "@/constants/appAttribution";
+import { UNIX_APP_ATTRIBUTION_TITLE, UNIX_APP_ATTRIBUTION_URL } from "@/constants/appAttribution";
 
 describe("AIService", () => {
   let service: AIService;
@@ -123,8 +123,8 @@ describe("buildAnthropicHeaders", () => {
 describe("buildAppAttributionHeaders", () => {
   it("adds both headers when no headers exist", () => {
     expect(buildAppAttributionHeaders(undefined)).toEqual({
-      "HTTP-Referer": MUX_APP_ATTRIBUTION_URL,
-      "X-Title": MUX_APP_ATTRIBUTION_TITLE,
+      "HTTP-Referer": UNIX_APP_ATTRIBUTION_URL,
+      "X-Title": UNIX_APP_ATTRIBUTION_TITLE,
     });
   });
 
@@ -133,7 +133,7 @@ describe("buildAppAttributionHeaders", () => {
     const result = buildAppAttributionHeaders(existing);
     expect(result).toEqual({
       "HTTP-Referer": "https://example.com",
-      "X-Title": MUX_APP_ATTRIBUTION_TITLE,
+      "X-Title": UNIX_APP_ATTRIBUTION_TITLE,
     });
   });
 
@@ -148,8 +148,8 @@ describe("buildAppAttributionHeaders", () => {
     const result = buildAppAttributionHeaders(existing);
     expect(result).toEqual({
       "x-custom": "value",
-      "HTTP-Referer": MUX_APP_ATTRIBUTION_URL,
-      "X-Title": MUX_APP_ATTRIBUTION_TITLE,
+      "HTTP-Referer": UNIX_APP_ATTRIBUTION_URL,
+      "X-Title": UNIX_APP_ATTRIBUTION_TITLE,
     });
   });
 

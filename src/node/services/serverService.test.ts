@@ -43,7 +43,7 @@ describe("ServerService.startServer", () => {
   let stubContext: ORPCContext;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-server-test-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-server-test-"));
     const config = new Config(tempDir);
     stubContext = { config } as unknown as ORPCContext;
   });
@@ -81,17 +81,17 @@ describe("ServerService.startServer", () => {
   test("cleans up server when lockfile acquisition fails", async () => {
     const service = new ServerService();
 
-    // Make muxHome a *file* (not a directory) so lockfile.acquire() fails reliably,
+    // Make unixHome a *file* (not a directory) so lockfile.acquire() fails reliably,
     // even when tests run as root (chmod-based tests don't fail for root).
-    const muxHomeFile = path.join(tempDir, "muxHome-not-a-dir");
-    await fs.writeFile(muxHomeFile, "not a directory");
+    const unixHomeFile = path.join(tempDir, "unixHome-not-a-dir");
+    await fs.writeFile(unixHomeFile, "not a directory");
 
     let thrownError: unknown = null;
 
     try {
       // Start server - this should fail when trying to write lockfile
       await service.startServer({
-        muxHome: muxHomeFile,
+        unixHome: unixHomeFile,
         context: stubContext,
         authToken: "test-token",
         port: 0, // random port
@@ -129,7 +129,7 @@ describe("ServerService.startServer", () => {
     let thrownError: Error | null = null;
     try {
       await service.startServer({
-        muxHome: tempDir,
+        unixHome: tempDir,
         context: stubContext,
         authToken: "test-token",
         port: 0,
@@ -155,7 +155,7 @@ describe("ServerService.startServer", () => {
     const service = new ServerService();
 
     const info = await service.startServer({
-      muxHome: tempDir,
+      unixHome: tempDir,
       context: stubContext,
       authToken: "test-token",
       port: 0,

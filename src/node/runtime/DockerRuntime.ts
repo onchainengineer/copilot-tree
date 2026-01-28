@@ -5,7 +5,7 @@
  * - Each workspace runs in its own container
  * - Container name derived from project+workspace name
  * - Uses docker exec for command execution
- * - Hardcoded paths: srcBaseDir=/src, bgOutputDir=/tmp/mux-bashes
+ * - Hardcoded paths: srcBaseDir=/src, bgOutputDir=/tmp/unix-bashes
  * - Managed lifecycle: container created/destroyed with workspace
  *
  * Extends RemoteRuntime for shared exec/file operations.
@@ -29,7 +29,7 @@ import type {
 } from "./Runtime";
 import { RuntimeError } from "./Runtime";
 import { RemoteRuntime, type SpawnResult } from "./RemoteRuntime";
-import { checkInitHookExists, getMuxEnv, runInitHookOnRuntime } from "./initHook";
+import { checkInitHookExists, getUnixEnv, runInitHookOnRuntime } from "./initHook";
 import { getProjectName } from "@/node/utils/runtime/helpers";
 import { getErrorMessage } from "@/common/utils/errors";
 import { syncProjectViaGitBundle } from "./gitBundleSync";
@@ -269,7 +269,7 @@ function sanitizeContainerName(name: string): string {
 
 /**
  * Generate container name from project path and workspace name.
- * Format: mux-{projectName}-{workspaceName}-{hash}
+ * Format: unix-{projectName}-{workspaceName}-{hash}
  * Hash suffix prevents collisions (e.g., feature/foo vs feature-foo)
  */
 export function getContainerName(projectPath: string, workspaceName: string): string {
@@ -279,7 +279,7 @@ export function getContainerName(projectPath: string, workspaceName: string): st
     .digest("hex")
     .slice(0, 6);
   // Reserve 7 chars for "-{hash}", leaving 56 for base
-  const base = sanitizeContainerName(`mux-${projectName}-${workspaceName}`).slice(0, 56);
+  const base = sanitizeContainerName(`unix-${projectName}-${workspaceName}`).slice(0, 56);
   return `${base}-${hash}`;
 }
 
@@ -376,7 +376,7 @@ export class DockerRuntime extends RemoteRuntime {
    */
   protected buildWriteCommand(quotedPath: string, quotedTempPath: string): string {
     // Default to 644 (world-readable) for new files, particularly important for
-    // plan files in /var/mux which need to be readable by VS Code Dev Containers
+    // plan files in /var/unix which need to be readable by VS Code Dev Containers
     return `RESOLVED=$(readlink -f ${quotedPath} 2>/dev/null || echo ${quotedPath}) && PERMS=$(stat -c '%a' "$RESOLVED" 2>/dev/null || echo 644) && mkdir -p $(dirname "$RESOLVED") && cat > ${quotedTempPath} && chmod "$PERMS" ${quotedTempPath} && mv ${quotedTempPath} "$RESOLVED"`;
   }
   // ===== Runtime interface implementations =====
@@ -440,7 +440,7 @@ export class DockerRuntime extends RemoteRuntime {
 
   /**
    * Post-create setup: provision container OR detect fork and setup credentials.
-   * Runs after mux persists workspace metadata so build logs stream to UI in real-time.
+   * Runs after unix persists workspace metadata so build logs stream to UI in real-time.
    *
    * Handles ALL environment setup:
    * - Fresh workspace: provisions container (create, sync, checkout, credentials)
@@ -504,7 +504,7 @@ export class DockerRuntime extends RemoteRuntime {
   }
 
   /**
-   * Initialize workspace by running .mux/init hook.
+   * Initialize workspace by running .unix/init hook.
    * Assumes postCreateSetup() has already been called to provision/prepare the container.
    *
    * This method ONLY runs the hook - all container provisioning and credential setup
@@ -523,16 +523,16 @@ export class DockerRuntime extends RemoteRuntime {
       }
 
       if (skipInitHook) {
-        initLogger.logStep("Skipping .mux/init hook (disabled for this task)");
+        initLogger.logStep("Skipping .unix/init hook (disabled for this task)");
         initLogger.logComplete(0);
         return { success: true };
       }
 
-      // Run .mux/init hook if it exists
+      // Run .unix/init hook if it exists
       const hookExists = await checkInitHookExists(projectPath);
       if (hookExists) {
-        const muxEnv = { ...env, ...getMuxEnv(projectPath, "docker", branchName) };
-        const hookPath = `${workspacePath}/.mux/init`;
+        const muxEnv = { ...env, ...getUnixEnv(projectPath, "docker", branchName) };
+        const hookPath = `${workspacePath}/.unix/init`;
         await runInitHookOnRuntime(this, hookPath, workspacePath, muxEnv, initLogger, abortSignal);
       } else {
         initLogger.logComplete(0);
@@ -678,13 +678,13 @@ export class DockerRuntime extends RemoteRuntime {
     this.containerGid = gidResult.stdout.trim() || "0";
     this.containerHome = homeResult.stdout.trim() || "/root";
 
-    // Create /src directory and /var/mux/plans in container
+    // Create /src directory and /var/unix/plans in container
     // Use --user root to create directories, then chown to container's default user
-    // /var/mux is used instead of ~/.mux because /root has 700 permissions,
+    // /var/unix is used instead of ~/.unix because /root has 700 permissions,
     // which makes it inaccessible to VS Code Dev Containers (non-root user)
     initLogger.logStep("Preparing workspace directory...");
     const mkdirResult = await runDockerCommand(
-      `docker exec --user root ${containerName} sh -c 'mkdir -p ${CONTAINER_SRC_DIR} /var/mux/plans && chown ${this.containerUid}:${this.containerGid} ${CONTAINER_SRC_DIR} /var/mux /var/mux/plans'`,
+      `docker exec --user root ${containerName} sh -c 'mkdir -p ${CONTAINER_SRC_DIR} /var/unix/plans && chown ${this.containerUid}:${this.containerGid} ${CONTAINER_SRC_DIR} /var/unix /var/unix/plans'`,
       10000
     );
     if (mkdirResult.exitCode !== 0) {
@@ -744,7 +744,7 @@ export class DockerRuntime extends RemoteRuntime {
     abortSignal?: AbortSignal
   ): Promise<void> {
     const timestamp = Date.now();
-    const bundleFilename = `mux-bundle-${timestamp}.bundle`;
+    const bundleFilename = `unix-bundle-${timestamp}.bundle`;
     const remoteBundlePath = `/tmp/${bundleFilename}`;
     // Use os.tmpdir() for host path (Windows doesn't have /tmp)
     const localBundlePath = path.join(os.tmpdir(), bundleFilename);
@@ -925,7 +925,7 @@ export class DockerRuntime extends RemoteRuntime {
 
     const srcContainerName = getContainerName(projectPath, sourceWorkspaceName);
     const destContainerName = getContainerName(projectPath, newWorkspaceName);
-    const hostTempPath = path.join(os.tmpdir(), `mux-fork-${Date.now()}.bundle`);
+    const hostTempPath = path.join(os.tmpdir(), `unix-fork-${Date.now()}.bundle`);
     const containerBundlePath = "/tmp/fork.bundle";
     let destContainerCreated = false;
     let forkSucceeded = false;
@@ -1007,9 +1007,9 @@ export class DockerRuntime extends RemoteRuntime {
       const destGid = gidResult.stdout.trim() || "0";
       const destHome = homeResult.stdout.trim() || "/root";
 
-      // Create /src and /var/mux/plans as root, then chown to container user
+      // Create /src and /var/unix/plans as root, then chown to container user
       const mkdirResult = await runDockerCommand(
-        `docker exec --user root ${destContainerName} sh -c 'mkdir -p ${CONTAINER_SRC_DIR} /var/mux/plans && chown ${destUid}:${destGid} ${CONTAINER_SRC_DIR} /var/mux /var/mux/plans'`,
+        `docker exec --user root ${destContainerName} sh -c 'mkdir -p ${CONTAINER_SRC_DIR} /var/unix/plans && chown ${destUid}:${destGid} ${CONTAINER_SRC_DIR} /var/unix /var/unix/plans'`,
         10000
       );
       if (mkdirResult.exitCode !== 0) {
@@ -1196,11 +1196,11 @@ export class DockerRuntime extends RemoteRuntime {
   }
 
   /**
-   * Docker uses /var/mux instead of ~/.mux because:
+   * Docker uses /var/unix instead of ~/.unix because:
    * - /root has 700 permissions, inaccessible to VS Code Dev Containers (non-root user)
-   * - /var/mux is world-readable by default
+   * - /var/unix is world-readable by default
    */
-  override getMuxHome(): string {
-    return "/var/mux";
+  override getUnixHome(): string {
+    return "/var/unix";
   }
 }

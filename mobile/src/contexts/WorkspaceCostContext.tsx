@@ -13,9 +13,9 @@ import type { ChatUsageDisplay } from "@/common/utils/tokens/usageAggregator";
 import { sumUsageHistory } from "@/common/utils/tokens/usageAggregator";
 import { createDisplayUsage } from "@/common/utils/tokens/displayUsage";
 import type { ChatStats } from "@/common/types/chatStats.ts";
-import type { MuxMessage } from "@/common/types/message.ts";
+import type { UnixMessage } from "@/common/types/message.ts";
 import type { WorkspaceChatMessage } from "@/common/orpc/types";
-import { isMuxMessage, isStreamEnd } from "@/common/orpc/types";
+import { isUnixMessage, isStreamEnd } from "@/common/orpc/types";
 import type { StreamEndEvent, StreamAbortEvent } from "@/common/types/stream.ts";
 
 import type { WorkspaceChatEvent } from "../types";
@@ -122,17 +122,17 @@ function sortEntries(entries: Iterable<UsageEntry>): ChatUsageDisplay[] {
     .map((entry) => entry.usage);
 }
 
-function extractMessagesFromReplay(events: WorkspaceChatMessage[]): MuxMessage[] {
-  const messages: MuxMessage[] = [];
+function extractMessagesFromReplay(events: WorkspaceChatMessage[]): UnixMessage[] {
+  const messages: UnixMessage[] = [];
   for (const event of events) {
-    if (isMuxMessage(event)) {
-      messages.push(event as unknown as MuxMessage);
+    if (isUnixMessage(event)) {
+      messages.push(event as unknown as UnixMessage);
     }
   }
   return messages;
 }
 
-function getLastModel(messages: MuxMessage[]): string | undefined {
+function getLastModel(messages: UnixMessage[]): string | undefined {
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     const candidate = messages[i]?.metadata?.model;
     if (typeof candidate === "string" && candidate.length > 0) {
@@ -180,8 +180,8 @@ export function WorkspaceCostProvider({
 
         const nextMap = new Map<string, UsageEntry>();
         for (const event of events) {
-          if (isMuxMessage(event as unknown as WorkspaceChatMessage)) {
-            const message = event as unknown as MuxMessage;
+          if (isUnixMessage(event as unknown as WorkspaceChatMessage)) {
+            const message = event as unknown as UnixMessage;
             const entry = normalizeUsage(message.id, {
               usage: message.metadata?.usage,
               model: message.metadata?.model,

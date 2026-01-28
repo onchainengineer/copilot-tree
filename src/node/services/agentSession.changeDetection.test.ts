@@ -18,7 +18,7 @@ describe("AgentSession change detection", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), "mux-change-detection-test-"));
+    tmpDir = await mkdtemp(join(tmpdir(), "unix-change-detection-test-"));
   });
 
   afterEach(async () => {

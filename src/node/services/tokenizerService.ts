@@ -1,12 +1,12 @@
 import { countTokens, countTokensBatch } from "@/node/utils/main/tokenizer";
 import { calculateTokenStats } from "@/common/utils/tokens/tokenStatsCalculator";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import type { ChatStats } from "@/common/types/chatStats";
 import assert from "@/common/utils/assert";
 import type { SessionUsageService, SessionUsageTokenStatsCacheV1 } from "./sessionUsageService";
 import { log } from "./log";
 
-function getMaxHistorySequence(messages: MuxMessage[]): number | undefined {
+function getMaxHistorySequence(messages: UnixMessage[]): number | undefined {
   let max: number | undefined;
   for (const message of messages) {
     const seq = message.metadata?.historySequence;
@@ -62,7 +62,7 @@ export class TokenizerService {
    */
   async calculateStats(
     workspaceId: string,
-    messages: MuxMessage[],
+    messages: UnixMessage[],
     model: string
   ): Promise<ChatStats> {
     assert(

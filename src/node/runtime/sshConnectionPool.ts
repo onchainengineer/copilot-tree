@@ -38,7 +38,7 @@ export interface SSHConnectionConfig {
 export interface SSHRuntimeConfig extends SSHConnectionConfig {
   /** Working directory on remote host */
   srcBaseDir: string;
-  /** Directory on remote for background process output (default: /tmp/mux-bashes) */
+  /** Directory on remote for background process output (default: /tmp/unix-bashes) */
   bgOutputDir?: string;
 }
 
@@ -446,7 +446,7 @@ export const sshConnectionPool = new SSHConnectionPool();
 export function getControlPath(config: SSHConnectionConfig): string {
   const key = makeConnectionKey(config);
   const hash = hashKey(key);
-  return path.join(os.tmpdir(), `mux-ssh-${hash}`);
+  return path.join(os.tmpdir(), `unix-ssh-${hash}`);
 }
 
 /**

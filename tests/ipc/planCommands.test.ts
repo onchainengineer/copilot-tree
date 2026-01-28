@@ -14,7 +14,7 @@ import type { TestEnvironment } from "./setup";
 import { createTempGitRepo, cleanupTempGitRepo, generateBranchName } from "./helpers";
 import { detectDefaultTrunkBranch } from "../../src/node/git";
 import { getPlanFilePath } from "../../src/common/utils/planStorage";
-import { createMuxMessage } from "../../src/common/types/message";
+import { createUnixMessage } from "../../src/common/types/message";
 import { expandTilde } from "../../src/node/runtime/tildeExpansion";
 
 // Skip all tests if TEST_INTEGRATION is not set
@@ -170,7 +170,7 @@ describeIntegration("Plan Commands Integration", () => {
         await fs.mkdir(path.dirname(expandedPlanPath), { recursive: true });
         await fs.writeFile(expandedPlanPath, "# Test Plan\n");
 
-        const summaryMessage = createMuxMessage(
+        const summaryMessage = createUnixMessage(
           `start-here-test-${Date.now()}`,
           "assistant",
           "summary",
@@ -212,7 +212,7 @@ describeIntegration("Plan Commands Integration", () => {
       const workspaceId = createResult.metadata.id;
 
       try {
-        const summaryMessage = createMuxMessage(
+        const summaryMessage = createUnixMessage(
           `start-here-test-${Date.now()}`,
           "assistant",
           "summary",

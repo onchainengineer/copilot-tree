@@ -35,7 +35,7 @@ echo "🔗 Checking code-to-docs links..."
 while IFS= read -r url; do
   path="${url#"$DOCS_BASE"}"
   check_path "$path" "README.md"
-done < <(grep -oE "https://mux\.coder\.com[^[:space:])\"']*" README.md 2>/dev/null || true)
+done < <(grep -oE "https://unix\.coder\.com[^[:space:])\"']*" README.md 2>/dev/null || true)
 
 # Extract from source files (URLs) - skip gateway URLs and generated files
 while IFS=: read -r file line url; do
@@ -43,7 +43,7 @@ while IFS=: read -r file line url; do
   [[ "$file" == *.generated.ts ]] && continue
   path="${url#"$DOCS_BASE"}"
   check_path "$path" "$file:$line"
-done < <(grep -rn --include="*.ts" --include="*.tsx" -oE "https://mux\.coder\.com[^[:space:])\"']*" src/ 2>/dev/null || true)
+done < <(grep -rn --include="*.ts" --include="*.tsx" -oE "https://unix\.coder\.com[^[:space:])\"']*" src/ 2>/dev/null || true)
 
 # Extract DocsLink paths
 while IFS= read -r match; do

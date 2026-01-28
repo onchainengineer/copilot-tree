@@ -2,15 +2,15 @@
  * Integration tests for PROJECT_CREATE IPC handler
  *
  * Tests:
- * - Bare project names resolve to ~/.mux/projects/<name>
- * - Tilde expansion in project paths (home + ~/.mux)
+ * - Bare project names resolve to ~/.unix/projects/<name>
+ * - Tilde expansion in project paths (home + ~/.unix)
  * - Auto-creation for non-existent paths
  * - Path validation (directory check, duplicates, empty paths)
  */
 
 import * as fs from "fs/promises";
 import * as path from "path";
-import { getMuxHome, getMuxProjectsDir } from "../../src/common/constants/paths";
+import { getUnixHome, getMuxProjectsDir } from "../../src/common/constants/paths";
 import * as os from "os";
 import { shouldRunIntegrationTests, createTestEnvironment, cleanupTestEnvironment } from "./setup";
 import type { TestEnvironment } from "./setup";
@@ -19,9 +19,9 @@ import { resolveOrpcClient } from "./helpers";
 const describeIntegration = shouldRunIntegrationTests() ? describe : describe.skip;
 
 describeIntegration("PROJECT_CREATE IPC Handler", () => {
-  test.concurrent("should resolve bare project name to mux projects dir", async () => {
+  test.concurrent("should resolve bare project name to unix projects dir", async () => {
     const env = await createTestEnvironment();
-    const bareName = `mux-test-bare-${Date.now()}`;
+    const bareName = `unix-test-bare-${Date.now()}`;
     const expectedPath = path.join(getMuxProjectsDir(), bareName);
     const client = resolveOrpcClient(env);
 
@@ -42,11 +42,11 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
     }
   });
 
-  test.concurrent("should expand ~/.mux paths to mux home", async () => {
+  test.concurrent("should expand ~/.unix paths to unix home", async () => {
     const env = await createTestEnvironment();
-    const tildeSubpath = `mux-test-tilde-${Date.now()}`;
-    const tildeProjectPath = `~/.mux/test-projects/${tildeSubpath}`;
-    const expectedPath = path.join(getMuxHome(), "test-projects", tildeSubpath);
+    const tildeSubpath = `unix-test-tilde-${Date.now()}`;
+    const tildeProjectPath = `~/.unix/test-projects/${tildeSubpath}`;
+    const expectedPath = path.join(getUnixHome(), "test-projects", tildeSubpath);
     const client = resolveOrpcClient(env);
 
     try {
@@ -66,11 +66,11 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
     }
   });
 
-  test.concurrent("should expand windows-style mux tilde paths", async () => {
+  test.concurrent("should expand windows-style unix tilde paths", async () => {
     const env = await createTestEnvironment();
-    const tildeSubpath = `mux-test-tilde-win-${Date.now()}`;
-    const tildeProjectPath = `~\\.mux\\test-projects\\${tildeSubpath}`;
-    const expectedPath = path.join(getMuxHome(), "test-projects", tildeSubpath);
+    const tildeSubpath = `unix-test-tilde-win-${Date.now()}`;
+    const tildeProjectPath = `~\\.unix\\test-projects\\${tildeSubpath}`;
+    const expectedPath = path.join(getUnixHome(), "test-projects", tildeSubpath);
     const client = resolveOrpcClient(env);
 
     try {
@@ -92,7 +92,7 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
 
   test.concurrent("should reject duplicate bare project name", async () => {
     const env = await createTestEnvironment();
-    const bareName = `mux-test-dup-${Date.now()}`;
+    const bareName = `unix-test-dup-${Date.now()}`;
     const expectedPath = path.join(getMuxProjectsDir(), bareName);
     const client = resolveOrpcClient(env);
 
@@ -133,9 +133,9 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
 
   test.concurrent("should expand tilde in project path and create project", async () => {
     const env = await createTestEnvironment();
-    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-test-"));
+    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-test-"));
     // Create a test directory in home directory
-    const testDirName = `mux-test-tilde-${Date.now()}`;
+    const testDirName = `unix-test-tilde-${Date.now()}`;
     const homeProjectPath = path.join(os.homedir(), testDirName);
     await fs.mkdir(homeProjectPath, { recursive: true });
     // Create .git directory to make it a valid git repo
@@ -171,8 +171,8 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
 
   test.concurrent("should create non-existent project path", async () => {
     const env = await createTestEnvironment();
-    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-test-"));
-    const newProjectPath = path.join(tempProjectDir, `mux-created-${Date.now()}`);
+    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-test-"));
+    const newProjectPath = path.join(tempProjectDir, `unix-created-${Date.now()}`);
     const client = resolveOrpcClient(env);
     const result = await client.projects.create({ projectPath: newProjectPath });
 
@@ -190,8 +190,8 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
 
   test.concurrent("should create non-existent tilde path", async () => {
     const env = await createTestEnvironment();
-    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-test-"));
-    const testDirName = `mux-tilde-create-${Date.now()}`;
+    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-test-"));
+    const testDirName = `unix-tilde-create-${Date.now()}`;
     const tildeProjectPath = `~/${testDirName}`;
     const expectedPath = path.join(os.homedir(), testDirName);
     const client = resolveOrpcClient(env);
@@ -212,7 +212,7 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
 
   test.concurrent("should reject file path (not a directory)", async () => {
     const env = await createTestEnvironment();
-    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-test-"));
+    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-test-"));
     const testFile = path.join(tempProjectDir, "test-file.txt");
     await fs.writeFile(testFile, "test content");
 
@@ -232,7 +232,7 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
     "should accept directory without .git (non-git repos use local runtime only)",
     async () => {
       const env = await createTestEnvironment();
-      const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-test-"));
+      const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-test-"));
 
       const client = resolveOrpcClient(env);
       const result = await client.projects.create({ projectPath: tempProjectDir });
@@ -255,7 +255,7 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
 
   test.concurrent("should accept valid absolute path", async () => {
     const env = await createTestEnvironment();
-    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-test-"));
+    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-test-"));
     // Create .git directory to make it a valid git repo
     await fs.mkdir(path.join(tempProjectDir, ".git"));
 
@@ -278,7 +278,7 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
 
   test.concurrent("should normalize paths with .. in them", async () => {
     const env = await createTestEnvironment();
-    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-test-"));
+    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-test-"));
     // Create .git directory to make it a valid git repo
     await fs.mkdir(path.join(tempProjectDir, ".git"));
 
@@ -303,7 +303,7 @@ describeIntegration("PROJECT_CREATE IPC Handler", () => {
 
   test.concurrent("should reject duplicate projects (same expanded path)", async () => {
     const env = await createTestEnvironment();
-    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-project-test-"));
+    const tempProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-project-test-"));
     // Create .git directory to make it a valid git repo
     await fs.mkdir(path.join(tempProjectDir, ".git"));
 

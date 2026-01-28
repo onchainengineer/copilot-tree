@@ -44,7 +44,7 @@ export interface TypeValidationResult {
 }
 
 /**
- * Validate JavaScript code against mux type definitions using TypeScript.
+ * Validate JavaScript code against unix type definitions using TypeScript.
  *
  * @param code - JavaScript code to validate
  * @param muxTypes - Generated `.d.ts` content from generateMuxTypes()
@@ -105,7 +105,7 @@ function findTokenAtPosition(sourceFile: ts.SourceFile, position: number): ts.No
 
 export function validateTypes(code: string, muxTypes: string): TypeValidationResult {
   // Wrap code in function to allow return statements (matches runtime behavior)
-  // Note: We don't use async because Asyncify makes mux.* calls appear synchronous
+  // Note: We don't use async because Asyncify makesunix.* calls appear synchronous
   // Types go AFTER code so error line numbers match agent's code directly
   const wrapperPrefix = "function __agent__() {\n";
   const wrappedCode = `${wrapperPrefix}${code}
@@ -190,7 +190,7 @@ ${muxTypes}
     .filter((d) => !d.file || d.file.fileName === "agent.ts")
     .filter((d) => !ts.flattenDiagnosticMessageText(d.messageText, "").includes("console"))
     // Allow dynamic property WRITES on empty object literals - Claude frequently uses
-    // `const results = {}; results.foo = mux.file_read(...)` to collate parallel reads.
+    // `const results = {}; results.foo =unix.file_read(...)` to collate parallel reads.
     // Only suppress when the property access is on the LEFT side of an assignment.
     // Reads like `return results.typo` must still error.
     .filter((d) => !isEmptyObjectWriteError(d, sourceFile))

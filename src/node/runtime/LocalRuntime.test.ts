@@ -92,13 +92,13 @@ describe("LocalRuntime", () => {
     it("runs init hook by default, but skips when skipInitHook=true", async () => {
       const runtime = new LocalRuntime(testDir);
 
-      const muxDir = path.join(testDir, ".mux");
-      await fs.mkdir(muxDir, { recursive: true });
+      const unixDir = path.join(testDir, ".unix");
+      await fs.mkdir(unixDir, { recursive: true });
 
       const markerPath = path.join(testDir, ".init-marker");
       await fs.rm(markerPath, { force: true });
 
-      const hookPath = path.join(muxDir, "init");
+      const hookPath = path.join(unixDir, "init");
       await fs.writeFile(hookPath, "#!/usr/bin/env bash\n\necho ran > .init-marker\n");
       await fs.chmod(hookPath, 0o755);
 
@@ -134,7 +134,7 @@ describe("LocalRuntime", () => {
           skipInitHook: true,
         });
         expect(result.success).toBe(true);
-        expect(logger.steps).toContain("Skipping .mux/init hook (disabled for this task)");
+        expect(logger.steps).toContain("Skipping .unix/init hook (disabled for this task)");
       }
 
       const skippedMarkerExists = await fs.access(markerPath).then(
@@ -263,35 +263,35 @@ describe("LocalRuntime", () => {
     it("stat expands tilde paths", async () => {
       const runtime = new LocalRuntime(testDir);
 
-      // Create a file in home directory's .mux folder
-      const muxDir = path.join(os.homedir(), ".mux", "test-tilde");
-      await fs.mkdir(muxDir, { recursive: true });
-      const testFile = path.join(muxDir, "test.txt");
+      // Create a file in home directory's .unix folder
+      const unixDir = path.join(os.homedir(), ".unix", "test-tilde");
+      await fs.mkdir(unixDir, { recursive: true });
+      const testFile = path.join(unixDir, "test.txt");
       await fs.writeFile(testFile, "test content");
 
       try {
         // Use tilde path - should work
-        const stat = await runtime.stat("~/.mux/test-tilde/test.txt");
+        const stat = await runtime.stat("~/.unix/test-tilde/test.txt");
         expect(stat.size).toBeGreaterThan(0);
         expect(stat.isDirectory).toBe(false);
       } finally {
-        await fs.rm(muxDir, { recursive: true, force: true });
+        await fs.rm(unixDir, { recursive: true, force: true });
       }
     });
 
     it("readFile expands tilde paths", async () => {
       const runtime = new LocalRuntime(testDir);
 
-      // Create a file in home directory's .mux folder
-      const muxDir = path.join(os.homedir(), ".mux", "test-tilde");
-      await fs.mkdir(muxDir, { recursive: true });
-      const testFile = path.join(muxDir, "read-test.txt");
+      // Create a file in home directory's .unix folder
+      const unixDir = path.join(os.homedir(), ".unix", "test-tilde");
+      await fs.mkdir(unixDir, { recursive: true });
+      const testFile = path.join(unixDir, "read-test.txt");
       const content = "hello from tilde path";
       await fs.writeFile(testFile, content);
 
       try {
         // Use tilde path - should work
-        const stream = runtime.readFile("~/.mux/test-tilde/read-test.txt");
+        const stream = runtime.readFile("~/.unix/test-tilde/read-test.txt");
         const reader = stream.getReader();
         let result = "";
         while (true) {
@@ -301,7 +301,7 @@ describe("LocalRuntime", () => {
         }
         expect(result).toBe(content);
       } finally {
-        await fs.rm(muxDir, { recursive: true, force: true });
+        await fs.rm(unixDir, { recursive: true, force: true });
       }
     });
 
@@ -309,22 +309,22 @@ describe("LocalRuntime", () => {
       const runtime = new LocalRuntime(testDir);
 
       // Create parent directory in home
-      const muxDir = path.join(os.homedir(), ".mux", "test-tilde-write");
-      await fs.mkdir(muxDir, { recursive: true });
+      const unixDir = path.join(os.homedir(), ".unix", "test-tilde-write");
+      await fs.mkdir(unixDir, { recursive: true });
 
       try {
         // Use tilde path - should work
         const content = "written via tilde path";
-        const stream = runtime.writeFile("~/.mux/test-tilde-write/write-test.txt");
+        const stream = runtime.writeFile("~/.unix/test-tilde-write/write-test.txt");
         const writer = stream.getWriter();
         await writer.write(new TextEncoder().encode(content));
         await writer.close();
 
         // Verify file was written to correct location
-        const written = await fs.readFile(path.join(muxDir, "write-test.txt"), "utf-8");
+        const written = await fs.readFile(path.join(unixDir, "write-test.txt"), "utf-8");
         expect(written).toBe(content);
       } finally {
-        await fs.rm(muxDir, { recursive: true, force: true });
+        await fs.rm(unixDir, { recursive: true, force: true });
       }
     });
   });

@@ -29,7 +29,7 @@ describe("WorkspaceMcpOverridesService", () => {
   let config: Config;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-mcp-overrides-test-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-mcp-overrides-test-"));
     config = new Config(tempDir);
   });
 
@@ -67,10 +67,10 @@ describe("WorkspaceMcpOverridesService", () => {
     const overrides = await service.getOverridesForWorkspace(workspaceId);
 
     expect(overrides).toEqual({});
-    expect(await pathExists(path.join(workspacePath, ".mux", "mcp.local.jsonc"))).toBe(false);
+    expect(await pathExists(path.join(workspacePath, ".unix", "mcp.local.jsonc"))).toBe(false);
   });
 
-  it("adds .mux/mcp.local.jsonc to git exclude when writing overrides", async () => {
+  it("adds .unix/mcp.local.jsonc to git exclude when writing overrides", async () => {
     const projectPath = "/fake/project";
     const workspaceId = "ws-id";
     const workspaceName = "branch";
@@ -119,16 +119,16 @@ describe("WorkspaceMcpOverridesService", () => {
       : path.join(workspacePath, excludePathRaw);
 
     const before = (await pathExists(excludePath)) ? await fs.readFile(excludePath, "utf-8") : "";
-    expect(before).not.toContain(".mux/mcp.local.jsonc");
+    expect(before).not.toContain(".unix/mcp.local.jsonc");
 
     await service.setOverridesForWorkspace(workspaceId, {
       disabledServers: ["server-a"],
     });
 
     const after = await fs.readFile(excludePath, "utf-8");
-    expect(after).toContain(".mux/mcp.local.jsonc");
+    expect(after).toContain(".unix/mcp.local.jsonc");
   });
-  it("persists overrides to .mux/mcp.local.jsonc and reads them back", async () => {
+  it("persists overrides to .unix/mcp.local.jsonc and reads them back", async () => {
     const projectPath = "/fake/project";
     const workspaceId = "ws-id";
     const workspaceName = "branch";
@@ -161,7 +161,7 @@ describe("WorkspaceMcpOverridesService", () => {
       toolAllowlist: { "server-b": ["tool1", "tool1", ""] },
     });
 
-    const filePath = path.join(workspacePath, ".mux", "mcp.local.jsonc");
+    const filePath = path.join(workspacePath, ".unix", "mcp.local.jsonc");
     expect(await pathExists(filePath)).toBe(true);
 
     const roundTrip = await service.getOverridesForWorkspace(workspaceId);
@@ -203,7 +203,7 @@ describe("WorkspaceMcpOverridesService", () => {
       disabledServers: ["server-a"],
     });
 
-    const filePath = path.join(workspacePath, ".mux", "mcp.local.jsonc");
+    const filePath = path.join(workspacePath, ".unix", "mcp.local.jsonc");
     expect(await pathExists(filePath)).toBe(true);
 
     await service.setOverridesForWorkspace(workspaceId, {});
@@ -249,7 +249,7 @@ describe("WorkspaceMcpOverridesService", () => {
     });
 
     // File written
-    const filePath = path.join(workspacePath, ".mux", "mcp.local.jsonc");
+    const filePath = path.join(workspacePath, ".unix", "mcp.local.jsonc");
     expect(await pathExists(filePath)).toBe(true);
 
     // Legacy config cleared

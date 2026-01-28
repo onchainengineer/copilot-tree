@@ -3,11 +3,11 @@ import * as path from "path";
 import writeFileAtomic from "write-file-atomic";
 import type { Result } from "@/common/types/result";
 import { Ok, Err } from "@/common/types/result";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import type { Config } from "@/node/config";
 import type { HistoryService } from "./historyService";
 import { workspaceFileLocks } from "@/node/utils/concurrency/workspaceFileLocks";
-import { normalizeLegacyMuxMetadata } from "@/node/utils/messages/legacy";
+import { normalizeLegacyUnixMetadata } from "@/node/utils/messages/legacy";
 import { log } from "@/node/services/log";
 
 /**
@@ -47,12 +47,12 @@ export class PartialService {
   /**
    * Read the partial message for a workspace, if it exists
    */
-  async readPartial(workspaceId: string): Promise<MuxMessage | null> {
+  async readPartial(workspaceId: string): Promise<UnixMessage | null> {
     try {
       const partialPath = this.getPartialPath(workspaceId);
       const data = await fs.readFile(partialPath, "utf-8");
-      const message = JSON.parse(data) as MuxMessage;
-      return normalizeLegacyMuxMetadata(message);
+      const message = JSON.parse(data) as UnixMessage;
+      return normalizeLegacyUnixMetadata(message);
     } catch (error) {
       if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
         return null; // No partial exists
@@ -66,7 +66,7 @@ export class PartialService {
   /**
    * Write a partial message to disk (with file locking per workspace)
    */
-  async writePartial(workspaceId: string, message: MuxMessage): Promise<Result<void>> {
+  async writePartial(workspaceId: string, message: UnixMessage): Promise<Result<void>> {
     return this.fileLocks.withLock(workspaceId, async () => {
       try {
         const workspaceDir = this.config.getSessionDir(workspaceId);

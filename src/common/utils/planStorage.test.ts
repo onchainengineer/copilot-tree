@@ -2,12 +2,12 @@ import { getPlanFilePath, getLegacyPlanFilePath } from "./planStorage";
 
 describe("planStorage", () => {
   // Plan paths use tilde prefix for portability across local/remote runtimes
-  const expectedMuxHome = "~/.mux";
+  const expectedUnixHome = "~/.unix";
 
   describe("getPlanFilePath", () => {
     it("should return path with project name and workspace name", () => {
-      const result = getPlanFilePath("fix-plan-a1b2", "mux");
-      expect(result).toBe(`${expectedMuxHome}/plans/mux/fix-plan-a1b2.md`);
+      const result = getPlanFilePath("fix-plan-a1b2", "unix");
+      expect(result).toBe(`${expectedUnixHome}/plans/unix/fix-plan-a1b2.md`);
     });
 
     it("should produce same path for same inputs", () => {
@@ -17,20 +17,20 @@ describe("planStorage", () => {
     });
 
     it("should organize plans by project folder", () => {
-      const result1 = getPlanFilePath("sidebar-a1b2", "mux");
+      const result1 = getPlanFilePath("sidebar-a1b2", "unix");
       const result2 = getPlanFilePath("auth-c3d4", "other-project");
-      expect(result1).toBe(`${expectedMuxHome}/plans/mux/sidebar-a1b2.md`);
-      expect(result2).toBe(`${expectedMuxHome}/plans/other-project/auth-c3d4.md`);
+      expect(result1).toBe(`${expectedUnixHome}/plans/unix/sidebar-a1b2.md`);
+      expect(result2).toBe(`${expectedUnixHome}/plans/other-project/auth-c3d4.md`);
     });
 
-    it("should use custom muxHome when provided (Docker uses /var/mux)", () => {
-      const result = getPlanFilePath("fix-plan-a1b2", "mux", "/var/mux");
-      expect(result).toBe("/var/mux/plans/mux/fix-plan-a1b2.md");
+    it("should use custom unixHome when provided (Docker uses /var/unix)", () => {
+      const result = getPlanFilePath("fix-plan-a1b2", "unix", "/var/unix");
+      expect(result).toBe("/var/unix/plans/unix/fix-plan-a1b2.md");
     });
 
-    it("should default to ~/.mux when muxHome not provided", () => {
+    it("should default to ~/.unix when unixHome not provided", () => {
       const withDefault = getPlanFilePath("workspace", "project");
-      const withExplicit = getPlanFilePath("workspace", "project", "~/.mux");
+      const withExplicit = getPlanFilePath("workspace", "project", "~/.unix");
       expect(withDefault).toBe(withExplicit);
     });
   });
@@ -38,12 +38,12 @@ describe("planStorage", () => {
   describe("getLegacyPlanFilePath", () => {
     it("should return path with workspace ID", () => {
       const result = getLegacyPlanFilePath("a1b2c3d4e5");
-      expect(result).toBe(`${expectedMuxHome}/plans/a1b2c3d4e5.md`);
+      expect(result).toBe(`${expectedUnixHome}/plans/a1b2c3d4e5.md`);
     });
 
     it("should handle legacy format IDs", () => {
-      const result = getLegacyPlanFilePath("mux-main");
-      expect(result).toBe(`${expectedMuxHome}/plans/mux-main.md`);
+      const result = getLegacyPlanFilePath("unix-main");
+      expect(result).toBe(`${expectedUnixHome}/plans/unix-main.md`);
     });
   });
 });

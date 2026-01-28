@@ -15,7 +15,7 @@ Usage:
 Environment variables (from GitHub Actions):
     GITHUB_RUN_ID, GITHUB_WORKFLOW, GITHUB_SHA, GITHUB_REF,
     GITHUB_ACTOR, GITHUB_EVENT_NAME
-    GCP_PROJECT_ID (default: mux-benchmarks)
+    GCP_PROJECT_ID (default: unix-benchmarks)
     BQ_DATASET (default: benchmarks)
 """
 
@@ -154,7 +154,7 @@ def build_rows(job_folder: Path) -> list[dict]:
     if dataset is None:
         dataset = job_config.get("dataset")
 
-    experiments = os.environ.get("MUX_EXPERIMENTS")
+    experiments = os.environ.get("UNIX_EXPERIMENTS")
 
     # Raw JSON for future-proofing
     run_result_json = json.dumps(job_result) if job_result else None
@@ -250,7 +250,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--project-id",
-        default=os.environ.get("GCP_PROJECT_ID", "mux-benchmarks"),
+        default=os.environ.get("GCP_PROJECT_ID", "unix-benchmarks"),
         help="GCP project ID",
     )
     parser.add_argument(

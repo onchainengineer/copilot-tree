@@ -1,8 +1,8 @@
 {
-  "name": "@coder/mux-mobile",
+  "name": "@coder/unix-mobile",
   "private": true,
   "version": "0.0.1",
-  "description": "Expo app for mux (connects to mux server over HTTP/WS)",
+  "description": "Expo app for unix (connects to unix server over HTTP/WS)",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",

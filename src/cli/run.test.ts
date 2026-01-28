@@ -1,5 +1,5 @@
 /**
- * Integration tests for `mux run` CLI command.
+ * Integration tests for `unix run` CLI command.
  *
  * These tests verify the CLI interface without actually running agent sessions.
  * They test argument parsing, help output, and error handling.
@@ -82,7 +82,7 @@ async function runRunDirect(args: string[], timeoutMs = 5000): Promise<ExecResul
   });
 }
 
-describe("mux CLI", () => {
+describe("unix CLI", () => {
   beforeAll(() => {
     // Verify CLI files exist
     expect(Bun.file(CLI_PATH).size).toBeGreaterThan(0);
@@ -93,8 +93,8 @@ describe("mux CLI", () => {
     test("--help shows usage", async () => {
       const result = await runCli(["--help"]);
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Usage: mux");
-      expect(result.stdout).toContain("Mux - AI agent orchestration");
+      expect(result.stdout).toContain("Usage: unix");
+      expect(result.stdout).toContain("Unix - AI agent orchestration");
       expect(result.stdout).toContain("run");
       expect(result.stdout).toContain("server");
     });
@@ -113,11 +113,11 @@ describe("mux CLI", () => {
     });
   });
 
-  describe("mux run", () => {
+  describe("unix run", () => {
     test("--help shows all options", async () => {
       const result = await runCli(["run", "--help"]);
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Usage: mux run");
+      expect(result.stdout).toContain("Usage: unix run");
       expect(result.stdout).toContain("--dir");
       expect(result.stdout).toContain("--model");
       expect(result.stdout).toContain("--runtime");
@@ -234,11 +234,11 @@ describe("mux CLI", () => {
     });
   });
 
-  describe("mux server", () => {
+  describe("unix server", () => {
     test("--help shows all options", async () => {
       const result = await runCli(["server", "--help"]);
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Usage: mux server");
+      expect(result.stdout).toContain("Usage: unix server");
       expect(result.stdout).toContain("--host");
       expect(result.stdout).toContain("--port");
       expect(result.stdout).toContain("--auth-token");

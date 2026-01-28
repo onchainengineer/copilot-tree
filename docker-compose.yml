@@ -1,22 +1,22 @@
-# mux server docker-compose configuration
+# unix server docker-compose configuration
 #
 # Quick start:
 #   docker compose up -d
 #
 # Add a project:
-#   docker compose run --rm mux-server --add-project /projects/my-repo
+#   docker compose run --rm unix-server --add-project /projects/my-repo
 
 services:
-  mux-server:
+  unix-server:
     build: .
-    container_name: mux-server
+    container_name: unix-server
     ports:
       - "3000:3000"
     volumes:
-      - mux-data:/root/.mux
+      - unix-data:/root/.unix
       # Mount project directories as needed:
       # - ~/projects:/projects:rw
     restart: unless-stopped
 
 volumes:
-  mux-data:
+  unix-data:

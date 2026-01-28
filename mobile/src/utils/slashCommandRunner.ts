@@ -167,7 +167,7 @@ async function handleCompaction(
       message: messageText,
       options: {
         ...sendOptions,
-        muxMetadata: metadata,
+        unixMetadata: metadata,
         editMessageId: ctx.editingMessageId,
       },
     });
@@ -334,7 +334,7 @@ export function parseRuntimeStringForMobile(runtime?: string): RuntimeConfig | u
     return {
       type: RUNTIME_MODE.SSH,
       host: hostPart,
-      srcBaseDir: "~/mux",
+      srcBaseDir: "~/unix",
     };
   }
   throw new Error(`Unknown runtime: ${runtime}`);

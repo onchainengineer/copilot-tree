@@ -2,34 +2,34 @@ import React, { useMemo, useState } from "react";
 
 import { SendHorizontal } from "lucide-react";
 
-import type { StreamingMessageAggregator } from "mux/browser/utils/messages/StreamingMessageAggregator";
-import { getSendOptionsFromStorage } from "mux/browser/utils/messages/sendOptions";
+import type { StreamingMessageAggregator } from "unix/browser/utils/messages/StreamingMessageAggregator";
+import { getSendOptionsFromStorage } from "unix/browser/utils/messages/sendOptions";
 
-import { matchesKeybind, formatKeybind, KEYBINDS } from "mux/browser/utils/ui/keybinds";
-import { useAPI } from "mux/browser/contexts/API";
-import { AgentProvider, useAgent } from "mux/browser/contexts/AgentContext";
-import { ThinkingProvider } from "mux/browser/contexts/ThinkingContext";
-import { useThinkingLevel } from "mux/browser/hooks/useThinkingLevel";
-import { usePersistedState } from "mux/browser/hooks/usePersistedState";
-import { useModelsFromSettings } from "mux/browser/hooks/useModelsFromSettings";
-import { migrateGatewayModel } from "mux/browser/hooks/useGatewayModels";
-import { useProviderOptions } from "mux/browser/hooks/useProviderOptions";
-import { useAutoCompactionSettings } from "mux/browser/hooks/useAutoCompactionSettings";
+import { matchesKeybind, formatKeybind, KEYBINDS } from "unix/browser/utils/ui/keybinds";
+import { useAPI } from "unix/browser/contexts/API";
+import { AgentProvider, useAgent } from "unix/browser/contexts/AgentContext";
+import { ThinkingProvider } from "unix/browser/contexts/ThinkingContext";
+import { useThinkingLevel } from "unix/browser/hooks/useThinkingLevel";
+import { usePersistedState } from "unix/browser/hooks/usePersistedState";
+import { useModelsFromSettings } from "unix/browser/hooks/useModelsFromSettings";
+import { migrateGatewayModel } from "unix/browser/hooks/useGatewayModels";
+import { useProviderOptions } from "unix/browser/hooks/useProviderOptions";
+import { useAutoCompactionSettings } from "unix/browser/hooks/useAutoCompactionSettings";
 
-import { VimTextArea } from "mux/browser/components/VimTextArea";
-import { ModelSelector } from "mux/browser/components/ModelSelector";
-import { ThinkingSliderComponent } from "mux/browser/components/ThinkingSlider";
-import { ContextUsageIndicatorButton } from "mux/browser/components/ContextUsageIndicatorButton";
-import { Tooltip, TooltipTrigger, TooltipContent } from "mux/browser/components/ui/tooltip";
+import { VimTextArea } from "unix/browser/components/VimTextArea";
+import { ModelSelector } from "unix/browser/components/ModelSelector";
+import { ThinkingSliderComponent } from "unix/browser/components/ThinkingSlider";
+import { ContextUsageIndicatorButton } from "unix/browser/components/ContextUsageIndicatorButton";
+import { Tooltip, TooltipTrigger, TooltipContent } from "unix/browser/components/ui/tooltip";
 
-import type { AgentId } from "mux/common/orpc/schemas";
+import type { AgentId } from "unix/common/orpc/schemas";
 
-import { calculateTokenMeterData } from "mux/common/utils/tokens/tokenMeterUtils";
-import { createDisplayUsage } from "mux/common/utils/tokens/displayUsage";
-import type { ChatUsageDisplay } from "mux/common/utils/tokens/usageAggregator";
-import { enforceThinkingPolicy } from "mux/common/utils/thinking/policy";
-import { cn } from "mux/common/lib/utils";
-import { VIM_ENABLED_KEY, getInputKey, getModelKey } from "mux/common/constants/storage";
+import { calculateTokenMeterData } from "unix/common/utils/tokens/tokenMeterUtils";
+import { createDisplayUsage } from "unix/common/utils/tokens/displayUsage";
+import type { ChatUsageDisplay } from "unix/common/utils/tokens/usageAggregator";
+import { enforceThinkingPolicy } from "unix/common/utils/thinking/policy";
+import { cn } from "unix/common/lib/utils";
+import { VIM_ENABLED_KEY, getInputKey, getModelKey } from "unix/common/constants/storage";
 
 const SEND_MESSAGE_TIMEOUT_MS = 30_000;
 
@@ -239,7 +239,7 @@ function ChatComposerInner(props: {
     }
 
     if (!api) {
-      props.onNotice({ level: "error", message: "Not connected to mux server." });
+      props.onNotice({ level: "error", message: "Not connected to unix server." });
       return;
     }
 

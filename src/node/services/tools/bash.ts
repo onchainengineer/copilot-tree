@@ -212,14 +212,14 @@ function shellEscape(str: string): string {
 }
 
 /**
- * Build script prelude that sources .mux/tool_env if present.
+ * Build script prelude that sources .unix/tool_env if present.
  * Returns empty string if no tool_env path is provided.
  */
 function buildToolEnvPrelude(toolEnvPath: string | null): string {
   if (!toolEnvPath) return "";
   // Source the tool_env file; fail with clear error if sourcing fails
   return `if ! source ${shellEscape(toolEnvPath)} 2>&1; then
-  echo "mux: failed to source ${toolEnvPath}" >&2
+  echo "unix: failed to source ${toolEnvPath}" >&2
   exit 1
 fi
 `;
@@ -256,7 +256,7 @@ export const createBashTool: ToolFactory = (config: ToolConfiguration) => {
       const validationError = validateScript(script, config);
       if (validationError) return validationError;
 
-      // Look up .mux/tool_env to source before script (for direnv, nvm, venv, etc.)
+      // Look up .unix/tool_env to source before script (for direnv, nvm, venv, etc.)
       const toolEnvPath = config.runtime ? await getToolEnvPath(config.runtime, config.cwd) : null;
       const toolEnvPrelude = buildToolEnvPrelude(toolEnvPath);
       const scriptWithEnv = toolEnvPrelude + script;

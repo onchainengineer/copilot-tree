@@ -270,12 +270,12 @@ export const ProjectSettingsWithServers: AppStory = {
       setup={() =>
         setupMCPStory({
           servers: {
-            mux: { command: "npx -y @anthropics/mux-server", disabled: false },
+            unix: { command: "npx -y @anthropics/unix-server", disabled: false },
             posthog: { command: "npx -y posthog-mcp-server", disabled: false },
             filesystem: { command: "npx -y @anthropics/filesystem-server /tmp", disabled: false },
           },
           testResults: {
-            mux: MOCK_TOOLS,
+            unix: MOCK_TOOLS,
             posthog: POSTHOG_TOOLS,
             filesystem: ["read_file", "write_file", "list_directory"],
           },
@@ -289,7 +289,7 @@ export const ProjectSettingsWithServers: AppStory = {
 
     // Verify servers are shown
     const body = within(canvasElement.ownerDocument.body);
-    await body.findByText("mux");
+    await body.findByText("unix");
     await body.findByText("posthog");
     await body.findByText("filesystem");
   },
@@ -302,12 +302,12 @@ export const ProjectSettingsMixedState: AppStory = {
       setup={() =>
         setupMCPStory({
           servers: {
-            mux: { command: "npx -y @anthropics/mux-server", disabled: false },
+            unix: { command: "npx -y @anthropics/unix-server", disabled: false },
             posthog: { command: "npx -y posthog-mcp-server", disabled: true },
             filesystem: { command: "npx -y @anthropics/filesystem-server /tmp", disabled: false },
           },
           testResults: {
-            mux: MOCK_TOOLS,
+            unix: MOCK_TOOLS,
             posthog: POSTHOG_TOOLS,
             filesystem: ["read_file", "write_file", "list_directory"],
           },
@@ -334,14 +334,14 @@ export const ProjectSettingsWithToolAllowlist: AppStory = {
       setup={() =>
         setupMCPStory({
           servers: {
-            mux: {
-              command: "npx -y @anthropics/mux-server",
+            unix: {
+              command: "npx -y @anthropics/unix-server",
               disabled: false,
               toolAllowlist: ["file_read", "file_write", "bash"],
             },
           },
           testResults: {
-            mux: MOCK_TOOLS,
+            unix: MOCK_TOOLS,
           },
           preCacheTools: true,
         })
@@ -352,7 +352,7 @@ export const ProjectSettingsWithToolAllowlist: AppStory = {
     await openProjectSettings(canvasElement);
 
     const body = within(canvasElement.ownerDocument.body);
-    await body.findByText("mux");
+    await body.findByText("unix");
 
     // Should show "3/8" tools indicator (3 allowed out of 8 total)
     await body.findByText(/3\/8/);
@@ -370,11 +370,11 @@ export const WorkspaceMCPNoOverrides: AppStory = {
       setup={() =>
         setupMCPStory({
           servers: {
-            mux: { command: "npx -y @anthropics/mux-server", disabled: false },
+            unix: { command: "npx -y @anthropics/unix-server", disabled: false },
             posthog: { command: "npx -y posthog-mcp-server", disabled: false },
           },
           testResults: {
-            mux: MOCK_TOOLS,
+            unix: MOCK_TOOLS,
             posthog: POSTHOG_TOOLS,
           },
           preCacheTools: true,
@@ -388,7 +388,7 @@ export const WorkspaceMCPNoOverrides: AppStory = {
     const body = within(canvasElement.ownerDocument.body);
 
     // Both servers should be shown and enabled
-    await body.findByText("mux");
+    await body.findByText("unix");
     await body.findByText("posthog");
   },
 };
@@ -400,11 +400,11 @@ export const WorkspaceMCPProjectDisabledServer: AppStory = {
       setup={() =>
         setupMCPStory({
           servers: {
-            mux: { command: "npx -y @anthropics/mux-server", disabled: false },
+            unix: { command: "npx -y @anthropics/unix-server", disabled: false },
             posthog: { command: "npx -y posthog-mcp-server", disabled: true },
           },
           testResults: {
-            mux: MOCK_TOOLS,
+            unix: MOCK_TOOLS,
             posthog: POSTHOG_TOOLS,
           },
           preCacheTools: true,
@@ -430,14 +430,14 @@ export const WorkspaceMCPEnabledOverride: AppStory = {
       setup={() =>
         setupMCPStory({
           servers: {
-            mux: { command: "npx -y @anthropics/mux-server", disabled: false },
+            unix: { command: "npx -y @anthropics/unix-server", disabled: false },
             posthog: { command: "npx -y posthog-mcp-server", disabled: true },
           },
           workspaceOverrides: {
             enabledServers: ["posthog"],
           },
           testResults: {
-            mux: MOCK_TOOLS,
+            unix: MOCK_TOOLS,
             posthog: POSTHOG_TOOLS,
           },
           preCacheTools: true,
@@ -465,14 +465,14 @@ export const WorkspaceMCPDisabledOverride: AppStory = {
       setup={() =>
         setupMCPStory({
           servers: {
-            mux: { command: "npx -y @anthropics/mux-server", disabled: false },
+            unix: { command: "npx -y @anthropics/unix-server", disabled: false },
             posthog: { command: "npx -y posthog-mcp-server", disabled: false },
           },
           workspaceOverrides: {
             disabledServers: ["posthog"],
           },
           testResults: {
-            mux: MOCK_TOOLS,
+            unix: MOCK_TOOLS,
             posthog: POSTHOG_TOOLS,
           },
           preCacheTools: true,
@@ -485,8 +485,8 @@ export const WorkspaceMCPDisabledOverride: AppStory = {
 
     const body = within(canvasElement.ownerDocument.body);
 
-    // mux should be enabled, posthog should be disabled
-    await body.findByText("mux");
+    // unix should be enabled, posthog should be disabled
+    await body.findByText("unix");
     await body.findByText("posthog");
   },
 };
@@ -535,10 +535,10 @@ export const ToolSelectorInteraction: AppStory = {
       setup={() =>
         setupMCPStory({
           servers: {
-            mux: { command: "npx -y @anthropics/mux-server", disabled: false },
+            unix: { command: "npx -y @anthropics/unix-server", disabled: false },
           },
           testResults: {
-            mux: MOCK_TOOLS,
+            unix: MOCK_TOOLS,
           },
           preCacheTools: true,
         })
@@ -551,7 +551,7 @@ export const ToolSelectorInteraction: AppStory = {
     const body = within(canvasElement.ownerDocument.body);
 
     // Find the tool selector section
-    await body.findByText("mux");
+    await body.findByText("unix");
 
     // Click "None" to deselect all tools
     const noneButton = await body.findByRole("button", { name: /^None$/i });
@@ -573,11 +573,11 @@ export const ToggleServerEnabled: AppStory = {
       setup={() =>
         setupMCPStory({
           servers: {
-            mux: { command: "npx -y @anthropics/mux-server", disabled: false },
+            unix: { command: "npx -y @anthropics/unix-server", disabled: false },
             posthog: { command: "npx -y posthog-mcp-server", disabled: false },
           },
           testResults: {
-            mux: MOCK_TOOLS,
+            unix: MOCK_TOOLS,
             posthog: POSTHOG_TOOLS,
           },
           preCacheTools: true,

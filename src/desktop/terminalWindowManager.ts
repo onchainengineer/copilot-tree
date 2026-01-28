@@ -72,8 +72,8 @@ export class TerminalWindowManager {
     });
 
     // Load the terminal page
-    // Match main window logic: use dev server unless packaged or MUX_E2E_LOAD_DIST=1
-    const forceDistLoad = process.env.MUX_E2E_LOAD_DIST === "1";
+    // Match main window logic: use dev server unless packaged or UNIX_E2E_LOAD_DIST=1
+    const forceDistLoad = process.env.UNIX_E2E_LOAD_DIST === "1";
     const useDevServer = !app.isPackaged && !forceDistLoad;
 
     // Build query params including optional sessionId for session handoff

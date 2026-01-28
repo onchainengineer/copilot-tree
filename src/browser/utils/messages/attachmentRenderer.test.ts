@@ -32,13 +32,13 @@ describe("attachmentRenderer", () => {
 
     // Should not leak file paths (inline only).
     expect(content).not.toContain("todos.json");
-    expect(content).not.toContain("~/.mux");
+    expect(content).not.toContain("~/.unix");
   });
 
   it("respects a maxChars budget and truncates oversized plan content", () => {
     const attachment: PlanFileReferenceAttachment = {
       type: "plan_file_reference",
-      planFilePath: "~/.mux/plans/cmux/ws.md",
+      planFilePath: "~/.unix/plans/cmux/ws.md",
       planContent: "a".repeat(10_000),
     };
 

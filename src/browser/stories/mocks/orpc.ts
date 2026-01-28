@@ -25,11 +25,11 @@ import type { DebugLlmRequestSnapshot } from "@/common/types/debugLlmRequest";
 import type { Secret } from "@/common/types/secrets";
 import type { ChatStats } from "@/common/types/chatStats";
 import {
-  MUX_HELP_CHAT_AGENT_ID,
-  MUX_HELP_CHAT_WORKSPACE_ID,
-  MUX_HELP_CHAT_WORKSPACE_NAME,
-  MUX_HELP_CHAT_WORKSPACE_TITLE,
-} from "@/common/constants/muxChat";
+  UNIX_HELP_CHAT_AGENT_ID,
+  UNIX_HELP_CHAT_WORKSPACE_ID,
+  UNIX_HELP_CHAT_WORKSPACE_NAME,
+  UNIX_HELP_CHAT_WORKSPACE_TITLE,
+} from "@/common/constants/unixChat";
 import { DEFAULT_RUNTIME_CONFIG } from "@/common/constants/workspace";
 import {
   DEFAULT_TASK_SETTINGS,
@@ -268,22 +268,22 @@ export function createMockORPCClient(options: MockORPCClientOptions = {}): APICl
     return { enabled, variant: statsTabVariant, override: statsTabOverride } as const;
   };
 
-  // App now boots into the built-in mux-chat workspace by default.
+  // App now boots into the built-in unix-chat workspace by default.
   // Ensure Storybook mocks always include it so stories don't render "Workspace not found".
-  const muxChatWorkspace: FrontendWorkspaceMetadata = {
-    id: MUX_HELP_CHAT_WORKSPACE_ID,
-    name: MUX_HELP_CHAT_WORKSPACE_NAME,
-    title: MUX_HELP_CHAT_WORKSPACE_TITLE,
-    projectName: "Mux",
-    projectPath: "/Users/dev/.mux/system/chat-with-mux",
-    namedWorkspacePath: "/Users/dev/.mux/system/chat-with-mux",
+  const unixChatWorkspace: FrontendWorkspaceMetadata = {
+    id: UNIX_HELP_CHAT_WORKSPACE_ID,
+    name: UNIX_HELP_CHAT_WORKSPACE_NAME,
+    title: UNIX_HELP_CHAT_WORKSPACE_TITLE,
+    projectName: "Unix",
+    projectPath: "/Users/dev/.unix/system/chat-with-unix",
+    namedWorkspacePath: "/Users/dev/.unix/system/chat-with-unix",
     runtimeConfig: { type: "local" },
-    agentId: MUX_HELP_CHAT_AGENT_ID,
+    agentId: UNIX_HELP_CHAT_AGENT_ID,
   };
 
-  const workspaces = inputWorkspaces.some((w) => w.id === MUX_HELP_CHAT_WORKSPACE_ID)
+  const workspaces = inputWorkspaces.some((w) => w.id === UNIX_HELP_CHAT_WORKSPACE_ID)
     ? inputWorkspaces
-    : [muxChatWorkspace, ...inputWorkspaces];
+    : [unixChatWorkspace, ...inputWorkspaces];
 
   const workspaceMap = new Map(workspaces.map((w) => [w.id, w]));
 
@@ -329,10 +329,10 @@ export function createMockORPCClient(options: MockORPCClientOptions = {}): APICl
         base: "exec",
       },
       {
-        id: "mux",
+        id: "unix",
         scope: "built-in",
-        name: "Mux",
-        description: "Configure mux global behavior (system workspace)",
+        name: "Unix",
+        description: "Configure unix global behavior (system workspace)",
         uiSelectable: false,
         subagentRunnable: false,
       },

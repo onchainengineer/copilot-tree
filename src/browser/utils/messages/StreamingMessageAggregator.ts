@@ -1,13 +1,13 @@
 import type {
-  MuxMessage,
-  MuxMetadata,
-  MuxFilePart,
+  UnixMessage,
+  UnixMetadata,
+  UnixFilePart,
   DisplayedMessage,
   CompactionRequestData,
   CompactionFollowUpRequest,
-  MuxFrontendMetadata,
+  UnixFrontendMetadata,
 } from "@/common/types/message";
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 
 import type {
   StreamStartEvent,
@@ -28,7 +28,7 @@ import type { TodoItem, StatusSetToolResult, NotifyToolResult } from "@/common/t
 import { getToolOutputUiOnly } from "@/common/utils/tools/toolOutputUiOnly";
 
 import type { WorkspaceChatMessage, StreamErrorMessage, DeleteMessage } from "@/common/orpc/types";
-import { isInitStart, isInitOutput, isInitEnd, isMuxMessage } from "@/common/orpc/types";
+import { isInitStart, isInitOutput, isInitEnd, isUnixMessage } from "@/common/orpc/types";
 import type {
   DynamicToolPart,
   DynamicToolPartPending,
@@ -113,10 +113,10 @@ function hasFailureResult(result: unknown): boolean {
  * Avoids O(n²) string allocations from repeated concatenation.
  * Tool parts are preserved as-is between merged text/reasoning runs.
  */
-function mergeAdjacentParts(parts: MuxMessage["parts"]): MuxMessage["parts"] {
+function mergeAdjacentParts(parts: UnixMessage["parts"]): UnixMessage["parts"] {
   if (parts.length <= 1) return parts;
 
-  const merged: MuxMessage["parts"] = [];
+  const merged: UnixMessage["parts"] = [];
   let pendingTexts: string[] = [];
   let pendingTextTimestamp: number | undefined;
   let pendingReasonings: string[] = [];
@@ -169,7 +169,7 @@ function mergeAdjacentParts(parts: MuxMessage["parts"]): MuxMessage["parts"] {
 }
 
 export class StreamingMessageAggregator {
-  private messages = new Map<string, MuxMessage>();
+  private messages = new Map<string, UnixMessage>();
   private activeStreams = new Map<string, StreamingContext>();
 
   // Derived value cache - invalidated as a unit on every mutation.
@@ -180,7 +180,7 @@ export class StreamingMessageAggregator {
   >();
   private messageVersions = new Map<string, number>();
   private cache: {
-    allMessages?: MuxMessage[];
+    allMessages?: UnixMessage[];
     displayedMessages?: DisplayedMessage[];
     latestStreamingBashToolCallId?: string | null; // null = computed, none found
   } = {};
@@ -662,7 +662,7 @@ export class StreamingMessageAggregator {
    * Extract the final response text from a message (text after the last tool call).
    * Used for notification body content.
    */
-  private extractFinalResponseText(message: MuxMessage | undefined): string {
+  private extractFinalResponseText(message: UnixMessage | undefined): string {
     if (!message) return "";
     const parts = message.parts;
     const lastToolIndex = parts.findLastIndex((part) => part.type === "dynamic-tool");
@@ -674,11 +674,11 @@ export class StreamingMessageAggregator {
       .trim();
   }
 
-  private compactMessageParts(message: MuxMessage): void {
+  private compactMessageParts(message: UnixMessage): void {
     message.parts = mergeAdjacentParts(message.parts);
   }
 
-  addMessage(message: MuxMessage): void {
+  addMessage(message: UnixMessage): void {
     const existing = this.messages.get(message.id);
     if (existing) {
       const existingParts = Array.isArray(existing.parts) ? existing.parts.length : 0;
@@ -713,7 +713,7 @@ export class StreamingMessageAggregator {
    * @param messages - Historical messages to load
    * @param hasActiveStream - Whether there's an active stream in buffered events (for reconnection scenario)
    */
-  loadHistoricalMessages(messages: MuxMessage[], hasActiveStream = false): void {
+  loadHistoricalMessages(messages: UnixMessage[], hasActiveStream = false): void {
     // Clear existing state to prevent stale messages from persisting.
     // This method replaces all messages, not merges them.
     this.messages.clear();
@@ -768,7 +768,7 @@ export class StreamingMessageAggregator {
     this.invalidateCache();
   }
 
-  getAllMessages(): MuxMessage[] {
+  getAllMessages(): UnixMessage[] {
     this.cache.allMessages ??= Array.from(this.messages.values()).sort(
       (a, b) => (a.metadata?.historySequence ?? 0) - (b.metadata?.historySequence ?? 0)
     );
@@ -839,9 +839,9 @@ export class StreamingMessageAggregator {
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i];
       if (message.role !== "user") continue;
-      const muxMetadata = message.metadata?.muxMetadata;
-      if (muxMetadata?.type === "compaction-request") {
-        return muxMetadata.parsed;
+      const unixMetadata = message.metadata?.unixMetadata;
+      if (unixMetadata?.type === "compaction-request") {
+        return unixMetadata.parsed;
       }
       return null;
     }
@@ -1180,7 +1180,7 @@ export class StreamingMessageAggregator {
     this.activeStreams.set(data.messageId, context);
 
     // Create initial streaming message with empty parts (deltas will append)
-    const streamingMessage = createMuxMessage(data.messageId, "assistant", "", {
+    const streamingMessage = createUnixMessage(data.messageId, "assistant", "", {
       historySequence: data.historySequence,
       timestamp: Date.now(),
       model: data.model,
@@ -1227,7 +1227,7 @@ export class StreamingMessageAggregator {
       const message = this.messages.get(data.messageId);
       if (message?.metadata) {
         // Transparent metadata merge - backend fields flow through automatically
-        const updatedMetadata: MuxMetadata = {
+        const updatedMetadata: UnixMetadata = {
           ...message.metadata,
           ...data.metadata,
         };
@@ -1284,7 +1284,7 @@ export class StreamingMessageAggregator {
       // Backend MUST provide historySequence in metadata
 
       // Create the complete message
-      const message: MuxMessage = {
+      const message: UnixMessage = {
         id: data.messageId,
         role: "assistant",
         metadata: {
@@ -1379,7 +1379,7 @@ export class StreamingMessageAggregator {
         0,
         ...Array.from(this.messages.values()).map((m) => m.metadata?.historySequence ?? 0)
       );
-      const errorMessage: MuxMessage = {
+      const errorMessage: UnixMessage = {
         id: data.messageId,
         role: "assistant",
         parts: [],
@@ -1748,8 +1748,8 @@ export class StreamingMessageAggregator {
     }
 
     // Handle regular messages (user messages, historical messages)
-    // Check if it's a MuxMessage (has role property but no type)
-    if (isMuxMessage(data)) {
+    // Check if it's a UnixMessage (has role property but no type)
+    if (isUnixMessage(data)) {
       const incomingMessage = data;
 
       // Smart replacement logic for edits:
@@ -1783,7 +1783,7 @@ export class StreamingMessageAggregator {
 
       // If this is a user message, clear derived state and record timestamp
       if (incomingMessage.role === "user") {
-        const muxMeta = incomingMessage.metadata?.muxMetadata as
+        const unixMeta = incomingMessage.metadata?.unixMetadata as
           | { displayStatus?: { emoji: string; message: string } }
           | undefined;
 
@@ -1791,15 +1791,15 @@ export class StreamingMessageAggregator {
         this.currentTodos = [];
 
         // Capture pending compaction metadata for pre-stream UI ("starting" phase).
-        const muxMetadata = incomingMessage.metadata?.muxMetadata as
-          | MuxFrontendMetadata
+        const unixMetadata = incomingMessage.metadata?.unixMetadata as
+          | UnixFrontendMetadata
           | undefined;
         this.pendingCompactionRequest =
-          muxMetadata?.type === "compaction-request" ? muxMetadata.parsed : null;
+          unixMetadata?.type === "compaction-request" ? unixMetadata.parsed : null;
 
-        if (muxMeta?.displayStatus) {
+        if (unixMeta?.displayStatus) {
           // Background operation - show requested status (don't persist)
-          this.agentStatus = muxMeta.displayStatus;
+          this.agentStatus = unixMeta.displayStatus;
         } else {
           // Normal user turn - clear status
           this.agentStatus = undefined;
@@ -1812,14 +1812,14 @@ export class StreamingMessageAggregator {
     }
   }
 
-  private buildDisplayedMessagesForMessage(message: MuxMessage): DisplayedMessage[] {
+  private buildDisplayedMessagesForMessage(message: UnixMessage): DisplayedMessage[] {
     const displayedMessages: DisplayedMessage[] = [];
     const baseTimestamp = message.metadata?.timestamp;
     const historySequence = message.metadata?.historySequence ?? 0;
 
     // Check for plan-display messages (ephemeral /plan output)
-    const muxMeta = message.metadata?.muxMetadata;
-    if (muxMeta?.type === "plan-display") {
+    const unixMeta = message.metadata?.unixMetadata;
+    if (unixMeta?.type === "plan-display") {
       const content = message.parts
         .filter((p) => p.type === "text")
         .map((p) => p.text)
@@ -1829,7 +1829,7 @@ export class StreamingMessageAggregator {
         id: message.id,
         historyId: message.id,
         content,
-        path: muxMeta.path,
+        path: unixMeta.path,
         historySequence,
       });
       return displayedMessages;
@@ -1843,25 +1843,25 @@ export class StreamingMessageAggregator {
         .join("");
 
       const fileParts = message.parts
-        .filter((p): p is MuxFilePart => p.type === "file")
+        .filter((p): p is UnixFilePart => p.type === "file")
         .map((p) => ({
           url: typeof p.url === "string" ? p.url : "",
           mediaType: p.mediaType,
           filename: p.filename,
         }));
 
-      // Extract slash command from muxMetadata (present for /compact, /skill, etc.)
-      let rawCommand = muxMeta && "rawCommand" in muxMeta ? muxMeta.rawCommand : undefined;
+      // Extract slash command from unixMetadata (present for /compact, /skill, etc.)
+      let rawCommand = unixMeta && "rawCommand" in unixMeta ? unixMeta.rawCommand : undefined;
 
       const agentSkill =
-        muxMeta?.type === "agent-skill"
-          ? { skillName: muxMeta.skillName, scope: muxMeta.scope }
+        unixMeta?.type === "agent-skill"
+          ? { skillName: unixMeta.skillName, scope: unixMeta.scope }
           : undefined;
 
       // Extract followUpContent, supporting both new `followUpContent` and legacy `continueMessage` fields
       const extractFollowUpContent = (): CompactionFollowUpRequest | undefined => {
-        if (muxMeta?.type !== "compaction-request") return undefined;
-        const parsed = muxMeta.parsed as {
+        if (unixMeta?.type !== "compaction-request") return undefined;
+        const parsed = unixMeta.parsed as {
           followUpContent?: CompactionFollowUpRequest;
           continueMessage?: CompactionFollowUpRequest;
         };
@@ -1870,11 +1870,11 @@ export class StreamingMessageAggregator {
       const compactionFollowUp = extractFollowUpContent();
 
       const compactionRequest =
-        muxMeta?.type === "compaction-request"
+        unixMeta?.type === "compaction-request"
           ? {
               parsed: {
-                model: muxMeta.parsed.model,
-                maxOutputTokens: muxMeta.parsed.maxOutputTokens,
+                model: unixMeta.parsed.model,
+                maxOutputTokens: unixMeta.parsed.maxOutputTokens,
                 followUpContent: compactionFollowUp,
               } satisfies CompactionRequestData,
             }
@@ -1892,10 +1892,10 @@ export class StreamingMessageAggregator {
       const content = rawCommand ?? partsContent;
 
       // commandPrefix comes directly from metadata - no reconstruction needed
-      const commandPrefix = muxMeta?.commandPrefix;
+      const commandPrefix = unixMeta?.commandPrefix;
 
-      // Extract reviews from muxMetadata for rich UI display (orthogonal to message type)
-      const reviews = muxMeta?.reviews;
+      // Extract reviews from unixMetadata for rich UI display (orthogonal to message type)
+      const reviews = unixMeta?.reviews;
 
       displayedMessages.push({
         type: "user",
@@ -2075,7 +2075,7 @@ export class StreamingMessageAggregator {
   }
 
   /**
-   * Transform MuxMessages into DisplayedMessages for UI consumption
+   * Transform UnixMessages into DisplayedMessages for UI consumption
    * This splits complex messages with multiple parts into separate UI blocks
    * while preserving temporal ordering through sequence numbers
    *

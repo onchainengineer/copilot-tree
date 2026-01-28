@@ -3,7 +3,7 @@
  *
  * This module provides telemetry tracking via PostHog.
  * Events are forwarded to the backend via ORPC to avoid ad-blocker issues.
- * Backend controls whether telemetry is enabled (MUX_DISABLE_TELEMETRY env var).
+ * Backend controls whether telemetry is enabled (UNIX_DISABLE_TELEMETRY env var).
  * See payload.ts for all data structures sent to PostHog.
  *
  * USAGE:

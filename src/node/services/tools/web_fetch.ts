@@ -11,7 +11,7 @@ import {
   WEB_FETCH_MAX_HTML_BYTES,
 } from "@/common/constants/toolLimits";
 import { execBuffered } from "@/node/utils/runtime/helpers";
-import { parseMuxMdUrl, downloadFromMuxMd, MUX_MD_BASE_URL, MUX_MD_HOST } from "@/common/lib/muxMd";
+import { parseUnixMdUrl, downloadFromUnixMd, UNIX_MD_BASE_URL, UNIX_MD_HOST } from "@/common/lib/unixMd";
 
 const USER_AGENT = "DEV-OS/1.0 (web-fetch tool)";
 
@@ -73,9 +73,9 @@ function tryExtractContent(
   }
 }
 
-function isMuxMdHost(url: string): boolean {
+function isUnixMdHost(url: string): boolean {
   try {
-    return new URL(url).host === MUX_MD_HOST;
+    return new URL(url).host === UNIX_MD_HOST;
   } catch {
     return false;
   }
@@ -93,11 +93,11 @@ export const createWebFetchTool: ToolFactory = (config: ToolConfiguration) => {
     inputSchema: TOOL_DEFINITIONS.web_fetch.schema,
     execute: async ({ url }, { abortSignal }): Promise<WebFetchToolResult> => {
       try {
-        // Handle mux.md share links with client-side decryption
-        const muxMdParsed = parseMuxMdUrl(url);
-        if (muxMdParsed) {
+        // Handle unix.md share links with client-side decryption
+        const unixMdParsed = parseUnixMdUrl(url);
+        if (unixMdParsed) {
           try {
-            const result = await downloadFromMuxMd(muxMdParsed.id, muxMdParsed.key, abortSignal);
+            const result = await downloadFromUnixMd(unixMdParsed.id, unixMdParsed.key, abortSignal);
             let content = result.content;
             if (content.length > WEB_FETCH_MAX_OUTPUT_BYTES) {
               content = content.slice(0, WEB_FETCH_MAX_OUTPUT_BYTES) + "\n\n[Content truncated]";
@@ -106,19 +106,19 @@ export const createWebFetchTool: ToolFactory = (config: ToolConfiguration) => {
               success: true,
               title: result.fileInfo?.name ?? "Shared Message",
               content,
-              url: `${MUX_MD_BASE_URL}/${muxMdParsed.id}#${muxMdParsed.key}`,
+              url: `${UNIX_MD_BASE_URL}/${unixMdParsed.id}#${unixMdParsed.key}`,
               length: content.length,
             };
           } catch (err) {
             return {
               success: false,
-              error: err instanceof Error ? err.message : "Failed to download from mux.md",
+              error: err instanceof Error ? err.message : "Failed to download from unix.md",
             };
           }
         }
 
-        if (isMuxMdHost(url)) {
-          return { success: false, error: "Invalid mux.md URL format" };
+        if (isUnixMdHost(url)) {
+          return { success: false, error: "Invalid unix.md URL format" };
         }
 
         // Build curl command with safe defaults
@@ -232,7 +232,7 @@ export const createWebFetchTool: ToolFactory = (config: ToolConfiguration) => {
           };
         }
 
-        // Parse HTML with JSDOM (runs locally in Mux, not over SSH)
+        // Parse HTML with JSDOM (runs locally in Unix, not over SSH)
         const dom = new JSDOM(body, { url });
 
         // Extract article with Readability

@@ -56,7 +56,7 @@ describe("sharedUrlCache", () => {
 
   it("should store and retrieve share data for content", () => {
     const content = "Hello, world!";
-    const data = makeShareData("https://mux.md/abc123#key");
+    const data = makeShareData("https://unix.md/abc123#key");
 
     setShareData(content, data);
     const result = getShareData(content);
@@ -67,7 +67,7 @@ describe("sharedUrlCache", () => {
 
   it("should return URL via getSharedUrl convenience function", () => {
     const content = "Hello, world!";
-    const url = "https://mux.md/abc123#key";
+    const url = "https://unix.md/abc123#key";
 
     setShareData(content, makeShareData(url));
     expect(getSharedUrl(content)).toBe(url);
@@ -80,8 +80,8 @@ describe("sharedUrlCache", () => {
 
   it("should overwrite existing data for same content", () => {
     const content = "Hello, world!";
-    const url1 = "https://mux.md/abc123#key1";
-    const url2 = "https://mux.md/def456#key2";
+    const url1 = "https://unix.md/abc123#key1";
+    const url2 = "https://unix.md/def456#key2";
 
     setShareData(content, makeShareData(url1, "abc123"));
     setShareData(content, makeShareData(url2, "def456"));
@@ -92,8 +92,8 @@ describe("sharedUrlCache", () => {
   it("should use different keys for different content", () => {
     const content1 = "Content A";
     const content2 = "Content B";
-    const url1 = "https://mux.md/abc123#key1";
-    const url2 = "https://mux.md/def456#key2";
+    const url1 = "https://unix.md/abc123#key1";
+    const url2 = "https://unix.md/def456#key2";
 
     setShareData(content1, makeShareData(url1, "abc123"));
     setShareData(content2, makeShareData(url2, "def456"));
@@ -104,7 +104,7 @@ describe("sharedUrlCache", () => {
 
   it("should handle content with special characters", () => {
     const content = "Hello! @#$%^&*() 你好 🎉";
-    const url = "https://mux.md/abc123#key";
+    const url = "https://unix.md/abc123#key";
 
     setShareData(content, makeShareData(url));
     expect(getSharedUrl(content)).toBe(url);
@@ -112,7 +112,7 @@ describe("sharedUrlCache", () => {
 
   it("should remove share data", () => {
     const content = "Hello, world!";
-    setShareData(content, makeShareData("https://mux.md/abc123#key"));
+    setShareData(content, makeShareData("https://unix.md/abc123#key"));
     expect(getSharedUrl(content)).toBeDefined();
 
     removeShareData(content);
@@ -123,7 +123,7 @@ describe("sharedUrlCache", () => {
     const content = "Hello, world!";
     const futureTime = Date.now() + 1000 * 60 * 60; // 1 hour from now
 
-    setShareData(content, makeShareData("https://mux.md/abc123#key"));
+    setShareData(content, makeShareData("https://unix.md/abc123#key"));
     expect(getShareData(content)?.expiresAt).toBeUndefined();
 
     updateShareExpiration(content, futureTime);
@@ -138,7 +138,7 @@ describe("sharedUrlCache", () => {
     const pastTime = Date.now() - 1000; // 1 second ago
 
     setShareData(content, {
-      url: "https://mux.md/abc123#key",
+      url: "https://unix.md/abc123#key",
       id: "abc123",
       mutateKey: "key123",
       expiresAt: pastTime,
@@ -154,12 +154,12 @@ describe("sharedUrlCache", () => {
     const futureTime = Date.now() + 1000 * 60 * 60; // 1 hour from now
 
     setShareData(content, {
-      url: "https://mux.md/abc123#key",
+      url: "https://unix.md/abc123#key",
       id: "abc123",
       mutateKey: "key123",
       expiresAt: futureTime,
     });
 
-    expect(getShareData(content)?.url).toBe("https://mux.md/abc123#key");
+    expect(getShareData(content)?.url).toBe("https://unix.md/abc123#key");
   });
 });

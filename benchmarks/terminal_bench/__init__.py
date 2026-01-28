@@ -1,3 +1,3 @@
-from .mux_agent import MuxAgent
+from .unix_agent import UnixAgent
 
 __all__ = ["MuxAgent"]

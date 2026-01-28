@@ -3,7 +3,7 @@ import { createWebFetchTool } from "./web_fetch";
 import type { WebFetchToolArgs, WebFetchToolResult } from "@/common/types/tools";
 import { WEB_FETCH_MAX_OUTPUT_BYTES } from "@/common/constants/toolLimits";
 import { TestTempDir, createTestToolConfig } from "./testHelpers";
-import { isMuxMdUrl, parseMuxMdUrl, uploadToMuxMd, deleteFromMuxMd } from "@/common/lib/muxMd";
+import { isUnixMdUrl, parseUnixMdUrl, uploadToUnixMd, deleteFromUnixMd } from "@/common/lib/unixMd";
 import * as fs from "fs/promises";
 import * as path from "path";
 
@@ -32,53 +32,53 @@ function createTestWebFetchTool() {
   };
 }
 
-describe("mux.md URL helpers", () => {
-  describe("isMuxMdUrl", () => {
-    it("should detect valid mux.md URLs", () => {
-      expect(isMuxMdUrl("https://mux.md/abc123#key456")).toBe(true);
-      expect(isMuxMdUrl("https://mux.md/RQJe3#Fbbhosspt9q9Ig")).toBe(true);
+describe("unix.md URL helpers", () => {
+  describe("isUnixMdUrl", () => {
+    it("should detect valid unix.md URLs", () => {
+      expect(isUnixMdUrl("https://unix.md/abc123#key456")).toBe(true);
+      expect(isUnixMdUrl("https://unix.md/RQJe3#Fbbhosspt9q9Ig")).toBe(true);
     });
 
-    it("should reject mux.md URLs without hash", () => {
-      expect(isMuxMdUrl("https://mux.md/abc123")).toBe(false);
+    it("should reject unix.md URLs without hash", () => {
+      expect(isUnixMdUrl("https://unix.md/abc123")).toBe(false);
     });
 
-    it("should reject mux.md URLs with empty hash", () => {
-      expect(isMuxMdUrl("https://mux.md/abc123#")).toBe(false);
+    it("should reject unix.md URLs with empty hash", () => {
+      expect(isUnixMdUrl("https://unix.md/abc123#")).toBe(false);
     });
 
-    it("should reject non-mux.md URLs", () => {
-      expect(isMuxMdUrl("https://example.com/page#hash")).toBe(false);
-      expect(isMuxMdUrl("https://other.md/abc#key")).toBe(false);
+    it("should reject non-unix.md URLs", () => {
+      expect(isUnixMdUrl("https://example.com/page#hash")).toBe(false);
+      expect(isUnixMdUrl("https://other.md/abc#key")).toBe(false);
     });
 
     it("should handle invalid URLs gracefully", () => {
-      expect(isMuxMdUrl("not-a-url")).toBe(false);
-      expect(isMuxMdUrl("")).toBe(false);
+      expect(isUnixMdUrl("not-a-url")).toBe(false);
+      expect(isUnixMdUrl("")).toBe(false);
     });
   });
 
-  describe("parseMuxMdUrl", () => {
-    it("should extract id and key from valid mux.md URL", () => {
-      const result = parseMuxMdUrl("https://mux.md/abc123#key456");
+  describe("parseUnixMdUrl", () => {
+    it("should extract id and key from valid unix.md URL", () => {
+      const result = parseUnixMdUrl("https://unix.md/abc123#key456");
       expect(result).toEqual({ id: "abc123", key: "key456" });
     });
 
     it("should handle base64url characters in key", () => {
-      const result = parseMuxMdUrl("https://mux.md/RQJe3#Fbbhosspt9q9Ig");
+      const result = parseUnixMdUrl("https://unix.md/RQJe3#Fbbhosspt9q9Ig");
       expect(result).toEqual({ id: "RQJe3", key: "Fbbhosspt9q9Ig" });
     });
 
     it("should return null for URLs without hash", () => {
-      expect(parseMuxMdUrl("https://mux.md/abc123")).toBeNull();
+      expect(parseUnixMdUrl("https://unix.md/abc123")).toBeNull();
     });
 
     it("should return null for URLs with empty id", () => {
-      expect(parseMuxMdUrl("https://mux.md/#key")).toBeNull();
+      expect(parseUnixMdUrl("https://unix.md/#key")).toBeNull();
     });
 
     it("should return null for invalid URLs", () => {
-      expect(parseMuxMdUrl("not-a-url")).toBeNull();
+      expect(parseUnixMdUrl("not-a-url")).toBeNull();
     });
   });
 });
@@ -302,12 +302,12 @@ describe("web_fetch tool", () => {
     }
   });
 
-  // mux.md integration tests
-  itIntegration("should handle expired/missing mux.md share links", async () => {
+  // unix.md integration tests
+  itIntegration("should handle expired/missing unix.md share links", async () => {
     using testEnv = createTestWebFetchTool();
     const args: WebFetchToolArgs = {
       // Non-existent share ID should return 404
-      url: "https://mux.md/nonexistent123#somekey456",
+      url: "https://unix.md/nonexistent123#somekey456",
     };
 
     const result = (await testEnv.tool.execute!(args, toolCallOptions)) as WebFetchToolResult;
@@ -318,27 +318,27 @@ describe("web_fetch tool", () => {
     }
   });
 
-  it("should return error for mux.md URLs without valid key format", async () => {
+  it("should return error for unix.md URLs without valid key format", async () => {
     using testEnv = createTestWebFetchTool();
     const args: WebFetchToolArgs = {
-      // URL without hash (invalid mux.md format) - should fall through to normal fetch
-      // which will fail to extract content from mux.md's HTML viewer
-      url: "https://mux.md/someid",
+      // URL without hash (invalid unix.md format) - should fall through to normal fetch
+      // which will fail to extract content from unix.md's HTML viewer
+      url: "https://unix.md/someid",
     };
 
     const result = (await testEnv.tool.execute!(args, toolCallOptions)) as WebFetchToolResult;
 
     // Without the key fragment, it's treated as a normal URL fetch
-    // The mux.md viewer page won't have extractable content
+    // The unix.md viewer page won't have extractable content
     expect(result.success).toBe(false);
   });
 
-  itIntegration("should decrypt and return mux.md content correctly", async () => {
+  itIntegration("should decrypt and return unix.md content correctly", async () => {
     using testEnv = createTestWebFetchTool();
 
-    // Upload test content to mux.md
+    // Upload test content to unix.md
     const testContent = "# Test Heading\n\nThis is **test content** for web_fetch decryption.";
-    const uploadResult = await uploadToMuxMd(
+    const uploadResult = await uploadToUnixMd(
       testContent,
       { name: "test.md", type: "text/markdown", size: testContent.length },
       { expiresAt: new Date(Date.now() + 60000) }
@@ -358,7 +358,7 @@ describe("web_fetch tool", () => {
       }
     } finally {
       // Clean up
-      await deleteFromMuxMd(uploadResult.id, uploadResult.mutateKey);
+      await deleteFromUnixMd(uploadResult.id, uploadResult.mutateKey);
     }
   });
 });

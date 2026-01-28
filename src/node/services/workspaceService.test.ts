@@ -21,17 +21,17 @@ function addToRenamingWorkspaces(service: WorkspaceService, workspaceId: string)
 }
 
 async function withTempMuxRoot<T>(fn: (root: string) => Promise<T>): Promise<T> {
-  const originalMuxRoot = process.env.MUX_ROOT;
-  const tempRoot = await fsPromises.mkdtemp(path.join(tmpdir(), "mux-plan-"));
-  process.env.MUX_ROOT = tempRoot;
+  const originalMuxRoot = process.env.UNIX_ROOT;
+  const tempRoot = await fsPromises.mkdtemp(path.join(tmpdir(), "unix-plan-"));
+  process.env.UNIX_ROOT = tempRoot;
 
   try {
     return await fn(tempRoot);
   } finally {
     if (originalMuxRoot === undefined) {
-      delete process.env.MUX_ROOT;
+      delete process.env.UNIX_ROOT;
     } else {
-      process.env.MUX_ROOT = originalMuxRoot;
+      process.env.UNIX_ROOT = originalMuxRoot;
     }
     await fsPromises.rm(tempRoot, { recursive: true, force: true });
   }
@@ -269,7 +269,7 @@ describe("WorkspaceService post-compaction metadata refresh", () => {
     );
 
     const postCompactionState = {
-      planPath: "~/.mux/plans/cmux/plan.md",
+      planPath: "~/.unix/plans/cmux/plan.md",
       trackedFilePaths: ["/tmp/proj/file.ts"],
       excludedItems: [],
     };
@@ -408,7 +408,7 @@ describe("WorkspaceService remove timing rollup", () => {
     const workspaceId = "child-ws";
     const parentWorkspaceId = "parent-ws";
 
-    const tempRoot = await fsPromises.mkdtemp(path.join(tmpdir(), "mux-remove-"));
+    const tempRoot = await fsPromises.mkdtemp(path.join(tmpdir(), "unix-remove-"));
     try {
       const sessionRoot = path.join(tempRoot, "sessions");
       await fsPromises.mkdir(path.join(sessionRoot, workspaceId), { recursive: true });

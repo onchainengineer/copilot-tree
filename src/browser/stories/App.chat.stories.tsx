@@ -132,7 +132,7 @@ export const WithSkillCommand: AppStory = {
             createUserMessage("msg-1", "/react-effects Audit this effect for stale closures", {
               historySequence: 1,
               timestamp: STABLE_TIMESTAMP - 120000,
-              muxMetadata: {
+              unixMetadata: {
                 type: "agent-skill",
                 rawCommand: "/react-effects Audit this effect for stale closures",
                 commandPrefix: "/react-effects",
@@ -1200,7 +1200,7 @@ export const InitHookSuccess: AppStory = {
             setTimeout(() => {
               emit({
                 type: "init-start",
-                hookPath: "/home/user/projects/my-app/.mux/init.sh",
+                hookPath: "/home/user/projects/my-app/.unix/init.sh",
                 timestamp: STABLE_TIMESTAMP - 110000,
               } as WorkspaceChatMessage);
               emit({
@@ -1261,7 +1261,7 @@ export const InitHookError: AppStory = {
             setTimeout(() => {
               emit({
                 type: "init-start",
-                hookPath: "/home/user/projects/my-app/.mux/init.sh",
+                hookPath: "/home/user/projects/my-app/.unix/init.sh",
                 timestamp: STABLE_TIMESTAMP - 110000,
               } as WorkspaceChatMessage);
               emit({
@@ -1617,7 +1617,7 @@ export const SigningBadgePassphraseWarning: AppStory = {
       await warmHashCache(SIGNING_WARNING_MESSAGE_CONTENT);
       // Now set share data with the warmed hash
       setShareData(SIGNING_WARNING_MESSAGE_CONTENT, {
-        url: "https://mux.md/story-test#fake-key",
+        url: "https://unix.md/story-test#fake-key",
         id: "story-share-id",
         mutateKey: "story-mutate-key",
         expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -1646,7 +1646,7 @@ export const SigningBadgePassphraseWarning: AppStory = {
             githubUser: null,
             error: {
               message:
-                "Signing key requires a passphrase. Create an unencrypted key at ~/.mux/message_signing_key or use ssh-add.",
+                "Signing key requires a passphrase. Create an unencrypted key at ~/.unix/message_signing_key or use ssh-add.",
               hasEncryptedKey: true,
             },
           },

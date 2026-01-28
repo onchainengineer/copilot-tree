@@ -8,7 +8,7 @@ import type { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import type { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import type { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import type { XaiProviderOptions } from "@ai-sdk/xai";
-import type { MuxProviderOptions } from "@/common/types/providerOptions";
+import type { UnixProviderOptions } from "@/common/types/providerOptions";
 import type { ThinkingLevel } from "@/common/types/thinking";
 import {
   ANTHROPIC_EFFORT,
@@ -18,7 +18,7 @@ import {
   OPENROUTER_REASONING_EFFORT,
 } from "@/common/types/thinking";
 import { log } from "@/node/services/log";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import { enforceThinkingPolicy } from "@/common/utils/thinking/policy";
 import { normalizeGatewayModel } from "./models";
 
@@ -66,9 +66,9 @@ type ProviderOptions =
 export function buildProviderOptions(
   modelString: string,
   thinkingLevel: ThinkingLevel,
-  messages?: MuxMessage[],
+  messages?: UnixMessage[],
   lostResponseIds?: (id: string) => boolean,
-  muxProviderOptions?: MuxProviderOptions,
+  muxProviderOptions?: UnixProviderOptions,
   workspaceId?: string, // Optional for non-OpenAI providers
   openaiTruncationMode?: OpenAIResponsesProviderOptions["truncation"]
 ): ProviderOptions {
@@ -215,7 +215,7 @@ export function buildProviderOptions(
     // Prompt cache key: derive from workspaceId
     // This helps OpenAI route requests to cached prefixes for improved hit rates
     // workspaceId is always passed from AIService.streamMessage for real requests
-    const promptCacheKey = workspaceId ? `mux-v1-${workspaceId}` : undefined;
+    const promptCacheKey = workspaceId ? `unix-v1-${workspaceId}` : undefined;
 
     const serviceTier = muxProviderOptions?.openai?.serviceTier ?? "auto";
     const truncationMode = openaiTruncationMode ?? "disabled";

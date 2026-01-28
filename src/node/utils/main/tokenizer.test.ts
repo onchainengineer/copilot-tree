@@ -34,7 +34,7 @@ describe("tokenizer", () => {
   });
 
   test("countTokens returns stable values", async () => {
-    const text = "mux-tokenizer-smoke-test";
+    const text = "unix-tokenizer-smoke-test";
     const first = await countTokens(openaiModel, text);
     const second = await countTokens(openaiModel, text);
     expect(first).toBeGreaterThan(0);
@@ -57,7 +57,7 @@ describe("tokenizer", () => {
   });
 
   test("countTokens returns stable values for google gemini 3", async () => {
-    const text = "mux-google-tokenizer-test";
+    const text = "unix-google-tokenizer-test";
     const first = await countTokens(googleModel, text);
     const second = await countTokens(googleModel, text);
     expect(first).toBeGreaterThan(0);

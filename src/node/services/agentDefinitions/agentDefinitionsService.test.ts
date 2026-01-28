@@ -29,7 +29,7 @@ describe("agentDefinitionsService", () => {
     using project = new DisposableTempDir("agent-defs-project");
     using global = new DisposableTempDir("agent-defs-global");
 
-    const projectAgentsRoot = path.join(project.path, ".mux", "agents");
+    const projectAgentsRoot = path.join(project.path, ".unix", "agents");
     const globalAgentsRoot = global.path;
 
     await writeAgent(globalAgentsRoot, "foo", "Foo (global)");
@@ -55,7 +55,7 @@ describe("agentDefinitionsService", () => {
     using project = new DisposableTempDir("agent-defs-project");
     using global = new DisposableTempDir("agent-defs-global");
 
-    const projectAgentsRoot = path.join(project.path, ".mux", "agents");
+    const projectAgentsRoot = path.join(project.path, ".unix", "agents");
     const globalAgentsRoot = global.path;
 
     await writeAgent(globalAgentsRoot, "foo", "Foo (global)");
@@ -73,7 +73,7 @@ describe("agentDefinitionsService", () => {
 
   test("resolveAgentBody appends by default (new default), replaces when prompt.append is false", async () => {
     using tempDir = new DisposableTempDir("agent-body-test");
-    const agentsRoot = path.join(tempDir.path, ".mux", "agents");
+    const agentsRoot = path.join(tempDir.path, ".unix", "agents");
     await fs.mkdir(agentsRoot, { recursive: true });
 
     // Create base agent
@@ -134,7 +134,7 @@ Replaced body.
     using project = new DisposableTempDir("agent-same-name");
     using global = new DisposableTempDir("agent-same-name-global");
 
-    const projectAgentsRoot = path.join(project.path, ".mux", "agents");
+    const projectAgentsRoot = path.join(project.path, ".unix", "agents");
     const globalAgentsRoot = global.path;
 
     await fs.mkdir(projectAgentsRoot, { recursive: true });
@@ -187,7 +187,7 @@ Project-specific additions.
     using project = new DisposableTempDir("agent-skip-scope");
     using global = new DisposableTempDir("agent-skip-scope-global");
 
-    const projectAgentsRoot = path.join(project.path, ".mux", "agents");
+    const projectAgentsRoot = path.join(project.path, ".unix", "agents");
     const globalAgentsRoot = global.path;
 
     await fs.mkdir(projectAgentsRoot, { recursive: true });

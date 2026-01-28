@@ -715,7 +715,7 @@ describe("isNonRetryableSendError", () => {
   it("returns true for incompatible_workspace error", () => {
     const error: SendMessageError = {
       type: "incompatible_workspace",
-      message: "This workspace uses a runtime configuration from a newer version of mux.",
+      message: "This workspace uses a runtime configuration from a newer version ofunix.",
     };
     expect(isNonRetryableSendError(error)).toBe(true);
   });

@@ -17,7 +17,7 @@ export const RuntimeModeSchema = z.enum(["local", "worktree", "ssh", "docker", "
 const bgOutputDirField = z
   .string()
   .optional()
-  .meta({ description: "Directory for background process output (e.g., /tmp/mux-bashes)" });
+  .meta({ description: "Directory for background process output (e.g., /tmp/unix-bashes)" });
 
 export const DevcontainerConfigInfoSchema = z.object({
   path: z.string(),
@@ -72,7 +72,7 @@ export const RuntimeConfigSchema = z.union([
     type: z.literal("worktree"),
     srcBaseDir: z
       .string()
-      .meta({ description: "Base directory where all workspaces are stored (e.g., ~/.mux/src)" }),
+      .meta({ description: "Base directory where all workspaces are stored (e.g., ~/.unix/src)" }),
     bgOutputDir: bgOutputDirField,
   }),
   // SSH runtime

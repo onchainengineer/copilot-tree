@@ -1,11 +1,11 @@
 import { describe, expect, it } from "bun:test";
 import { createPatch } from "diff";
 import { FILE_EDIT_DIFF_OMITTED_MESSAGE } from "@/common/types/tools";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import { extractEditedFileDiffs, extractEditedFilePaths } from "./extractEditedFiles";
 
 /**
- * Helper to create a mock MuxMessage with file edit tool results.
+ * Helper to create a mock UnixMessage with file edit tool results.
  */
 function createAssistantMessage(
   toolCalls: Array<{
@@ -15,7 +15,7 @@ function createAssistantMessage(
     uiOnlyDiff?: string;
     success?: boolean;
   }>
-): MuxMessage {
+): UnixMessage {
   return {
     id: `msg-${Math.random().toString(36).slice(2)}`,
     role: "assistant",
@@ -51,7 +51,7 @@ function makeDiff(filePath: string, oldContent: string, newContent: string): str
 
 describe("extractEditedFilePaths", () => {
   it("should extract file paths from successful edits", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         {
           toolName: "file_edit_replace_string",
@@ -73,7 +73,7 @@ describe("extractEditedFilePaths", () => {
   });
 
   it("should ignore failed edits", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         {
           toolName: "file_edit_replace_string",
@@ -89,7 +89,7 @@ describe("extractEditedFilePaths", () => {
   });
 
   it("should dedupe paths and return most recent first", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         {
           toolName: "file_edit_replace_string",
@@ -125,7 +125,7 @@ describe("extractEditedFileDiffs", () => {
     const newContent = "line1\nmodified\nline3";
     const diff = makeDiff("/path/to/file.ts", originalContent, newContent);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         {
           toolName: "file_edit_replace_string",
@@ -148,7 +148,7 @@ describe("extractEditedFileDiffs", () => {
     const newContent = "line1\nmodified\nline3";
     const diff = makeDiff("/path/to/file.ts", originalContent, newContent);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         {
           toolName: "file_edit_replace_string",
@@ -174,7 +174,7 @@ describe("extractEditedFileDiffs", () => {
     const afterEdit2 = "line1\nMODIFIED2\nline3\nMODIFIED4\nline5";
     const diff2 = makeDiff("/path/to/file.ts", afterEdit1, afterEdit2);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         {
           toolName: "file_edit_replace_string",
@@ -210,7 +210,7 @@ describe("extractEditedFileDiffs", () => {
     const afterEdit2 = "line1\nSECOND_EDIT\nline3";
     const diff2 = makeDiff("/path/to/file.ts", afterEdit1, afterEdit2);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         {
           toolName: "file_edit_replace_string",
@@ -245,7 +245,7 @@ describe("extractEditedFileDiffs", () => {
     const diff2 = makeDiff("/path/to/file.ts", v1, v2);
     const diff3 = makeDiff("/path/to/file.ts", v2, v3);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         { toolName: "file_edit_replace_string", filePath: "/path/to/file.ts", diff: diff1 },
       ]),
@@ -275,7 +275,7 @@ describe("extractEditedFileDiffs", () => {
     const afterModify = "line1\nMODIFIED\nline3";
     const diff2 = makeDiff("/path/to/file.ts", afterInsert, afterModify);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         { toolName: "file_edit_insert", filePath: "/path/to/file.ts", diff: diff1 },
       ]),
@@ -303,7 +303,7 @@ describe("extractEditedFileDiffs", () => {
     const diff2a = makeDiff("/file2.ts", file2Original, file2V1);
     const diff2b = makeDiff("/file2.ts", file2V1, file2Final);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         { toolName: "file_edit_replace_string", filePath: "/file1.ts", diff: diff1 },
       ]),
@@ -331,7 +331,7 @@ describe("extractEditedFileDiffs", () => {
     const afterSuccess = "modified";
     const successDiff = makeDiff("/file.ts", original, afterSuccess);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         { toolName: "file_edit_replace_string", filePath: "/file.ts", diff: successDiff },
       ]),
@@ -360,7 +360,7 @@ describe("extractEditedFileDiffs", () => {
     const afterDelete = "start\nmiddle1\nend";
     const diff2 = makeDiff("/file.ts", afterAdd, afterDelete);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         { toolName: "file_edit_replace_string", filePath: "/file.ts", diff: diff1 },
       ]),
@@ -394,7 +394,7 @@ describe("extractEditedFileDiffs", () => {
     const afterEdit2 = linesAfterEdit2.join("\n");
     const diff2 = makeDiff("/large-file.ts", afterEdit1, afterEdit2);
 
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createAssistantMessage([
         { toolName: "file_edit_replace_string", filePath: "/large-file.ts", diff: diff1 },
       ]),

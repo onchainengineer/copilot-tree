@@ -26,26 +26,26 @@ export interface ProjectsConfig {
   /**
    * Bind host/interface for the desktop HTTP/WS API server.
    *
-   * When unset, mux binds to 127.0.0.1 (localhost only).
-   * When set to 0.0.0.0 or ::, mux can be reachable from other devices on your LAN/VPN.
+   * When unset, unix binds to 127.0.0.1 (localhost only).
+   * When set to 0.0.0.0 or ::, unix can be reachable from other devices on your LAN/VPN.
    */
   apiServerBindHost?: string;
   /**
    * Port for the desktop HTTP/WS API server.
    *
-   * When unset, mux binds to port 0 (random available port).
+   * When unset, unix binds to port 0 (random available port).
    */
   apiServerPort?: number;
   /**
-   * When true, the desktop HTTP server also serves the mux web UI at /.
+   * When true, the desktop HTTP server also serves the unix web UI at /.
    *
-   * This enables other devices (LAN/VPN) to open mux in a browser.
+   * This enables other devices (LAN/VPN) to open unix in a browser.
    */
   apiServerServeWebUi?: boolean;
   /**
    * Advertise the API server on the local network via mDNS/Bonjour (DNS-SD).
    *
-   * When unset, mux uses "auto" behavior (advertise only when apiServerBindHost is non-loopback).
+   * When unset, unix uses "auto" behavior (advertise only when apiServerBindHost is non-loopback).
    */
   mdnsAdvertisementEnabled?: boolean;
   /** Optional mDNS DNS-SD service instance name override. */
@@ -54,11 +54,11 @@ export interface ProjectsConfig {
   serverSshHost?: string;
   /** IDs of splash screens that have been viewed */
   viewedSplashScreens?: string[];
-  /** Cross-client feature flag overrides (shared via ~/.mux/config.json). */
+  /** Cross-client feature flag overrides (shared via ~/.unix/config.json). */
   featureFlagOverrides?: Record<string, FeatureFlagOverride>;
   /** Global task settings (agent sub-workspaces, queue limits, nesting depth) */
   taskSettings?: TaskSettings;
-  /** UI layout presets + hotkeys (shared via ~/.mux/config.json). */
+  /** UI layout presets + hotkeys (shared via ~/.unix/config.json). */
   layoutPresets?: LayoutPresetsConfig;
   /** Default model + thinking overrides per agentId (applies to UI agents and subagents). */
   agentAiDefaults?: AgentAiDefaults;

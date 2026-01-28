@@ -81,7 +81,7 @@ describe("workspace.updateAgentAISettings", () => {
       expect(updateResult.success).toBe(true);
 
       // Send a compaction request with a different model
-      // The muxMetadata type: "compaction-request" should prevent AI settings from being persisted
+      // The unixMetadata type: "compaction-request" should prevent AI settings from being persisted
       await client.workspace.sendMessage({
         workspaceId: workspaceId!,
         message: "Summarize the conversation",
@@ -89,7 +89,7 @@ describe("workspace.updateAgentAISettings", () => {
           model: "openai:gpt-4.1-mini", // Different model for compaction
           thinkingLevel: "off",
           agentId: "compact",
-          muxMetadata: {
+          unixMetadata: {
             type: "compaction-request",
             rawCommand: "/compact",
             parsed: {},

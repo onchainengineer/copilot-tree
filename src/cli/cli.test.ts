@@ -1,5 +1,5 @@
 /**
- * E2E tests for the CLI layer (mux api commands).
+ * E2E tests for the CLI layer (unix api commands).
  *
  * These tests verify that:
  * 1. CLI commands work correctly via HTTP to a real server
@@ -37,7 +37,7 @@ interface TestServerHandle {
  */
 async function createTestServer(authToken?: string): Promise<TestServerHandle> {
   // Create temp dir for config
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-cli-test-"));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-cli-test-"));
   const config = new Config(tempDir);
 
   // Mock BrowserWindow

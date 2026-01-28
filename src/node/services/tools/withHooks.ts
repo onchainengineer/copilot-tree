@@ -7,9 +7,9 @@
  *
  * New model (tool_pre/tool_post):
  * - tool_pre: runs before tool, exit 0 = allow, non-zero = block
- * - tool_post: runs after tool with result in MUX_TOOL_RESULT/MUX_TOOL_RESULT_PATH
+ * - tool_post: runs after tool with result in UNIX_TOOL_RESULT/UNIX_TOOL_RESULT_PATH
  *
- * Legacy model (tool_hook): single hook with marker protocol (echo $MUX_EXEC)
+ * Legacy model (tool_hook): single hook with marker protocol (echo $UNIX_EXEC)
  */
 
 import assert from "@/common/utils/assert";
@@ -270,14 +270,14 @@ async function executeWithLegacyHook<TResult>(
   );
   const hookDurationMs = Date.now() - hookStart;
 
-  // Hook blocked tool execution (exited before $MUX_EXEC)
+  // Hook blocked tool execution (exited before $UNIX_EXEC)
   if (!hook.toolExecuted) {
     const blockOutput = truncateHookOutput(
       [hook.stdoutBeforeExec, hook.stderr].filter(Boolean).join("\n").trim()
     );
     log.debug("[withHooks] Hook blocked tool execution", { toolName, output: blockOutput });
     const errorResult: { error: string } = {
-      error: blockOutput || "Tool blocked by hook (exited before $MUX_EXEC)",
+      error: blockOutput || "Tool blocked by hook (exited before $UNIX_EXEC)",
     };
     return errorResult as TResult;
   }

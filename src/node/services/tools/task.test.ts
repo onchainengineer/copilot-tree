@@ -25,7 +25,7 @@ describe("task tool", () => {
 
     const tool = createTaskTool({
       ...baseConfig,
-      muxEnv: { MUX_MODEL_STRING: "openai:gpt-4o-mini", MUX_THINKING_LEVEL: "high" },
+      muxEnv: { UNIX_MODEL_STRING: "openai:gpt-4o-mini", UNIX_THINKING_LEVEL: "high" },
       taskService,
     });
 

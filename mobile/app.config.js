@@ -1,7 +1,7 @@
 // Dynamic Expo config.
 //
 // We intentionally keep iOS App Transport Security (ATS) strict for preview/production
-// builds, but allow plain HTTP in *dev* builds so the app can talk to a local mux
+// builds, but allow plain HTTP in *dev* builds so the app can talk to a local unix
 // server (e.g. http://<lan-ip>:3000) without having to run TLS locally.
 //
 // EAS sets EAS_BUILD_PROFILE to the profile name (development|preview|production).

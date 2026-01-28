@@ -10,7 +10,7 @@ import type { RouterClient } from "@orpc/server";
 import type { AppRouter } from "@/node/orpc/router";
 import type { SendMessageOptions, FilePart } from "@/common/orpc/types";
 import {
-  type MuxFrontendMetadata,
+  type UnixFrontendMetadata,
   type CompactionRequestData,
   type CompactionFollowUpRequest,
   type CompactionFollowUpInput,
@@ -721,7 +721,7 @@ export function parseRuntimeString(
       return {
         type: RUNTIME_MODE.SSH,
         host: parsed.host,
-        srcBaseDir: "~/mux", // Default remote base directory (tilde resolved by backend)
+        srcBaseDir: "~/unix", // Default remote base directory (tilde resolved by backend)
       };
 
     case RUNTIME_MODE.DEVCONTAINER: {
@@ -893,7 +893,7 @@ export interface CompactionResult {
  */
 export function prepareCompactionMessage(options: CompactionOptions): {
   messageText: string;
-  metadata: MuxFrontendMetadata;
+  metadata: UnixFrontendMetadata;
   sendOptions: SendMessageOptions;
 } {
   const targetWords = options.maxOutputTokens
@@ -957,7 +957,7 @@ export function prepareCompactionMessage(options: CompactionOptions): {
     followUpContent: fc,
   };
 
-  const metadata: MuxFrontendMetadata = {
+  const metadata: UnixFrontendMetadata = {
     type: "compaction-request",
     rawCommand: fullRawCommand,
     commandPrefix: commandLine,
@@ -987,7 +987,7 @@ export async function executeCompaction(
     message: messageText,
     options: {
       ...sendOptions,
-      muxMetadata: metadata,
+      unixMetadata: metadata,
       editMessageId: options.editMessageId,
     },
   });
@@ -1252,7 +1252,7 @@ export async function handlePlanShowCommand(
     parts: [{ type: "text" as const, text: result.data.content }],
     metadata: {
       historySequence: Number.MAX_SAFE_INTEGER, // Appear at end of chat
-      muxMetadata: { type: "plan-display" as const, path: result.data.path },
+      unixMetadata: { type: "plan-display" as const, path: result.data.path },
     },
   };
   addEphemeralMessage(workspaceId, planMessage);

@@ -41,7 +41,7 @@ const createMockPartialService = (): PartialService => {
 };
 
 describe("StreamManager - createTempDirForStream", () => {
-  test("creates ~/.mux-tmp/<token> under the runtime's home", async () => {
+  test("creates ~/.unix-tmp/<token> under the runtime's home", async () => {
     using home = new DisposableTempDir("stream-home");
 
     const prevHome = process.env.HOME;
@@ -63,7 +63,7 @@ describe("StreamManager - createTempDirForStream", () => {
       // StreamManager normalizes Windows paths to forward slashes.
       const normalizedHomePath = home.path.replace(/\\/g, "/");
       expect(resolved.startsWith(normalizedHomePath)).toBe(true);
-      expect(resolved).toContain(`/.mux-tmp/${token}`);
+      expect(resolved).toContain(`/.unix-tmp/${token}`);
 
       const stat = await fs.stat(resolved);
       expect(stat.isDirectory()).toBe(true);

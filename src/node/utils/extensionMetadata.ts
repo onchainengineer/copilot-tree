@@ -25,7 +25,7 @@ export interface ExtensionMetadataFile {
 
 /**
  * Get the path to the extension metadata file.
- * @param rootDir - Optional root directory (defaults to getMuxHome())
+ * @param rootDir - Optional root directory (defaults to getUnixHome())
  */
 export function getExtensionMetadataPath(rootDir?: string): string {
   return getMuxExtensionMetadataPath(rootDir);

@@ -12,7 +12,7 @@ describe("withHooks", () => {
   let runtime: LocalRuntime;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-withHooks-test-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-withHooks-test-"));
     runtime = new LocalRuntime(tempDir);
   });
 
@@ -45,13 +45,13 @@ describe("withHooks", () => {
   });
 
   test("executes tool through hook when hook exists", async () => {
-    const hookDir = path.join(tempDir, ".mux");
+    const hookDir = path.join(tempDir, ".unix");
     const hookPath = path.join(hookDir, "tool_hook");
     await fs.mkdir(hookDir, { recursive: true });
     await fs.writeFile(
       hookPath,
       `#!/bin/bash
-echo "$MUX_EXEC"
+echo "$UNIX_EXEC"
 read RESULT
 `
     );
@@ -73,7 +73,7 @@ read RESULT
   });
 
   test("returns error when hook blocks execution", async () => {
-    const hookDir = path.join(tempDir, ".mux");
+    const hookDir = path.join(tempDir, ".unix");
     const hookPath = path.join(hookDir, "tool_hook");
     await fs.mkdir(hookDir, { recursive: true });
     await fs.writeFile(
@@ -106,13 +106,13 @@ exit 1
   });
 
   test("appends hook_output when hook fails after execution", async () => {
-    const hookDir = path.join(tempDir, ".mux");
+    const hookDir = path.join(tempDir, ".unix");
     const hookPath = path.join(hookDir, "tool_hook");
     await fs.mkdir(hookDir, { recursive: true });
     await fs.writeFile(
       hookPath,
       `#!/bin/bash
-echo "$MUX_EXEC"
+echo "$UNIX_EXEC"
 read RESULT
 echo "Lint failed: syntax error" >&2
 exit 1
@@ -138,13 +138,13 @@ exit 1
   });
 
   test("appends hook_output and hook_path when hook succeeds with output", async () => {
-    const hookDir = path.join(tempDir, ".mux");
+    const hookDir = path.join(tempDir, ".unix");
     const hookPath = path.join(hookDir, "tool_hook");
     await fs.mkdir(hookDir, { recursive: true });
     await fs.writeFile(
       hookPath,
       `#!/bin/bash
-echo "$MUX_EXEC"
+echo "$UNIX_EXEC"
 read RESULT
 echo "Formatted: test.ts" >&2
 exit 0
@@ -172,7 +172,7 @@ exit 0
   });
 
   test("passes env to hook", async () => {
-    const hookDir = path.join(tempDir, ".mux");
+    const hookDir = path.join(tempDir, ".unix");
     const hookPath = path.join(hookDir, "tool_hook");
     await fs.mkdir(hookDir, { recursive: true });
     await fs.writeFile(
@@ -183,7 +183,7 @@ if [ "$MY_API_KEY" != "secret123" ]; then
   echo "SECRET not found" >&2
   exit 1
 fi
-echo "$MUX_EXEC"
+echo "$UNIX_EXEC"
 read RESULT
 `
     );
@@ -204,7 +204,7 @@ read RESULT
   });
 
   test("uses tool_pre hook to block execution", async () => {
-    const hookDir = path.join(tempDir, ".mux");
+    const hookDir = path.join(tempDir, ".unix");
     const hookPath = path.join(hookDir, "tool_pre");
     await fs.mkdir(hookDir, { recursive: true });
     await fs.writeFile(
@@ -237,7 +237,7 @@ exit 1
   });
 
   test("uses tool_post hook to add output after execution", async () => {
-    const hookDir = path.join(tempDir, ".mux");
+    const hookDir = path.join(tempDir, ".unix");
     const postHookPath = path.join(hookDir, "tool_post");
     await fs.mkdir(hookDir, { recursive: true });
     await fs.writeFile(
@@ -267,7 +267,7 @@ exit 0
   });
 
   test("tool_pre takes priority over tool_hook", async () => {
-    const hookDir = path.join(tempDir, ".mux");
+    const hookDir = path.join(tempDir, ".unix");
     await fs.mkdir(hookDir, { recursive: true });
 
     // Create both tool_pre and tool_hook
@@ -293,7 +293,7 @@ exit 0
   });
 
   test("tool_pre + tool_post work together", async () => {
-    const hookDir = path.join(tempDir, ".mux");
+    const hookDir = path.join(tempDir, ".unix");
     await fs.mkdir(hookDir, { recursive: true });
 
     await fs.writeFile(path.join(hookDir, "tool_pre"), '#!/bin/bash\necho "pre ran" >&2\nexit 0');
@@ -301,7 +301,7 @@ exit 0
 
     await fs.writeFile(
       path.join(hookDir, "tool_post"),
-      '#!/bin/bash\necho "post ran: $MUX_TOOL_RESULT"'
+      '#!/bin/bash\necho "post ran: $UNIX_TOOL_RESULT"'
     );
     await fs.chmod(path.join(hookDir, "tool_post"), 0o755);
 

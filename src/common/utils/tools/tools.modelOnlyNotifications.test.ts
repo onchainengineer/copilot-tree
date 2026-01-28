@@ -36,7 +36,7 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 describe("getToolsForModel - model-only notifications", () => {
   test("injects __mux_notifications into tool results after 5 tool calls", async () => {
-    const workspaceSessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-ws-"));
+    const workspaceSessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-ws-"));
 
     try {
       await setTodosForSessionDir("ws-1", workspaceSessionDir, [
@@ -80,7 +80,7 @@ describe("getToolsForModel - model-only notifications", () => {
   });
 
   test("does not re-wrap cached MCP tools across getToolsForModel() calls", async () => {
-    const workspaceSessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-ws-"));
+    const workspaceSessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-ws-"));
 
     try {
       await setTodosForSessionDir("ws-1", workspaceSessionDir, [
@@ -177,7 +177,7 @@ describe("getToolsForModel - model-only notifications", () => {
   });
 
   test("only attaches notifications to plain-object tool results", async () => {
-    const workspaceSessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-ws-"));
+    const workspaceSessionDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-ws-"));
 
     try {
       await setTodosForSessionDir("ws-1", workspaceSessionDir, [

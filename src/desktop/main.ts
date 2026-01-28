@@ -44,7 +44,7 @@ import * as path from "path";
 import type { Config } from "@/node/config";
 import type { ServiceContainer } from "@/node/services/serviceContainer";
 import { VERSION } from "@/version";
-import { getMuxHome, migrateLegacyMuxHome } from "@/common/constants/paths";
+import { getUnixHome, migrateLegacyUnixHome } from "@/common/constants/paths";
 
 import assert from "@/common/utils/assert";
 import { loadTokenizerModules } from "@/node/utils/main/tokenizer";
@@ -69,13 +69,13 @@ import { getTitleBarOptions } from "@/desktop/titleBarOptions";
 // These will be loaded on-demand when createWindow() is called
 let config: Config | null = null;
 let services: ServiceContainer | null = null;
-const isE2ETest = process.env.MUX_E2E === "1";
-const forceDistLoad = process.env.MUX_E2E_LOAD_DIST === "1";
+const isE2ETest = process.env.UNIX_E2E === "1";
+const forceDistLoad = process.env.UNIX_E2E_LOAD_DIST === "1";
 
 if (isE2ETest) {
   // For e2e tests, use a test-specific userData directory
-  // Note: getMuxHome() already respects MUX_ROOT for test isolation
-  const e2eUserData = path.join(getMuxHome(), "user-data");
+  // Note: getUnixHome() already respects UNIX_ROOT for test isolation
+  const e2eUserData = path.join(getUnixHome(), "user-data");
   try {
     fs.mkdirSync(e2eUserData, { recursive: true });
     app.setPath("userData", e2eUserData);
@@ -85,17 +85,17 @@ if (isE2ETest) {
   }
 }
 
-const devServerPort = process.env.MUX_DEVSERVER_PORT ?? "5173";
+const devServerPort = process.env.UNIX_DEVSERVER_PORT ?? "5173";
 
 console.log(
-  `Mux starting - version: ${(VERSION as { git?: string; buildTime?: string }).git ?? "(dev)"} (built: ${(VERSION as { git?: string; buildTime?: string }).buildTime ?? "dev-mode"})`
+  `Unix starting - version: ${(VERSION as { git?: string; buildTime?: string }).git ?? "(dev)"} (built: ${(VERSION as { git?: string; buildTime?: string }).buildTime ?? "dev-mode"})`
 );
 console.log("Main process starting...");
 
-// Debug: abort immediately if MUX_DEBUG_START_TIME is set
+// Debug: abort immediately if UNIX_DEBUG_START_TIME is set
 // This is used to measure baseline startup time without full initialization
-if (process.env.MUX_DEBUG_START_TIME === "1") {
-  console.log("MUX_DEBUG_START_TIME is set - aborting immediately");
+if (process.env.UNIX_DEBUG_START_TIME === "1") {
+  console.log("UNIX_DEBUG_START_TIME is set - aborting immediately");
   process.exit(0);
 }
 
@@ -131,8 +131,8 @@ process.on("unhandledRejection", (reason, promise) => {
   }
 });
 
-// Single instance lock (can be disabled for development with CMUX_ALLOW_MULTIPLE_INSTANCES=1)
-const allowMultipleInstances = process.env.CMUX_ALLOW_MULTIPLE_INSTANCES === "1";
+// Single instance lock (can be disabled for development with CUNIX_ALLOW_MULTIPLE_INSTANCES=1)
+const allowMultipleInstances = process.env.CUNIX_ALLOW_MULTIPLE_INSTANCES === "1";
 const gotTheLock = allowMultipleInstances || app.requestSingleInstanceLock();
 console.log("Single instance lock acquired:", gotTheLock);
 
@@ -334,7 +334,7 @@ async function loadServices(): Promise<void> {
   await services.initialize();
 
   // Generate auth token (use env var or random per-session)
-  const authToken = process.env.MUX_SERVER_AUTH_TOKEN ?? randomBytes(32).toString("hex");
+  const authToken = process.env.UNIX_SERVER_AUTH_TOKEN ?? randomBytes(32).toString("hex");
 
   // Store auth token so the API server can be restarted via Settings.
   services.serverService.setApiAuthToken(authToken);
@@ -379,7 +379,7 @@ async function loadServices(): Promise<void> {
     coderService: services.coderService,
   };
 
-  electronIpcMain.handle("mux:get-is-rosetta", async () => {
+  electronIpcMain.handle("unix:get-is-rosetta", async () => {
     if (process.platform !== "darwin") {
       return false;
     }
@@ -394,7 +394,7 @@ async function loadServices(): Promise<void> {
       return false;
     }
   });
-  electronIpcMain.handle("mux:get-is-windows-wsl-shell", async () => {
+  electronIpcMain.handle("unix:get-is-windows-wsl-shell", async () => {
     if (process.platform !== "win32") return false;
 
     const normalize = (p: string) => p.replace(/\//g, "\\").toLowerCase();
@@ -447,7 +447,7 @@ async function loadServices(): Promise<void> {
   });
 
   // Start HTTP/WS API server for CLI access (unless explicitly disabled)
-  if (process.env.MUX_NO_API_SERVER !== "1") {
+  if (process.env.UNIX_NO_API_SERVER !== "1") {
     const lockfile = new ServerLockfile(config.rootDir);
     const existing = await lockfile.read();
 
@@ -464,8 +464,8 @@ async function loadServices(): Promise<void> {
         const serveStatic = loadedConfig.apiServerServeWebUi === true;
         const configuredPort = loadedConfig.apiServerPort;
 
-        const envPortRaw = process.env.MUX_SERVER_PORT
-          ? Number.parseInt(process.env.MUX_SERVER_PORT, 10)
+        const envPortRaw = process.env.UNIX_SERVER_PORT
+          ? Number.parseInt(process.env.UNIX_SERVER_PORT, 10)
           : undefined;
         const envPort =
           envPortRaw !== undefined && Number.isFinite(envPortRaw) ? envPortRaw : undefined;
@@ -474,7 +474,7 @@ async function loadServices(): Promise<void> {
         const host = configuredBindHost ?? "127.0.0.1";
 
         const serverInfo = await services.serverService.startServer({
-          muxHome: config.rootDir,
+          unixHome: config.rootDir,
           context: orpcContext,
           router: orpcRouter,
           authToken,
@@ -590,7 +590,7 @@ function createWindow() {
   console.time("[window] Content load");
   if ((isE2ETest && !forceDistLoad) || (!app.isPackaged && !forceDistLoad)) {
     // Development mode: load from vite dev server
-    const devHost = process.env.MUX_DEVSERVER_HOST ?? "127.0.0.1";
+    const devHost = process.env.UNIX_DEVSERVER_HOST ?? "127.0.0.1";
     const url = `http://${devHost}:${devServerPort}`;
     console.log(`[${timestamp()}] [window] Loading from dev server: ${url}`);
     void mainWindow.loadURL(url);
@@ -628,8 +628,8 @@ if (gotTheLock) {
     try {
       console.log("App ready, creating window...");
 
-      // Migrate from .cmux to .mux directory structure if needed
-      migrateLegacyMuxHome();
+      // Migrate from .cmux to .unix directory structure if needed
+      migrateLegacyUnixHome();
 
       // Install React DevTools in development
       if (!app.isPackaged) {

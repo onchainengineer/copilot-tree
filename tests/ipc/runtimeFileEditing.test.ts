@@ -139,7 +139,7 @@ describeIntegration("Runtime File Editing Tools", () => {
               const createEvents = await sendMessageAndWait(
                 env,
                 workspaceId,
-                `Create a file called ${testFileName} with the content: "Hello from mux file tools!"`,
+                `Create a file called ${testFileName} with the content: "Hello from unix file tools!"`,
                 HAIKU_MODEL,
                 FILE_TOOLS_ONLY,
                 streamTimeout

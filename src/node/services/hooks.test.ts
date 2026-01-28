@@ -18,7 +18,7 @@ describe("hooks", () => {
   let runtime: LocalRuntime;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mux-hooks-test-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "unix-hooks-test-"));
     runtime = new LocalRuntime(tempDir);
   });
 
@@ -33,7 +33,7 @@ describe("hooks", () => {
     });
 
     test("finds project-level hook", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
       await fs.writeFile(hookPath, "#!/bin/bash\necho test");
@@ -44,7 +44,7 @@ describe("hooks", () => {
     });
 
     test("ignores directory with hook name", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookPath, { recursive: true }); // Create as directory
 
@@ -60,7 +60,7 @@ describe("hooks", () => {
     });
 
     test("finds project-level tool_env", async () => {
-      const envDir = path.join(tempDir, ".mux");
+      const envDir = path.join(tempDir, ".unix");
       const envPath = path.join(envDir, "tool_env");
       await fs.mkdir(envDir, { recursive: true });
       await fs.writeFile(envPath, "export FOO=bar");
@@ -70,7 +70,7 @@ describe("hooks", () => {
     });
 
     test("ignores directory with tool_env name", async () => {
-      const envDir = path.join(tempDir, ".mux");
+      const envDir = path.join(tempDir, ".unix");
       const envPath = path.join(envDir, "tool_env");
       await fs.mkdir(envPath, { recursive: true }); // Create as directory
 
@@ -86,7 +86,7 @@ describe("hooks", () => {
     });
 
     test("finds project-level tool_pre", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_pre");
       await fs.mkdir(hookDir, { recursive: true });
       await fs.writeFile(hookPath, "#!/bin/bash\nexit 0");
@@ -104,7 +104,7 @@ describe("hooks", () => {
     });
 
     test("finds project-level tool_post", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_post");
       await fs.mkdir(hookDir, { recursive: true });
       await fs.writeFile(hookPath, "#!/bin/bash\nexit 0");
@@ -117,7 +117,7 @@ describe("hooks", () => {
 
   describe("runPreHook", () => {
     test("allows tool when hook exits 0", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_pre");
       await fs.mkdir(hookDir, { recursive: true });
       await fs.writeFile(hookPath, "#!/bin/bash\nexit 0");
@@ -135,7 +135,7 @@ describe("hooks", () => {
     });
 
     test("blocks tool when hook exits non-zero", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_pre");
       await fs.mkdir(hookDir, { recursive: true });
       await fs.writeFile(hookPath, '#!/bin/bash\necho "blocked" >&2\nexit 1');
@@ -153,11 +153,11 @@ describe("hooks", () => {
       expect(result.output).toContain("blocked");
     });
 
-    test("receives MUX_TOOL env var", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+    test("receives UNIX_TOOL env var", async () => {
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_pre");
       await fs.mkdir(hookDir, { recursive: true });
-      await fs.writeFile(hookPath, '#!/bin/bash\necho "tool=$MUX_TOOL"');
+      await fs.writeFile(hookPath, '#!/bin/bash\necho "tool=$UNIX_TOOL"');
       await fs.chmod(hookPath, 0o755);
 
       const result = await runPreHook(runtime, hookPath, {
@@ -174,7 +174,7 @@ describe("hooks", () => {
 
   describe("runPostHook", () => {
     test("succeeds when hook exits 0", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_post");
       await fs.mkdir(hookDir, { recursive: true });
       await fs.writeFile(hookPath, "#!/bin/bash\nexit 0");
@@ -196,11 +196,11 @@ describe("hooks", () => {
       expect(result.exitCode).toBe(0);
     });
 
-    test("receives MUX_TOOL_RESULT env var", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+    test("receives UNIX_TOOL_RESULT env var", async () => {
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_post");
       await fs.mkdir(hookDir, { recursive: true });
-      await fs.writeFile(hookPath, '#!/bin/bash\necho "result=$MUX_TOOL_RESULT"');
+      await fs.writeFile(hookPath, '#!/bin/bash\necho "result=$UNIX_TOOL_RESULT"');
       await fs.chmod(hookPath, 0o755);
 
       const result = await runPostHook(
@@ -219,11 +219,11 @@ describe("hooks", () => {
       expect(result.output).toContain('result={"value":42}');
     });
 
-    test("can read result from MUX_TOOL_RESULT_PATH", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+    test("can read result from UNIX_TOOL_RESULT_PATH", async () => {
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_post");
       await fs.mkdir(hookDir, { recursive: true });
-      await fs.writeFile(hookPath, '#!/bin/bash\ncat "$MUX_TOOL_RESULT_PATH"');
+      await fs.writeFile(hookPath, '#!/bin/bash\ncat "$UNIX_TOOL_RESULT_PATH"');
       await fs.chmod(hookPath, 0o755);
 
       const result = await runPostHook(
@@ -243,7 +243,7 @@ describe("hooks", () => {
     });
 
     test("reports failure when hook exits non-zero", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_post");
       await fs.mkdir(hookDir, { recursive: true });
       await fs.writeFile(hookPath, '#!/bin/bash\necho "lint error" >&2\nexit 1');
@@ -268,8 +268,8 @@ describe("hooks", () => {
   });
 
   describe("runWithHook", () => {
-    test("executes tool when hook prints $MUX_EXEC", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+    test("executes tool when hook prints $UNIX_EXEC", async () => {
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -277,7 +277,7 @@ describe("hooks", () => {
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 `
       );
@@ -305,8 +305,8 @@ read RESULT
       expect(result).toEqual({ success: true, data: "test result" });
     });
 
-    test("blocks tool when hook exits before $MUX_EXEC", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+    test("blocks tool when hook exits before $UNIX_EXEC", async () => {
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -344,7 +344,7 @@ exit 1
     });
 
     test("captures stderr when hook fails after tool execution", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -352,7 +352,7 @@ exit 1
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 echo "Lint error: missing semicolon" >&2
 exit 1
@@ -380,8 +380,8 @@ exit 1
       expect(result).toEqual({ success: true, diff: "+line" });
     });
 
-    test("receives tool input via MUX_TOOL_INPUT env var", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+    test("receives tool input via UNIX_TOOL_INPUT env var", async () => {
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -389,9 +389,9 @@ exit 1
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo "TOOL=$MUX_TOOL" >&2
-echo "INPUT=$MUX_TOOL_INPUT" >&2
-echo $MUX_EXEC
+echo "TOOL=$UNIX_TOOL" >&2
+echo "INPUT=$UNIX_TOOL_INPUT" >&2
+echo $UNIX_EXEC
 read RESULT
 `
       );
@@ -414,7 +414,7 @@ read RESULT
     });
 
     test("receives tool result via stdin", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -422,7 +422,7 @@ read RESULT
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 echo "GOT_RESULT=$RESULT" >&2
 `
@@ -445,7 +445,7 @@ echo "GOT_RESULT=$RESULT" >&2
     });
 
     test("passes additional env vars to hook", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -453,7 +453,7 @@ echo "GOT_RESULT=$RESULT" >&2
         hookPath,
         `#!/bin/bash
 echo "SECRET=$MY_SECRET" >&2
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 `
       );
@@ -476,14 +476,14 @@ read RESULT
     });
 
     test("rethrows tool errors after hook completes", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 echo "Hook received: $RESULT" >&2
 `
@@ -510,14 +510,14 @@ echo "Hook received: $RESULT" >&2
     test("handles hook paths with spaces", async () => {
       // Create a directory with spaces in the name
       const spacedDir = path.join(tempDir, "my project");
-      const hookDir = path.join(spacedDir, ".mux");
+      const hookDir = path.join(spacedDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 `
       );
@@ -543,8 +543,8 @@ read RESULT
       expect(result).toEqual({ success: true });
     });
 
-    test("succeeds when hook exits without reading MUX_RESULT", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+    test("succeeds when hook exits without reading UNIX_RESULT", async () => {
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -552,7 +552,7 @@ read RESULT
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 exit 0
 `
       );
@@ -576,7 +576,7 @@ exit 0
     });
 
     test("logs warning when pre-hook takes too long", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -585,7 +585,7 @@ exit 0
         hookPath,
         `#!/bin/bash
 sleep 0.15
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 `
       );
@@ -614,7 +614,7 @@ read RESULT
     });
 
     test("logs warning when post-hook takes too long", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -622,7 +622,7 @@ read RESULT
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 sleep 0.15
 `
@@ -652,14 +652,14 @@ sleep 0.15
     });
 
     test("does not log warning when hook is fast", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 `
       );
@@ -687,14 +687,14 @@ read RESULT
     });
 
     test("sends streaming placeholder to hook for AsyncIterable results", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 echo "GOT_RESULT=$RESULT" >&2
 `
@@ -723,7 +723,7 @@ echo "GOT_RESULT=$RESULT" >&2
     });
 
     test("times out when pre-hook takes too long (does not run tool)", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
@@ -731,7 +731,7 @@ echo "GOT_RESULT=$RESULT" >&2
         hookPath,
         `#!/bin/bash
 sleep 0.15
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 `
       );
@@ -760,19 +760,19 @@ read RESULT
       expect(toolExecuted).toBe(false);
       expect(hook.toolExecuted).toBe(false);
       expect(hook.success).toBe(false);
-      expect(hook.stderr).toContain("Hook timed out before $MUX_EXEC");
+      expect(hook.stderr).toContain("Hook timed out before $UNIX_EXEC");
       expect(result).toBeUndefined();
     });
 
     test("times out when post-hook takes too long (after tool result)", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 sleep 0.15
 `
@@ -807,14 +807,14 @@ sleep 0.15
     });
 
     test("does not count tool duration towards hook timeouts", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 `
       );
@@ -844,25 +844,25 @@ read RESULT
       expect(result).toEqual({ success: true });
     });
 
-    test("writes large tool input to MUX_TOOL_INPUT_PATH", async () => {
-      const hookDir = path.join(tempDir, ".mux");
+    test("writes large tool input to UNIX_TOOL_INPUT_PATH", async () => {
+      const hookDir = path.join(tempDir, ".unix");
       const hookPath = path.join(hookDir, "tool_hook");
       await fs.mkdir(hookDir, { recursive: true });
 
       await fs.writeFile(
         hookPath,
         `#!/bin/bash
-echo "ENV_INPUT=$MUX_TOOL_INPUT" >&2
+echo "ENV_INPUT=$UNIX_TOOL_INPUT" >&2
 
-if [ -z "$MUX_TOOL_INPUT_PATH" ]; then
+if [ -z "$UNIX_TOOL_INPUT_PATH" ]; then
   echo "NO_PATH" >&2
   exit 1
 fi
 
-len=$(wc -c < "$MUX_TOOL_INPUT_PATH")
+len=$(wc -c < "$UNIX_TOOL_INPUT_PATH")
 echo "LEN=$len" >&2
 
-echo $MUX_EXEC
+echo $UNIX_EXEC
 read RESULT
 `
       );
@@ -883,7 +883,7 @@ read RESULT
       );
 
       expect(hook.success).toBe(true);
-      expect(hook.stderr).toContain("ENV_INPUT=__MUX_TOOL_INPUT_FILE__");
+      expect(hook.stderr).toContain("ENV_INPUT=__UNIX_TOOL_INPUT_FILE__");
       expect(hook.stderr).toMatch(new RegExp(`LEN=\\s*${bigInput.length}`));
     });
   });

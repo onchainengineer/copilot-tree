@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import assert from "node:assert";
 
-import { getMuxHome } from "mux/common/constants/paths";
-import { ServerLockfile } from "mux/node/services/serverLockfile";
+import { getUnixHome } from "unix/common/constants/paths";
+import { ServerLockfile } from "unix/node/services/serverLockfile";
 
 export type ConnectionMode = "auto" | "server-only" | "file-only";
 
@@ -15,7 +15,7 @@ export interface DiscoveredServerConfig {
   authTokenSource: "secret" | "env" | "lockfile" | "none";
 }
 
-const SERVER_AUTH_TOKEN_SECRET_KEY = "mux.serverAuthToken";
+const SERVER_AUTH_TOKEN_SECRET_KEY = "unix.serverAuthToken";
 
 function normalizeBaseUrl(baseUrl: string): string {
   assert(baseUrl.length > 0, "baseUrl must be non-empty");
@@ -31,7 +31,7 @@ function normalizeBaseUrl(baseUrl: string): string {
 }
 
 export function getConnectionModeSetting(): ConnectionMode {
-  const config = vscode.workspace.getConfiguration("mux");
+  const config = vscode.workspace.getConfiguration("unix");
   const value = config.get<unknown>("connectionMode");
 
   if (value === "auto" || value === "server-only" || value === "file-only") {
@@ -44,12 +44,12 @@ export function getConnectionModeSetting(): ConnectionMode {
 export async function discoverServerConfig(
   context: vscode.ExtensionContext
 ): Promise<DiscoveredServerConfig> {
-  const config = vscode.workspace.getConfiguration("mux");
+  const config = vscode.workspace.getConfiguration("unix");
   const serverUrlOverrideRaw = config.get<string>("serverUrl")?.trim();
 
   let lockfileData: { baseUrl: string; token: string } | null = null;
   try {
-    const lockfile = new ServerLockfile(getMuxHome());
+    const lockfile = new ServerLockfile(getUnixHome());
     const data = await lockfile.read();
     if (data) {
       lockfileData = { baseUrl: data.baseUrl, token: data.token };
@@ -59,7 +59,7 @@ export async function discoverServerConfig(
   }
 
   // Base URL precedence: settings -> env -> lockfile -> default.
-  const envBaseUrl = process.env.MUX_SERVER_URL?.trim();
+  const envBaseUrl = process.env.UNIX_SERVER_URL?.trim();
 
   let baseUrlSource: DiscoveredServerConfig["baseUrlSource"] = "default";
   let baseUrlRaw = "http://localhost:3000";
@@ -79,7 +79,7 @@ export async function discoverServerConfig(
 
   // Auth token precedence: secret storage -> env -> lockfile (only if same baseUrl).
   const secretToken = (await context.secrets.get(SERVER_AUTH_TOKEN_SECRET_KEY))?.trim();
-  const envToken = process.env.MUX_SERVER_AUTH_TOKEN?.trim();
+  const envToken = process.env.UNIX_SERVER_AUTH_TOKEN?.trim();
 
   let authTokenSource: DiscoveredServerConfig["authTokenSource"] = "none";
   let authToken: string | undefined;

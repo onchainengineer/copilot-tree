@@ -288,7 +288,7 @@ interface ReviewBlockFromDataProps {
 
 /**
  * ReviewBlock that takes structured data directly (preferred)
- * Used when review data is available from muxMetadata
+ * Used when review data is available from unixMetadata
  */
 export const ReviewBlockFromData: React.FC<ReviewBlockFromDataProps> = ({
   data,

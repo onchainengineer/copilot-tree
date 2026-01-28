@@ -213,7 +213,7 @@ export class WorktreeManager {
       await moveProc.result;
 
       // Rename the git branch to match the new workspace name
-      // In mux, branch name and workspace name are always kept in sync.
+      // In unix, branch name and workspace name are always kept in sync.
       // Run from the new worktree path since that's where the branch is checked out.
       // Best-effort: ignore errors (e.g., branch might have a different name in test scenarios).
       try {

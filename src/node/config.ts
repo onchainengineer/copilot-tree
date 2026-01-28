@@ -21,7 +21,7 @@ import { isLayoutPresetsConfigEmpty, normalizeLayoutPresetsConfig } from "@/comm
 import { normalizeAgentAiDefaults } from "@/common/types/agentAiDefaults";
 import { DEFAULT_RUNTIME_CONFIG } from "@/common/constants/workspace";
 import { isIncompatibleRuntimeConfig } from "@/common/utils/runtimeCompatibility";
-import { getMuxHome } from "@/common/constants/paths";
+import { getUnixHome } from "@/common/constants/paths";
 import { PlatformPaths } from "@/common/utils/paths";
 import { stripTrailingSlashes } from "@/node/utils/pathUtils";
 import { getContainerName as getDockerContainerName } from "@/node/runtime/DockerRuntime";
@@ -94,7 +94,7 @@ export type ProvidersConfig = Record<string, ProviderConfig>;
  * Config - Centralized configuration management
  *
  * Encapsulates all config paths and operations, making them dependency-injectable
- * and testable. Pass a custom rootDir for tests to avoid polluting ~/.mux
+ * and testable. Pass a custom rootDir for tests to avoid polluting ~/.unix
  */
 export class Config {
   readonly rootDir: string;
@@ -105,7 +105,7 @@ export class Config {
   private readonly secretsFile: string;
 
   constructor(rootDir?: string) {
-    this.rootDir = rootDir ?? getMuxHome();
+    this.rootDir = rootDir ?? getUnixHome();
     this.sessionsDir = path.join(this.rootDir, "sessions");
     this.srcDir = path.join(this.rootDir, "src");
     this.configFile = path.join(this.rootDir, "config.json");
@@ -306,7 +306,7 @@ export class Config {
   }
 
   /**
-   * Cross-client feature flag overrides (shared via ~/.mux/config.json).
+   * Cross-client feature flag overrides (shared via ~/.unix/config.json).
    */
   getFeatureFlagOverride(flagKey: string): FeatureFlagOverride {
     const config = this.loadConfigOrDefault();
@@ -339,7 +339,7 @@ export class Config {
    * - undefined: "auto" (advertise only when the API server is LAN-reachable)
    */
   getMdnsAdvertisementEnabled(): boolean | undefined {
-    const envOverride = parseOptionalEnvBoolean(process.env.MUX_MDNS_ADVERTISE);
+    const envOverride = parseOptionalEnvBoolean(process.env.UNIX_MDNS_ADVERTISE);
     if (envOverride !== undefined) {
       return envOverride;
     }
@@ -350,7 +350,7 @@ export class Config {
 
   /** Optional DNS-SD service instance name override. */
   getMdnsServiceName(): string | undefined {
-    const envName = parseOptionalNonEmptyString(process.env.MUX_MDNS_SERVICE_NAME);
+    const envName = parseOptionalNonEmptyString(process.env.UNIX_MDNS_SERVICE_NAME);
     if (envName) {
       return envName;
     }
@@ -415,11 +415,11 @@ export class Config {
       namedWorkspacePath: workspacePath,
     };
 
-    // Check for incompatible runtime configs (from newer mux versions)
+    // Check for incompatible runtime configs (from newer unix versions)
     if (isIncompatibleRuntimeConfig(metadata.runtimeConfig)) {
       result.incompatibleRuntime =
-        "This workspace was created with a newer version of mux. " +
-        "Please upgrade mux to use this workspace.";
+        "This workspace was created with a newer version ofunix. " +
+        "Please upgrade unix to use this workspace.";
     }
 
     return result;
@@ -884,7 +884,7 @@ export class Config {
       const jsonString = JSON.stringify(config, null, 2);
 
       // Add a comment header to the file
-      const contentWithComments = `// Providers configuration for mux
+      const contentWithComments = `// Providers configuration for unix
 // Configure your AI providers here
 // Example:
 // {

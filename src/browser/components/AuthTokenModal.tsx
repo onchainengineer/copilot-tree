@@ -15,7 +15,7 @@ interface AuthTokenModalProps {
   error?: string | null;
 }
 
-const AUTH_TOKEN_STORAGE_KEY = "mux:auth-token";
+const AUTH_TOKEN_STORAGE_KEY = "unix:auth-token";
 
 export function getStoredAuthToken(): string | null {
   try {

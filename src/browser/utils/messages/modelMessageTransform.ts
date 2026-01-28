@@ -4,7 +4,7 @@
  */
 
 import type { ModelMessage, AssistantModelMessage, ToolModelMessage } from "ai";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import type { EditedFileAttachment } from "@/node/services/agentSession";
 import type { PostCompactionAttachment } from "@/common/types/attachment";
 import { MAX_POST_COMPACTION_INJECTION_CHARS } from "@/common/constants/attachments";
@@ -31,9 +31,9 @@ import { renderAttachmentsToContentWithBudget } from "./attachmentRenderer";
  * @param preserveReasoningOnly - If true, keep reasoning-only messages (for Extended Thinking)
  */
 export function filterEmptyAssistantMessages(
-  messages: MuxMessage[],
+  messages: UnixMessage[],
   preserveReasoningOnly = false
-): MuxMessage[] {
+): UnixMessage[] {
   return messages.filter((msg) => {
     // Keep all non-assistant messages
     if (msg.role !== "assistant") {
@@ -106,8 +106,8 @@ export function filterEmptyAssistantMessages(
  * filtered out, and we'd lose the interruption context. A user message always
  * survives filtering.
  */
-export function addInterruptedSentinel(messages: MuxMessage[]): MuxMessage[] {
-  const result: MuxMessage[] = [];
+export function addInterruptedSentinel(messages: UnixMessage[]): UnixMessage[] {
+  const result: UnixMessage[] = [];
 
   for (let i = 0; i < messages.length; i++) {
     const msg = messages[i];
@@ -153,12 +153,12 @@ export function addInterruptedSentinel(messages: MuxMessage[]): MuxMessage[] {
  * @returns Messages with agent transition context injected if needed
  */
 export function injectAgentTransition(
-  messages: MuxMessage[],
+  messages: UnixMessage[],
   currentAgentId?: string,
   toolNames?: string[],
   planContent?: string,
   planFilePath?: string
-): MuxMessage[] {
+): UnixMessage[] {
   // No agent specified, nothing to do
   if (!currentAgentId) {
     return messages;
@@ -195,7 +195,7 @@ export function injectAgentTransition(
     return messages;
   }
 
-  const result: MuxMessage[] = [];
+  const result: UnixMessage[] = [];
 
   // Add all messages up to (but not including) the last user message
   for (let i = 0; i < lastUserIndex; i++) {
@@ -227,7 +227,7 @@ ${planContent}
 </plan>`;
   }
 
-  const transitionMessage: MuxMessage = {
+  const transitionMessage: UnixMessage = {
     id: `agent-transition-${Date.now()}`,
     role: "user",
     parts: [
@@ -261,9 +261,9 @@ ${planContent}
  * @returns Messages with file change notification appended if any files changed
  */
 export function injectFileChangeNotifications(
-  messages: MuxMessage[],
+  messages: UnixMessage[],
   changedFileAttachments?: EditedFileAttachment[]
-): MuxMessage[] {
+): UnixMessage[] {
   if (!changedFileAttachments || changedFileAttachments.length === 0) {
     return messages;
   }
@@ -277,7 +277,7 @@ export function injectFileChangeNotifications(
     )
     .join("\n\n");
 
-  const syntheticMessage: MuxMessage = {
+  const syntheticMessage: UnixMessage = {
     id: `file-change-${Date.now()}`,
     role: "user",
     parts: [{ type: "text", text: `<system-file-update>\n${notice}\n</system-file-update>` }],
@@ -303,9 +303,9 @@ export function injectFileChangeNotifications(
  * @returns Messages with attachments injected after compaction summary
  */
 export function injectPostCompactionAttachments(
-  messages: MuxMessage[],
+  messages: UnixMessage[],
   attachments?: PostCompactionAttachment[] | null
-): MuxMessage[] {
+): UnixMessage[] {
   if (!attachments || attachments.length === 0) {
     return messages;
   }
@@ -316,7 +316,7 @@ export function injectPostCompactionAttachments(
   if (compactionIndex === -1) {
     // No compaction message found - this shouldn't happen if attachments are provided,
     // but append at end as a fallback
-    const syntheticMessage: MuxMessage = {
+    const syntheticMessage: UnixMessage = {
       id: `post-compaction-${Date.now()}`,
       role: "user",
       parts: [
@@ -336,7 +336,7 @@ export function injectPostCompactionAttachments(
   }
 
   // Insert the synthetic message immediately after the compaction summary
-  const syntheticMessage: MuxMessage = {
+  const syntheticMessage: UnixMessage = {
     id: `post-compaction-${Date.now()}`,
     role: "user",
     parts: [
@@ -765,7 +765,7 @@ function coalesceConsecutiveParts(messages: ModelMessage[]): ModelMessage[] {
         // Preserve signature from later parts - during streaming, the signature
         // arrives at the end and is attached to the last reasoning part.
         // Cast needed because AI SDK's ReasoningPart doesn't have signature,
-        // but our MuxReasoningPart (which flows through convertToModelMessages) does.
+        // but our UnixReasoningPart (which flows through convertToModelMessages) does.
         const partWithSig = part as typeof part & {
           signature?: string;
           providerOptions?: { anthropic?: { signature?: string } };

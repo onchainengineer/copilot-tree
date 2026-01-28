@@ -4,7 +4,7 @@ import { z } from "zod";
 export const CoderWorkspaceConfigSchema = z.object({
   /**
    * Coder workspace name.
-   * - For new workspaces: omit or undefined (backend derives from mux branch name)
+   * - For new workspaces: omit or undefined (backend derives from unix branch name)
    * - For existing workspaces: required (the selected Coder workspace name)
    * - After creation: populated with the actual Coder workspace name for reference
    */
@@ -15,7 +15,7 @@ export const CoderWorkspaceConfigSchema = z.object({
   }),
   preset: z.string().optional().meta({ description: "Preset used during creation" }),
 
-  /** True if connected to pre-existing Coder workspace (vs mux creating one). */
+  /** True if connected to pre-existing Coder workspace (vs unix creating one). */
   existingWorkspace: z.boolean().optional().meta({
     description: "True if connected to pre-existing Coder workspace",
   }),

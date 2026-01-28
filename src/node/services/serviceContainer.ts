@@ -2,13 +2,13 @@ import * as os from "os";
 import * as path from "path";
 import * as fsPromises from "fs/promises";
 import {
-  MUX_HELP_CHAT_AGENT_ID,
-  MUX_HELP_CHAT_WORKSPACE_ID,
-  MUX_HELP_CHAT_WORKSPACE_NAME,
-  MUX_HELP_CHAT_WORKSPACE_TITLE,
-} from "@/common/constants/muxChat";
-import { getMuxHelpChatProjectPath } from "@/node/constants/muxChat";
-import { createMuxMessage } from "@/common/types/message";
+  UNIX_HELP_CHAT_AGENT_ID,
+  UNIX_HELP_CHAT_WORKSPACE_ID,
+  UNIX_HELP_CHAT_WORKSPACE_NAME,
+  UNIX_HELP_CHAT_WORKSPACE_TITLE,
+} from "@/common/constants/unixChat";
+import { getUnixHelpChatProjectPath } from "@/node/constants/unixChat";
+import { createUnixMessage } from "@/common/types/message";
 import { log } from "@/node/services/log";
 import type { Config } from "@/node/config";
 import { AIService } from "@/node/services/aiService";
@@ -54,20 +54,20 @@ import { getSigningService, type SigningService } from "@/node/services/signingS
 import { coderService, type CoderService } from "@/node/services/coderService";
 import { setGlobalCoderService } from "@/node/runtime/runtimeFactory";
 
-const MUX_HELP_CHAT_WELCOME_MESSAGE_ID = "mux-chat-welcome";
-const MUX_HELP_CHAT_WELCOME_MESSAGE = `Hi, I'm Mux.
+const UNIX_HELP_CHAT_WELCOME_MESSAGE_ID = "unix-chat-welcome";
+const UNIX_HELP_CHAT_WELCOME_MESSAGE = `Hi, I'm Unix.
 
-This is your built-in **Chat with Mux** workspace — a safe place to ask questions about Mux itself.
+This is your built-in **Chat with Unix** workspace — a safe place to ask questions about Unix itself.
 
 I can help you:
-- Configure global agent behavior by editing **~/.mux/AGENTS.md** (I'll show a diff and ask before writing).
-- Pick models/providers and explain Mux modes + tool policies.
+- Configure global agent behavior by editing **~/.unix/AGENTS.md** (I'll show a diff and ask before writing).
+- Pick models/providers and explain Unix modes + tool policies.
 - Troubleshoot common setup issues (keys, runtimes, workspaces, etc.).
 
 Try asking:
 - "What does AGENTS.md do?"
 - "Help me write global instructions for code reviews"
-- "How do I set up an OpenAI / Anthropic key in Mux?"
+- "How do I set up an OpenAI / Anthropic key in Unix?"
 `;
 
 /**
@@ -121,7 +121,7 @@ export class ServiceContainer {
       path.join(config.rootDir, "extensionMetadata.json")
     );
     this.backgroundProcessManager = new BackgroundProcessManager(
-      path.join(os.tmpdir(), "mux-bashes")
+      path.join(os.tmpdir(), "unix-bashes")
     );
     this.mcpServerManager = new MCPServerManager(this.mcpConfigService);
     this.sessionUsageService = new SessionUsageService(config, this.historyService);
@@ -181,7 +181,7 @@ export class ServiceContainer {
     this.workspaceService.setTelemetryService(this.telemetryService);
     this.experimentsService = new ExperimentsService({
       telemetryService: this.telemetryService,
-      muxHome: config.rootDir,
+      unixHome: config.rootDir,
     });
     this.featureFlagService = new FeatureFlagService(config, this.telemetryService);
     this.sessionTimingService = new SessionTimingService(config, this.telemetryService);
@@ -242,17 +242,17 @@ export class ServiceContainer {
       // Ignore errors - coder may not be installed
     });
 
-    // Ensure the built-in Chat with Mux system workspace exists.
+    // Ensure the built-in Chat with Unix system workspace exists.
     // Defensive: startup-time initialization must never crash the app.
     try {
-      await this.ensureMuxChatWorkspace();
+      await this.ensureUnixChatWorkspace();
     } catch (error) {
-      log.warn("[ServiceContainer] Failed to ensure Chat with Mux workspace", { error });
+      log.warn("[ServiceContainer] Failed to ensure Chat with Unix workspace", { error });
     }
   }
 
-  private async ensureMuxChatWorkspace(): Promise<void> {
-    const projectPath = getMuxHelpChatProjectPath(this.config.rootDir);
+  private async ensureUnixChatWorkspace(): Promise<void> {
+    const projectPath = getUnixHelpChatProjectPath(this.config.rootDir);
 
     // Ensure the directory exists (LocalRuntime uses project dir directly).
     await fsPromises.mkdir(projectPath, { recursive: true });
@@ -264,14 +264,14 @@ export class ServiceContainer {
         config.projects.set(projectPath, projectConfig);
       }
 
-      const existing = projectConfig.workspaces.find((w) => w.id === MUX_HELP_CHAT_WORKSPACE_ID);
+      const existing = projectConfig.workspaces.find((w) => w.id === UNIX_HELP_CHAT_WORKSPACE_ID);
       if (!existing) {
         projectConfig.workspaces.push({
           path: projectPath,
-          id: MUX_HELP_CHAT_WORKSPACE_ID,
-          name: MUX_HELP_CHAT_WORKSPACE_NAME,
-          title: MUX_HELP_CHAT_WORKSPACE_TITLE,
-          agentId: MUX_HELP_CHAT_AGENT_ID,
+          id: UNIX_HELP_CHAT_WORKSPACE_ID,
+          name: UNIX_HELP_CHAT_WORKSPACE_NAME,
+          title: UNIX_HELP_CHAT_WORKSPACE_TITLE,
+          agentId: UNIX_HELP_CHAT_AGENT_ID,
           createdAt: new Date().toISOString(),
           runtimeConfig: { type: "local" },
         });
@@ -280,9 +280,9 @@ export class ServiceContainer {
 
       // Self-heal: enforce invariants for the system workspace.
       existing.path = projectPath;
-      existing.name = MUX_HELP_CHAT_WORKSPACE_NAME;
-      existing.title = MUX_HELP_CHAT_WORKSPACE_TITLE;
-      existing.agentId = MUX_HELP_CHAT_AGENT_ID;
+      existing.name = UNIX_HELP_CHAT_WORKSPACE_NAME;
+      existing.title = UNIX_HELP_CHAT_WORKSPACE_TITLE;
+      existing.agentId = UNIX_HELP_CHAT_AGENT_ID;
       existing.createdAt ??= new Date().toISOString();
       existing.runtimeConfig = { type: "local" };
       existing.archivedAt = undefined;
@@ -290,13 +290,13 @@ export class ServiceContainer {
       return config;
     });
 
-    await this.ensureMuxChatWelcomeMessage();
+    await this.ensureUnixChatWelcomeMessage();
   }
 
-  private async ensureMuxChatWelcomeMessage(): Promise<void> {
-    const historyResult = await this.historyService.getHistory(MUX_HELP_CHAT_WORKSPACE_ID);
+  private async ensureUnixChatWelcomeMessage(): Promise<void> {
+    const historyResult = await this.historyService.getHistory(UNIX_HELP_CHAT_WORKSPACE_ID);
     if (!historyResult.success) {
-      log.warn("[ServiceContainer] Failed to read mux-chat history for welcome message", {
+      log.warn("[ServiceContainer] Failed to read unix-chat history for welcome message", {
         error: historyResult.error,
       });
       return;
@@ -306,20 +306,20 @@ export class ServiceContainer {
       return;
     }
 
-    const message = createMuxMessage(
-      MUX_HELP_CHAT_WELCOME_MESSAGE_ID,
+    const message = createUnixMessage(
+      UNIX_HELP_CHAT_WELCOME_MESSAGE_ID,
       "assistant",
-      MUX_HELP_CHAT_WELCOME_MESSAGE,
+      UNIX_HELP_CHAT_WELCOME_MESSAGE,
       // Note: This message should be visible in the UI, so it must NOT be marked synthetic.
       { timestamp: Date.now() }
     );
 
     const appendResult = await this.historyService.appendToHistory(
-      MUX_HELP_CHAT_WORKSPACE_ID,
+      UNIX_HELP_CHAT_WORKSPACE_ID,
       message
     );
     if (!appendResult.success) {
-      log.warn("[ServiceContainer] Failed to seed mux-chat welcome message", {
+      log.warn("[ServiceContainer] Failed to seed unix-chat welcome message", {
         error: appendResult.error,
       });
     }

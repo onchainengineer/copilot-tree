@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const ServerLockDataSchema = z.object({
   pid: z.number(),
-  /** Base URL for HTTP API (e.g., "http://localhost:3000" or "https://my.box.com/mux") */
+  /** Base URL for HTTP API (e.g., "http://localhost:3000" or "https://my.box.com/unix") */
   baseUrl: z.url(),
   token: z.string(),
   startedAt: z.string(),
@@ -19,16 +19,16 @@ export const ServerLockDataSchema = z.object({
 export type ServerLockData = z.infer<typeof ServerLockDataSchema>;
 
 /**
- * Manages the server lockfile at ~/.mux/server.lock
+ * Manages the server lockfile at ~/.unix/server.lock
  *
- * The lockfile enables CLI tools to discover a running mux server
- * (either Electron app or standalone mux server) and connect to it.
+ * The lockfile enables CLI tools to discover a running unix server
+ * (either Electron app or standalone unix server) and connect to it.
  */
 export class ServerLockfile {
   private readonly lockPath: string;
 
-  constructor(muxHome: string) {
-    this.lockPath = path.join(muxHome, "server.lock");
+  constructor(unixHome: string) {
+    this.lockPath = path.join(unixHome, "server.lock");
   }
 
   /**

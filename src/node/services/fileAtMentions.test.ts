@@ -3,14 +3,14 @@ import * as fsPromises from "fs/promises";
 import * as os from "os";
 import * as path from "path";
 
-import { createMuxMessage } from "@/common/types/message";
+import { createUnixMessage } from "@/common/types/message";
 import { createRuntime } from "@/node/runtime/runtimeFactory";
 
 import { injectFileAtMentions, materializeFileAtMentions } from "./fileAtMentions";
 
 describe("injectFileAtMentions", () => {
   it("expands @file mentions from earlier user messages even when the latest has none", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-file-at-mentions-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-file-at-mentions-"));
 
     try {
       await fsPromises.mkdir(path.join(tmpDir, "src"), { recursive: true });
@@ -22,9 +22,9 @@ describe("injectFileAtMentions", () => {
 
       const runtime = createRuntime({ type: "local" }, { projectPath: tmpDir });
       const messages = [
-        createMuxMessage("u1", "user", "Please check @src/foo.ts"),
-        createMuxMessage("a1", "assistant", "Sure."),
-        createMuxMessage("u2", "user", "Now do X (no mentions)."),
+        createUnixMessage("u1", "user", "Please check @src/foo.ts"),
+        createUnixMessage("a1", "assistant", "Sure."),
+        createUnixMessage("u2", "user", "Now do X (no mentions)."),
       ];
 
       const result = await injectFileAtMentions(messages, {
@@ -40,7 +40,7 @@ describe("injectFileAtMentions", () => {
       expect(result[3]).toEqual(messages[2]);
 
       const injectedText = result[0]?.parts.find((p) => p.type === "text")?.text ?? "";
-      expect(injectedText).toContain('<mux-file path="src/foo.ts"');
+      expect(injectedText).toContain('<unix-file path="src/foo.ts"');
       expect(injectedText).toContain("line1");
       expect(injectedText).toContain("line2");
       expect(injectedText).toContain("line3");
@@ -49,7 +49,7 @@ describe("injectFileAtMentions", () => {
     }
   });
   it("prioritizes the latest @file mention when the global cap is hit", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-file-at-mentions-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-file-at-mentions-"));
 
     try {
       await fsPromises.mkdir(path.join(tmpDir, "src"), { recursive: true });
@@ -61,7 +61,7 @@ describe("injectFileAtMentions", () => {
       const runtime = createRuntime({ type: "local" }, { projectPath: tmpDir });
       const messages = Array.from({ length: 11 }, (_, idx) => {
         const i = idx + 1;
-        return createMuxMessage(`u${i}`, "user", `Please check @src/f${i}.ts`);
+        return createUnixMessage(`u${i}`, "user", `Please check @src/f${i}.ts`);
       });
 
       const result = await injectFileAtMentions(messages, {
@@ -75,14 +75,14 @@ describe("injectFileAtMentions", () => {
       const injectedText = syntheticMessages
         .map((m) => m.parts.find((p) => p.type === "text")?.text ?? "")
         .join("\n\n");
-      expect(injectedText).toContain('<mux-file path="src/f11.ts"');
+      expect(injectedText).toContain('<unix-file path="src/f11.ts"');
     } finally {
       await fsPromises.rm(tmpDir, { recursive: true, force: true });
     }
   });
 
   it("injects a synthetic user message with file contents before the prompt", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-file-at-mentions-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-file-at-mentions-"));
 
     try {
       await fsPromises.mkdir(path.join(tmpDir, "src"), { recursive: true });
@@ -93,7 +93,7 @@ describe("injectFileAtMentions", () => {
       );
 
       const runtime = createRuntime({ type: "local" }, { projectPath: tmpDir });
-      const messages = [createMuxMessage("u1", "user", "Please check @src/foo.ts#L2-3")];
+      const messages = [createUnixMessage("u1", "user", "Please check @src/foo.ts#L2-3")];
 
       const result = await injectFileAtMentions(messages, {
         runtime,
@@ -106,7 +106,7 @@ describe("injectFileAtMentions", () => {
       expect(result[1]).toEqual(messages[0]);
 
       const injectedText = result[0]?.parts.find((p) => p.type === "text")?.text ?? "";
-      expect(injectedText).toContain('<mux-file path="src/foo.ts" range="L2-L3"');
+      expect(injectedText).toContain('<unix-file path="src/foo.ts" range="L2-L3"');
       expect(injectedText).toContain("```ts");
       expect(injectedText).toContain("line2");
       expect(injectedText).toContain("line3");
@@ -118,11 +118,11 @@ describe("injectFileAtMentions", () => {
   });
 
   it("ignores non-existent file mentions", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-file-at-mentions-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-file-at-mentions-"));
 
     try {
       const runtime = createRuntime({ type: "local" }, { projectPath: tmpDir });
-      const messages = [createMuxMessage("u1", "user", "Please check @src/missing.ts")];
+      const messages = [createUnixMessage("u1", "user", "Please check @src/missing.ts")];
 
       const result = await injectFileAtMentions(messages, {
         runtime,
@@ -135,7 +135,7 @@ describe("injectFileAtMentions", () => {
     }
   });
   it("injects root files like @Makefile", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-file-at-mentions-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-file-at-mentions-"));
 
     try {
       await fsPromises.writeFile(
@@ -145,7 +145,7 @@ describe("injectFileAtMentions", () => {
       );
 
       const runtime = createRuntime({ type: "local" }, { projectPath: tmpDir });
-      const messages = [createMuxMessage("u1", "user", "Please check @Makefile")];
+      const messages = [createUnixMessage("u1", "user", "Please check @Makefile")];
 
       const result = await injectFileAtMentions(messages, {
         runtime,
@@ -156,7 +156,7 @@ describe("injectFileAtMentions", () => {
       expect(result[0]?.metadata?.synthetic).toBe(true);
 
       const injectedText = result[0]?.parts.find((p) => p.type === "text")?.text ?? "";
-      expect(injectedText).toContain('<mux-file path="Makefile" range="L1-L2"');
+      expect(injectedText).toContain('<unix-file path="Makefile" range="L1-L2"');
       expect(injectedText).toContain("line1");
       expect(injectedText).toContain("line2");
     } finally {
@@ -165,11 +165,11 @@ describe("injectFileAtMentions", () => {
   });
 
   it("ignores non-file @mentions with # fragments", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-file-at-mentions-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-file-at-mentions-"));
 
     try {
       const runtime = createRuntime({ type: "local" }, { projectPath: tmpDir });
-      const messages = [createMuxMessage("u1", "user", "Ping @alice#123")];
+      const messages = [createUnixMessage("u1", "user", "Ping @alice#123")];
 
       const result = await injectFileAtMentions(messages, {
         runtime,
@@ -183,7 +183,7 @@ describe("injectFileAtMentions", () => {
   });
 
   it("skips tokens that already have persisted snapshots (fileAtMentionSnapshot metadata)", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-file-at-mentions-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-file-at-mentions-"));
 
     try {
       await fsPromises.mkdir(path.join(tmpDir, "src"), { recursive: true });
@@ -196,17 +196,17 @@ describe("injectFileAtMentions", () => {
       const runtime = createRuntime({ type: "local" }, { projectPath: tmpDir });
 
       // Simulate a message that has already-materialized snapshot
-      const snapshotMessage = createMuxMessage(
+      const snapshotMessage = createUnixMessage(
         "snapshot-1",
         "user",
-        '<mux-file path="src/foo.ts" range="L1-L2">\n```ts\nold line1\nold line2\n```\n</mux-file>',
+        '<unix-file path="src/foo.ts" range="L1-L2">\n```ts\nold line1\nold line2\n```\n</unix-file>',
         {
           timestamp: Date.now(),
           synthetic: true,
           fileAtMentionSnapshot: ["src/foo.ts"], // Token that was materialized
         }
       );
-      const userMessage = createMuxMessage("u1", "user", "Please check @src/foo.ts");
+      const userMessage = createUnixMessage("u1", "user", "Please check @src/foo.ts");
       const messages = [snapshotMessage, userMessage];
 
       const result = await injectFileAtMentions(messages, {
@@ -232,7 +232,7 @@ describe("injectFileAtMentions", () => {
 
 describe("materializeFileAtMentions", () => {
   it("materializes @file mentions into snapshot blocks", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-materialize-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-materialize-"));
 
     try {
       await fsPromises.mkdir(path.join(tmpDir, "src"), { recursive: true });
@@ -252,7 +252,7 @@ describe("materializeFileAtMentions", () => {
       expect(result).toHaveLength(1);
       expect(result[0]?.token).toBe("src/foo.ts");
       expect(result[0]?.resolvedPath).toBe(path.join(tmpDir, "src", "foo.ts"));
-      expect(result[0]?.block).toContain('<mux-file path="src/foo.ts"');
+      expect(result[0]?.block).toContain('<unix-file path="src/foo.ts"');
       expect(result[0]?.block).toContain("line1");
       expect(result[0]?.block).toContain("line2");
       expect(result[0]?.content).toBe("line1\nline2\nline3");
@@ -263,7 +263,7 @@ describe("materializeFileAtMentions", () => {
   });
 
   it("materializes line range mentions", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-materialize-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-materialize-"));
 
     try {
       await fsPromises.mkdir(path.join(tmpDir, "src"), { recursive: true });
@@ -293,7 +293,7 @@ describe("materializeFileAtMentions", () => {
   });
 
   it("returns empty array when no @file mentions found", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-materialize-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-materialize-"));
 
     try {
       const runtime = createRuntime({ type: "local" }, { projectPath: tmpDir });
@@ -310,7 +310,7 @@ describe("materializeFileAtMentions", () => {
   });
 
   it("ignores non-existent files", async () => {
-    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-materialize-"));
+    const tmpDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-materialize-"));
 
     try {
       const runtime = createRuntime({ type: "local" }, { projectPath: tmpDir });

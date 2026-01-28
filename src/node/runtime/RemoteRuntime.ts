@@ -502,8 +502,8 @@ export abstract class RemoteRuntime implements Runtime {
     return Promise.resolve("/tmp");
   }
 
-  getMuxHome(): string {
-    return "~/.mux";
+  getUnixHome(): string {
+    return "~/.unix";
   }
 
   // Abstract methods that subclasses must implement

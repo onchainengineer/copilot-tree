@@ -2,7 +2,7 @@
  * CLI environment detection for correct argv parsing across:
  * - bun/node direct invocation
  * - Electron dev mode (electron .)
- * - Packaged Electron app (./mux.AppImage)
+ * - Packaged Electron app (./unix.AppImage)
  */
 
 export interface CliEnvironment {
@@ -118,7 +118,7 @@ export function isCommandAvailable(
   }
   if (command === "desktop") {
     // Desktop command only works when running inside Electron runtime.
-    // When run via node/bun (npx mux), require("../desktop/main") fails because
+    // When run via node/bun (npx unix), require("../desktop/main") fails because
     // the Electron APIs aren't available. Users should download the packaged app.
     return env.isElectron;
   }

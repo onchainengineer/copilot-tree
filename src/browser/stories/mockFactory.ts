@@ -9,18 +9,18 @@
 
 import type { ProjectConfig } from "@/node/config";
 import type { FrontendWorkspaceMetadata } from "@/common/types/workspace";
-import type { WorkspaceChatMessage, ChatMuxMessage } from "@/common/orpc/types";
+import type { WorkspaceChatMessage, ChatUnixMessage } from "@/common/orpc/types";
 import type {
-  MuxFrontendMetadata,
-  MuxTextPart,
-  MuxReasoningPart,
-  MuxFilePart,
-  MuxToolPart,
+  UnixFrontendMetadata,
+  UnixTextPart,
+  UnixReasoningPart,
+  UnixFilePart,
+  UnixToolPart,
 } from "@/common/types/message";
 import { DEFAULT_MODEL } from "@/common/constants/knownModels";
 
 /** Part type for message construction */
-type MuxPart = MuxTextPart | MuxReasoningPart | MuxFilePart | MuxToolPart;
+type UnixPart = UnixTextPart | UnixReasoningPart | UnixFilePart | UnixToolPart;
 import type { RuntimeConfig } from "@/common/types/runtime";
 import { DEFAULT_RUNTIME_CONFIG } from "@/common/constants/workspace";
 
@@ -58,7 +58,7 @@ export function createWorkspace(
     name: opts.name,
     projectPath,
     projectName: opts.projectName,
-    namedWorkspacePath: `/home/user/.mux/src/${opts.projectName}/${safeName}`,
+    namedWorkspacePath: `/home/user/.unix/src/${opts.projectName}/${safeName}`,
     runtimeConfig: opts.runtimeConfig ?? DEFAULT_RUNTIME_CONFIG,
     // Default to current time so workspaces aren't filtered as "old" by age-based UI
     createdAt: opts.createdAt ?? new Date().toISOString(),
@@ -75,7 +75,7 @@ export function createSSHWorkspace(
     runtimeConfig: {
       type: "ssh",
       host: opts.host,
-      srcBaseDir: "/home/user/.mux/src",
+      srcBaseDir: "/home/user/.unix/src",
     },
   });
 }
@@ -103,7 +103,7 @@ export function createIncompatibleWorkspace(
     ...createWorkspace(opts),
     incompatibleRuntime:
       opts.incompatibleReason ??
-      "This workspace was created with a newer version of mux.\nPlease upgrade mux to use this workspace.",
+      "This workspace was created with a newer version ofunix.\nPlease upgrade unix to use this workspace.",
   };
 }
 
@@ -174,10 +174,10 @@ export function createUserMessage(
     historySequence: number;
     timestamp?: number;
     images?: string[];
-    muxMetadata?: MuxFrontendMetadata;
+    unixMetadata?: UnixFrontendMetadata;
   }
-): ChatMuxMessage {
-  const parts: MuxPart[] = [{ type: "text", text }];
+): ChatUnixMessage {
+  const parts: UnixPart[] = [{ type: "text", text }];
   if (opts.images) {
     for (const url of opts.images) {
       parts.push({ type: "file", mediaType: "image/png", url });
@@ -191,7 +191,7 @@ export function createUserMessage(
     metadata: {
       historySequence: opts.historySequence,
       timestamp: opts.timestamp ?? STABLE_TIMESTAMP,
-      muxMetadata: opts.muxMetadata,
+      unixMetadata: opts.unixMetadata,
     },
   };
 }
@@ -200,7 +200,7 @@ export function createUserMessage(
 export function createCompactionRequestMessage(
   id: string,
   opts: { historySequence: number; timestamp?: number; rawCommand?: string }
-): ChatMuxMessage {
+): ChatUnixMessage {
   const rawCommand = opts.rawCommand ?? "/compact";
   return {
     type: "message",
@@ -210,7 +210,7 @@ export function createCompactionRequestMessage(
     metadata: {
       historySequence: opts.historySequence,
       timestamp: opts.timestamp ?? STABLE_TIMESTAMP,
-      muxMetadata: {
+      unixMetadata: {
         type: "compaction-request",
         rawCommand,
         parsed: {},
@@ -227,14 +227,14 @@ export function createAssistantMessage(
     timestamp?: number;
     model?: string;
     reasoning?: string;
-    toolCalls?: MuxPart[];
+    toolCalls?: UnixPart[];
     /** Mark as partial/interrupted message (unfinished stream) */
     partial?: boolean;
     /** Custom context usage for testing context meter display */
     contextUsage?: { inputTokens: number; outputTokens: number; totalTokens?: number };
   }
-): ChatMuxMessage {
-  const parts: MuxPart[] = [];
+): ChatUnixMessage {
+  const parts: UnixPart[] = [];
   if (opts.reasoning) {
     parts.push({ type: "reasoning", text: opts.reasoning });
   }
@@ -269,7 +269,7 @@ export function createAssistantMessage(
 // TOOL CALL FACTORY
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export function createFileReadTool(toolCallId: string, filePath: string, content: string): MuxPart {
+export function createFileReadTool(toolCallId: string, filePath: string, content: string): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -280,7 +280,7 @@ export function createFileReadTool(toolCallId: string, filePath: string, content
   };
 }
 
-export function createFileEditTool(toolCallId: string, filePath: string, diff: string): MuxPart {
+export function createFileEditTool(toolCallId: string, filePath: string, diff: string): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -299,7 +299,7 @@ export function createBashOverflowTool(
   timeoutSecs = 3,
   durationMs = 50,
   displayName = "Bash"
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -330,7 +330,7 @@ export function createBashTool(
   timeoutSecs = 3,
   durationMs = 50,
   displayName = "Bash"
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -351,7 +351,7 @@ export function createWebSearchTool(
   query: string,
   resultCount = 5,
   encrypted = true
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -369,7 +369,7 @@ export function createTerminalTool(
   command: string,
   output: string,
   exitCode = 0
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -385,7 +385,7 @@ export function createStatusTool(
   emoji: string,
   message: string,
   url?: string
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -396,7 +396,7 @@ export function createStatusTool(
   };
 }
 
-export function createPendingTool(toolCallId: string, toolName: string, args: object): MuxPart {
+export function createPendingTool(toolCallId: string, toolName: string, args: object): UnixPart {
   // Note: "input-available" is used for in-progress tool calls that haven't completed yet
   return {
     type: "dynamic-tool",
@@ -418,7 +418,7 @@ export function createAgentSkillReadTool(
     scope?: "project" | "global" | "built-in";
     body?: string;
   } = {}
-): MuxPart {
+): UnixPart {
   const scope = opts.scope ?? "project";
   const description = opts.description ?? `${skillName} skill description`;
   return {
@@ -447,7 +447,7 @@ export function createGenericTool(
   toolName: string,
   input: object,
   output: object
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -462,8 +462,8 @@ export function createGenericTool(
 export function createProposePlanTool(
   toolCallId: string,
   planContent: string,
-  planPath = ".mux/plan.md"
-): MuxPart {
+  planPath = ".unix/plan.md"
+): UnixPart {
   // Extract title from first heading
   const titleMatch = /^#\s+(.+)$/m.exec(planContent);
   const title = titleMatch ? titleMatch[1] : "Plan";
@@ -489,10 +489,10 @@ export function createProposePlanTool(
  * Only works on tool parts with state="output-available".
  */
 export function withHookOutput(
-  toolPart: MuxPart,
+  toolPart: UnixPart,
   hookOutput: string,
   hookDurationMs?: number
-): MuxPart {
+): UnixPart {
   if (toolPart.type !== "dynamic-tool" || toolPart.state !== "output-available") {
     return toolPart;
   }
@@ -524,7 +524,7 @@ export function createCodeExecutionTool(
   code: string,
   result: CodeExecutionResult,
   nestedCalls?: NestedToolCall[]
-): MuxPart & { nestedCalls?: NestedToolCall[] } {
+): UnixPart & { nestedCalls?: NestedToolCall[] } {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -541,7 +541,7 @@ export function createPendingCodeExecutionTool(
   toolCallId: string,
   code: string,
   nestedCalls?: NestedToolCall[]
-): MuxPart & { nestedCalls?: NestedToolCall[] } {
+): UnixPart & { nestedCalls?: NestedToolCall[] } {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -563,7 +563,7 @@ export function createBackgroundBashTool(
   processId: string,
   displayName = "Background",
   timeoutSecs = 60
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -594,7 +594,7 @@ export function createMigratedBashTool(
   displayName = "Bash",
   capturedOutput?: string,
   timeoutSecs = 30
-): MuxPart {
+): UnixPart {
   const outputLines = capturedOutput?.split("\n") ?? [];
   const outputSummary =
     outputLines.length > 20
@@ -633,7 +633,7 @@ export function createBashOutputTool(
   filter?: string,
   timeoutSecs = 5,
   filterExclude?: boolean
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -655,7 +655,7 @@ export function createBashOutputErrorTool(
   processId: string,
   error: string,
   timeoutSecs = 5
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -677,7 +677,7 @@ export function createBashBackgroundListTool(
     exitCode?: number;
     display_name?: string;
   }>
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -693,7 +693,7 @@ export function createBashBackgroundTerminateTool(
   toolCallId: string,
   processId: string,
   displayName?: string
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -757,7 +757,7 @@ type ChatHandler = (callback: (event: WorkspaceChatMessage) => void) => () => vo
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /** Creates a chat handler that sends messages then caught-up */
-export function createStaticChatHandler(messages: ChatMuxMessage[]): ChatHandler {
+export function createStaticChatHandler(messages: ChatUnixMessage[]): ChatHandler {
   return (callback) => {
     setTimeout(() => {
       for (const msg of messages) {
@@ -772,7 +772,7 @@ export function createStaticChatHandler(messages: ChatMuxMessage[]): ChatHandler
 
 /** Creates a chat handler with streaming state */
 export function createStreamingChatHandler(opts: {
-  messages: ChatMuxMessage[];
+  messages: ChatUnixMessage[];
   streamingMessageId: string;
   model: string;
   historySequence: number;
@@ -846,7 +846,7 @@ export function createTaskTool(
     taskId: string;
     status: "queued" | "running";
   }
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -876,7 +876,7 @@ export function createCompletedTaskTool(
     reportMarkdown: string;
     reportTitle?: string;
   }
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -906,7 +906,7 @@ export function createPendingTaskTool(
     title: string;
     run_in_background?: boolean;
   }
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -931,7 +931,7 @@ export function createFailedTaskTool(
     run_in_background?: boolean;
     error: string;
   }
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -965,7 +965,7 @@ export function createTaskAwaitTool(
       note?: string;
     }>;
   }
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -1023,7 +1023,7 @@ export function createTaskListTool(
       depth: number;
     }>;
   }
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,
@@ -1046,7 +1046,7 @@ export function createTaskTerminateTool(
       error?: string;
     }>;
   }
-): MuxPart {
+): UnixPart {
   return {
     type: "dynamic-tool",
     toolCallId,

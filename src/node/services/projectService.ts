@@ -93,7 +93,7 @@ export class ProjectService {
       }
 
       // Resolve the path:
-      // - Bare names like "my-project" → ~/.mux/projects/my-project
+      // - Bare names like "my-project" → ~/.unix/projects/my-project
       // - Paths with ~ → expand to home directory
       // - Absolute/relative paths → resolve normally
       const isBareProjectName =
@@ -111,7 +111,7 @@ export class ProjectService {
         projectPath.startsWith("~/") ||
         projectPath.startsWith("~\\")
       ) {
-        // Tilde expansion - uses expandTilde to respect MUX_ROOT for ~/.mux paths
+        // Tilde expansion - uses expandTilde to respect UNIX_ROOT for ~/.unix paths
         normalizedPath = path.resolve(expandTilde(projectPath));
       } else {
         normalizedPath = path.resolve(projectPath);
@@ -260,7 +260,7 @@ export class ProjectService {
       // Without a commit, the repo is "unborn" and has no branches
       // Use -c flags to set identity only for this commit (don't persist to repo config)
       using commitProc = execAsync(
-        `git -C "${normalizedPath}" -c user.name="mux" -c user.email="mux@localhost" commit --allow-empty -m "Initial commit"`
+        `git -C "${normalizedPath}" -c user.name="unix" -c user.email="unix@localhost" commit --allow-empty -m "Initial commit"`
       );
       await commitProc.result;
 

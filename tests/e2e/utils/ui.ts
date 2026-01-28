@@ -125,7 +125,7 @@ export function createWorkspaceUI(page: Page, context: DemoProjectConfig): Works
 
       await workspaceItem.click();
 
-      // The app now boots into the persistent "Chat with Mux" workspace, which already renders
+      // The app now boots into the persistent "Chat with Unix" workspace, which already renders
       // a transcript immediately. Waiting on the transcript alone is no longer sufficient to
       // confirm that the click actually navigated to the demo workspace.
       const expectedProjectName = path.basename(context.projectPath);

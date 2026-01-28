@@ -118,7 +118,7 @@ describeIntegration("Runtime integration tests", () => {
           getBaseWorkdir(),
           sshConfig,
           type === "docker"
-            ? { image: "mux-ssh-test", containerName: sshConfig!.containerId }
+            ? { image: "unix-ssh-test", containerName: sshConfig!.containerId }
             : undefined
         );
 
@@ -262,10 +262,10 @@ describeIntegration("Runtime integration tests", () => {
             // so stopping it doesn't affect other tests
             const { execSync } = await import("child_process");
             const { DockerRuntime } = await import("@/node/runtime/DockerRuntime");
-            const containerName = `mux-docker-ready-test-${Date.now()}`;
+            const containerName = `unix-docker-ready-test-${Date.now()}`;
 
             // Start a fresh container (no --rm so we can stop/start it)
-            execSync(`docker run -d --name ${containerName} mux-ssh-test sleep infinity`, {
+            execSync(`docker run -d --name ${containerName} unix-ssh-test sleep infinity`, {
               timeout: 60000,
             });
 
@@ -282,7 +282,7 @@ describeIntegration("Runtime integration tests", () => {
 
               // ensureReady() should start it
               const runtime = new DockerRuntime({
-                image: "mux-ssh-test",
+                image: "unix-ssh-test",
                 containerName,
               });
               const result = await runtime.ensureReady();
@@ -311,7 +311,7 @@ describeIntegration("Runtime integration tests", () => {
           const { DockerRuntime } = await import("@/node/runtime/DockerRuntime");
           const runtime = new DockerRuntime({
             image: "ubuntu:22.04",
-            containerName: "mux-nonexistent-container-12345",
+            containerName: "unix-nonexistent-container-12345",
           });
 
           const result = await runtime.ensureReady();
@@ -341,9 +341,9 @@ describeIntegration("Runtime integration tests", () => {
           const runtime = createRuntime();
 
           const home = await runtime.resolvePath("~");
-          const resolved = await runtime.resolvePath("~/mux");
+          const resolved = await runtime.resolvePath("~/unix");
 
-          expect(resolved).toBe(`${home}/mux`);
+          expect(resolved).toBe(`${home}/unix`);
         });
       });
 
@@ -1091,7 +1091,7 @@ describeIntegration("Runtime integration tests", () => {
         expect(fileCheck.stdout.trim()).toBe("exists");
 
         // runFullInit (and thus initWorkspace) should be able to run on a forked repo
-        // without trying to re-sync. (The absence of a .mux/init hook means it will
+        // without trying to re-sync. (The absence of a .unix/init hook means it will
         // complete immediately.)
         const initResult = await runFullInit(runtime, {
           projectPath,
@@ -1212,7 +1212,7 @@ describeIntegration("Runtime integration tests", () => {
             `cd ${projectPath} && git init -b main && git config user.email "test@test.com" && git config user.name "Test" && echo "test" > README.md && git add . && git commit -m "init"`
           );
 
-          const runtime = new DockerRuntime({ image: "mux-ssh-test" });
+          const runtime = new DockerRuntime({ image: "unix-ssh-test" });
 
           try {
             // Create workspace
@@ -1295,7 +1295,7 @@ describeIntegration("Runtime integration tests", () => {
           );
 
           // Instantiate runtime with containerName directly (simulates existing forked workspace)
-          const runtime = new DockerRuntime({ image: "mux-ssh-test", containerName });
+          const runtime = new DockerRuntime({ image: "unix-ssh-test", containerName });
           const loggedSteps: string[] = [];
           const initLogger = {
             logStep: (msg: string) => loggedSteps.push(msg),
@@ -1307,7 +1307,7 @@ describeIntegration("Runtime integration tests", () => {
           try {
             // Pre-create a running container (simulating successful fork)
             await dockerCommand(
-              `docker run -d --name ${containerName} mux-ssh-test sleep infinity`
+              `docker run -d --name ${containerName} unix-ssh-test sleep infinity`
             );
             // Also create /src with the git repo inside, on the correct branch
             await dockerCommand(`docker exec ${containerName} mkdir -p /src`);
@@ -1348,31 +1348,31 @@ describeIntegration("Runtime integration tests", () => {
           const containerName = getContainerName(projectPath, workspaceName);
 
           // Create a minimal git repo with a FAILING init hook
-          await dockerCommand(`mkdir -p ${projectPath}/.mux`);
+          await dockerCommand(`mkdir -p ${projectPath}/.unix`);
           await dockerCommand(
             `cd ${projectPath} && git init -b main && git config user.email "test@test.com" && git config user.name "Test" && echo "test" > README.md`
           );
-          await dockerCommand(`echo '#!/bin/bash\nexit 1' > ${projectPath}/.mux/init`);
-          await dockerCommand(`chmod +x ${projectPath}/.mux/init`);
+          await dockerCommand(`echo '#!/bin/bash\nexit 1' > ${projectPath}/.unix/init`);
+          await dockerCommand(`chmod +x ${projectPath}/.unix/init`);
           await dockerCommand(
             `cd ${projectPath} && git add . && git commit -m "init with failing hook"`
           );
 
           // Instantiate runtime with containerName directly (simulates existing forked workspace)
-          const runtime = new DockerRuntime({ image: "mux-ssh-test", containerName });
+          const runtime = new DockerRuntime({ image: "unix-ssh-test", containerName });
 
           try {
             // Pre-create a running container (simulating successful fork)
             await dockerCommand(
-              `docker run -d --name ${containerName} mux-ssh-test sleep infinity`
+              `docker run -d --name ${containerName} unix-ssh-test sleep infinity`
             );
             // Create git repo with the failing init hook inside container
-            await dockerCommand(`docker exec ${containerName} mkdir -p /src/.mux`);
+            await dockerCommand(`docker exec ${containerName} mkdir -p /src/.unix`);
             await dockerCommand(
               `docker exec ${containerName} bash -c "cd /src && git init -b ${workspaceName} && git config user.email test@test.com && git config user.name Test && echo test > README.md"`
             );
             await dockerCommand(
-              `docker exec ${containerName} bash -c "echo '#!/bin/bash\nexit 1' > /src/.mux/init && chmod +x /src/.mux/init"`
+              `docker exec ${containerName} bash -c "echo '#!/bin/bash\nexit 1' > /src/.unix/init && chmod +x /src/.unix/init"`
             );
             await dockerCommand(
               `docker exec ${containerName} bash -c "cd /src && git add . && git commit -m init"`
@@ -1535,7 +1535,7 @@ describeIntegration("Runtime integration tests", () => {
             coder: {
               workspaceName: "test-coder-ws",
               template: "test-template",
-              existingWorkspace: false, // Source was mux-created
+              existingWorkspace: false, // Source was unix-created
             },
           };
           const transport = createSSHTransport(config, false);

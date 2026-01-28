@@ -1,10 +1,10 @@
 import { expect, test } from "bun:test";
 import assert from "node:assert";
 
-import { getMuxHome } from "mux/common/constants/paths";
-import { ServerLockfile } from "mux/node/services/serverLockfile";
+import { getUnixHome } from "unix/common/constants/paths";
+import { ServerLockfile } from "unix/node/services/serverLockfile";
 
-import { getAllWorkspacesFromApi } from "../muxConfig";
+import { getAllWorkspacesFromApi } from "../unixConfig";
 import { createApiClient } from "./client";
 import { checkAuth, checkServerReachable } from "./connectionCheck";
 
@@ -12,15 +12,15 @@ const integrationTest = process.env.TEST_INTEGRATION === "1";
 const integrationTestOrSkip = integrationTest ? test : test.skip;
 
 integrationTestOrSkip(
-  "connects to mux oRPC server (via lockfile discovery) and lists workspaces",
+  "connects to unix oRPC server (via lockfile discovery) and lists workspaces",
   async () => {
-    const lockfile = new ServerLockfile(getMuxHome());
+    const lockfile = new ServerLockfile(getUnixHome());
     const lock = await lockfile.read();
 
     assert(
       lock,
-      `No running mux server found (missing/stale lockfile at ${lockfile.getLockPath()}). ` +
-        `Start mux and re-run with TEST_INTEGRATION=1.`
+      `No running unix server found (missing/stale lockfile at ${lockfile.getLockPath()}). ` +
+        `Start unix and re-run with TEST_INTEGRATION=1.`
     );
 
     assert(typeof lock.baseUrl === "string" && lock.baseUrl.length > 0, "lock.baseUrl must be set");

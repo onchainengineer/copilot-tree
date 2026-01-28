@@ -6,7 +6,7 @@ import * as path from "path";
 import { log } from "./log";
 import * as os from "os";
 import { VERSION } from "@/version";
-import { buildMuxMdnsServiceOptions, MdnsAdvertiserService } from "./mdnsAdvertiserService";
+import { buildUnixMdnsServiceOptions, MdnsAdvertiserService } from "./mdnsAdvertiserService";
 import type { AppRouter } from "@/node/orpc/router";
 
 export interface ServerInfo {
@@ -23,8 +23,8 @@ export interface ServerInfo {
 }
 
 export interface StartServerOptions {
-  /** Path to mux home directory (for lockfile) */
-  muxHome: string;
+  /** Path to unix home directory (for lockfile) */
+  unixHome: string;
   /** oRPC context with services */
   context: ORPCContext;
   /** Host/interface to bind to (default: "127.0.0.1") */
@@ -208,13 +208,13 @@ export class ServerService {
     }
 
     // Create lockfile instance for checking - don't store yet
-    const lockfile = new ServerLockfile(options.muxHome);
+    const lockfile = new ServerLockfile(options.unixHome);
 
     // Check for existing server (another process)
     const existing = await lockfile.read();
     if (existing) {
       throw new Error(
-        `Another mux server is already running at ${existing.baseUrl} (PID: ${existing.pid})`
+        `Another unix server is already running at ${existing.baseUrl} (PID: ${existing.pid})`
       );
     }
 
@@ -276,8 +276,8 @@ export class ServerService {
 
     // "auto" mode: only advertise when the bind host is reachable from other devices.
     if (mdnsAdvertisementEnabled !== false && !isLoopbackHost(bindHost)) {
-      const instanceName = options.context.config.getMdnsServiceName() ?? `mux-${os.hostname()}`;
-      const serviceOptions = buildMuxMdnsServiceOptions({
+      const instanceName = options.context.config.getMdnsServiceName() ?? `unix-${os.hostname()}`;
+      const serviceOptions = buildUnixMdnsServiceOptions({
         bindHost,
         port: server.port,
         instanceName,
@@ -288,7 +288,7 @@ export class ServerService {
       try {
         await this.mdnsAdvertiser.start(serviceOptions);
       } catch (err) {
-        log.warn("Failed to advertise mux API server via mDNS:", err);
+        log.warn("Failed to advertise unix API server via mDNS:", err);
       }
     } else if (mdnsAdvertisementEnabled === true && isLoopbackHost(bindHost)) {
       log.warn(

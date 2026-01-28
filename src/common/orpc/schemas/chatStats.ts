@@ -65,7 +65,7 @@ export const SessionUsageTokenStatsCacheSchema = z.object({
     maxHistorySequence: z
       .number()
       .optional()
-      .meta({ description: "Max MuxMessage.metadata.historySequence seen in the message list" }),
+      .meta({ description: "Max UnixMessage.metadata.historySequence seen in the message list" }),
   }),
   consumers: z.array(TokenConsumerSchema).meta({ description: "Sorted descending by token count" }),
   totalTokens: z.number(),
@@ -77,7 +77,7 @@ export const SessionUsageTokenStatsCacheSchema = z.object({
 
 /**
  * Cumulative session usage file format.
- * Stored in ~/.mux/sessions/{workspaceId}/session-usage.json
+ * Stored in ~/.unix/sessions/{workspaceId}/session-usage.json
  */
 export const SessionUsageFileSchema = z.object({
   byModel: z.record(z.string(), ChatUsageDisplaySchema),

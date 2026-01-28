@@ -1,7 +1,7 @@
 {
-  "name": "mux",
-  "displayName": "mux",
-  "description": "Open mux workspaces directly from VS Code",
+  "name": "unix",
+  "displayName": "unix",
+  "description": "Open unix workspaces directly from VS Code",
   "version": "0.1.0",
   "publisher": "devos",
   "icon": "icon.png",
@@ -15,7 +15,7 @@
     "Other"
   ],
   "keywords": [
-    "mux",
+    "unix",
     "workspace",
     "remote",
     "ssh",
@@ -23,49 +23,49 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onView:mux.chatView",
-    "onCommand:mux.openWorkspace",
-    "onCommand:mux.configureConnection",
-    "onCommand:mux.debugConnection"
+    "onView:unix.chatView",
+    "onCommand:unix.openWorkspace",
+    "onCommand:unix.configureConnection",
+    "onCommand:unix.debugConnection"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "mux.openWorkspace",
-        "title": "mux: Open Workspace"
+        "command": "unix.openWorkspace",
+        "title": "unix: Open Workspace"
       },
       {
-        "command": "mux.configureConnection",
-        "title": "mux: Configure Connection"
+        "command": "unix.configureConnection",
+        "title": "unix: Configure Connection"
       },
       {
-        "command": "mux.debugConnection",
-        "title": "mux: Debug Connection"
+        "command": "unix.debugConnection",
+        "title": "unix: Debug Connection"
       }
     ],
     "viewsContainers": {
       "secondarySidebar": [
         {
-          "id": "muxSecondary",
-          "title": "mux",
+          "id": "unixSecondary",
+          "title": "unix",
           "icon": "icon.png"
         }
       ]
     },
     "views": {
-      "muxSecondary": [
+      "unixSecondary": [
         {
-          "id": "mux.chatView",
+          "id": "unix.chatView",
           "name": "Chat (Preview)",
           "type": "webview"
         }
       ]
     },
     "configuration": {
-      "title": "mux",
+      "title": "unix",
       "properties": {
-        "mux.connectionMode": {
+        "unix.connectionMode": {
           "type": "string",
           "enum": [
             "auto",
@@ -74,13 +74,13 @@
           ],
           "default": "auto",
           "scope": "machine",
-          "description": "How the mux VS Code extension connects to mux (prefer server, require server, or use local files)."
+          "description": "How the unix VS Code extension connects to unix (prefer server, require server, or use local files)."
         },
-        "mux.serverUrl": {
+        "unix.serverUrl": {
           "type": "string",
           "default": "",
           "scope": "machine",
-          "description": "Override the mux server URL (leave empty to auto-discover). Example: http://127.0.0.1:3000"
+          "description": "Override the unix server URL (leave empty to auto-discover). Example: http://127.0.0.1:3000"
         }
       }
     }

@@ -11,7 +11,7 @@ import { expandProjects } from "./storyHelpers";
 import type { ProjectConfig } from "@/node/config";
 
 async function openProjectCreationView(storyRoot: HTMLElement, projectPath: string): Promise<void> {
-  // App now boots into the built-in mux-chat workspace.
+  // App now boots into the built-in unix-chat workspace.
   // Navigate to the project creation page so runtime controls are visible.
   const projectRow = await waitFor(
     () => {

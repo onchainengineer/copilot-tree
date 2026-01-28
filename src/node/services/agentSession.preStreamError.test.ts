@@ -7,7 +7,7 @@ import type { HistoryService } from "@/node/services/historyService";
 import type { InitStateManager } from "@/node/services/initStateManager";
 import type { PartialService } from "@/node/services/partialService";
 import type { SendMessageError } from "@/common/types/errors";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import type { Result } from "@/common/types/result";
 import { Err, Ok } from "@/common/types/result";
 import type { StreamErrorMessage, WorkspaceChatMessage } from "@/common/orpc/types";
@@ -22,16 +22,16 @@ describe("AgentSession pre-stream errors", () => {
       getSessionDir: (_workspaceId: string) => "/tmp",
     } as unknown as Config;
 
-    const messages: MuxMessage[] = [];
+    const messages: UnixMessage[] = [];
     let nextSeq = 0;
 
-    const appendToHistory = mock((_workspaceId: string, message: MuxMessage) => {
+    const appendToHistory = mock((_workspaceId: string, message: UnixMessage) => {
       message.metadata = { ...(message.metadata ?? {}), historySequence: nextSeq++ };
       messages.push(message);
       return Promise.resolve(Ok(undefined));
     });
 
-    const getHistory = mock((_workspaceId: string): Promise<Result<MuxMessage[], string>> => {
+    const getHistory = mock((_workspaceId: string): Promise<Result<UnixMessage[], string>> => {
       return Promise.resolve(Ok([...messages]));
     });
 
@@ -45,7 +45,7 @@ describe("AgentSession pre-stream errors", () => {
     } as unknown as PartialService;
 
     const aiEmitter = new EventEmitter();
-    const streamMessage = mock((_history: MuxMessage[]) => {
+    const streamMessage = mock((_history: UnixMessage[]) => {
       return Promise.resolve(
         Err({
           type: "api_key_not_found",

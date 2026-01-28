@@ -113,8 +113,8 @@ describe("CoderSSHRuntime.finalizeConfig", () => {
       if (result.success) {
         expect(result.data.type).toBe("ssh");
         if (result.data.type === "ssh") {
-          expect(result.data.coder?.workspaceName).toBe("mux-my-feature");
-          expect(result.data.host).toBe("mux-my-feature.coder");
+          expect(result.data.coder?.workspaceName).toBe("unix-my-feature");
+          expect(result.data.host).toBe("unix-my-feature.coder");
         }
       }
     });
@@ -125,8 +125,8 @@ describe("CoderSSHRuntime.finalizeConfig", () => {
 
       expect(result.success).toBe(true);
       if (result.success && result.data.type === "ssh") {
-        expect(result.data.coder?.workspaceName).toBe("mux-my-feature-branch");
-        expect(result.data.host).toBe("mux-my-feature-branch.coder");
+        expect(result.data.coder?.workspaceName).toBe("unix-my-feature-branch");
+        expect(result.data.host).toBe("unix-my-feature-branch.coder");
       }
     });
 
@@ -136,7 +136,7 @@ describe("CoderSSHRuntime.finalizeConfig", () => {
 
       expect(result.success).toBe(true);
       if (result.success && result.data.type === "ssh") {
-        expect(result.data.coder?.workspaceName).toBe("mux-my-feature");
+        expect(result.data.coder?.workspaceName).toBe("unix-my-feature");
       }
     });
 

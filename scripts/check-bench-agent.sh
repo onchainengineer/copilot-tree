@@ -2,24 +2,24 @@
 set -euo pipefail
 
 # This script verifies that the terminal-bench agent entry point
-# referenced in mux-run.sh is valid and can be executed (imports resolve).
+# referenced in unix-run.sh is valid and can be executed (imports resolve).
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MUX_RUN_SH="$REPO_ROOT/benchmarks/terminal_bench/mux-run.sh"
+UNIX_RUN_SH="$REPO_ROOT/benchmarks/terminal_bench/unix-run.sh"
 
 echo "Checking terminal-bench agent configuration..."
 
-if [[ ! -f "$MUX_RUN_SH" ]]; then
-  echo "❌ Error: $MUX_RUN_SH not found"
+if [[ ! -f "$UNIX_RUN_SH" ]]; then
+  echo "❌ Error: $UNIX_RUN_SH not found"
   exit 1
 fi
 
-# Extract the agent CLI path from mux-run.sh
+# Extract the agent CLI path from unix-run.sh
 # Looks for line like: cmd=(bun src/cli/run.ts
-CLI_PATH_MATCH=$(grep -o "bun src/.*\.ts" "$MUX_RUN_SH" | head -1 | cut -d' ' -f2)
+CLI_PATH_MATCH=$(grep -o "bun src/.*\.ts" "$UNIX_RUN_SH" | head -1 | cut -d' ' -f2)
 
 if [[ -z "$CLI_PATH_MATCH" ]]; then
-  echo "❌ Error: Could not find agent CLI path in $MUX_RUN_SH"
+  echo "❌ Error: Could not find agent CLI path in $UNIX_RUN_SH"
   exit 1
 fi
 

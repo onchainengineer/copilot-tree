@@ -1,4 +1,4 @@
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 
 const PDF_MEDIA_TYPE = "application/pdf";
 
@@ -44,10 +44,10 @@ export function sanitizeAnthropicDocumentFilename(
  * "The document file name can only contain alphanumeric characters, whitespace characters,
  * hyphens, parentheses, and square brackets."
  *
- * @param messages - MuxMessage array to process
+ * @param messages - UnixMessage array to process
  * @returns New array with sanitized PDF filenames (does not mutate input)
  */
-export function sanitizeAnthropicPdfFilenames(messages: MuxMessage[]): MuxMessage[] {
+export function sanitizeAnthropicPdfFilenames(messages: UnixMessage[]): UnixMessage[] {
   let didChange = false;
 
   const result = messages.map((msg) => {

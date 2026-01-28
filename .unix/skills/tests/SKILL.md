@@ -58,7 +58,7 @@ Otherwise, tests that live in `src/` run under `bun test` (generally these are u
 
 ## Runtime & Checks
 
-- Never kill the running Mux process; rely on the following for local validation:
+- Never kill the running Unix process; rely on the following for local validation:
   - `make typecheck`
   - `make static-check` (includes typecheck, lint, fmt-check, and docs link validation)
   - targeted test invocations (e.g. `bun x jest tests/ipc/sendMessage.test.ts -t "pattern"`)

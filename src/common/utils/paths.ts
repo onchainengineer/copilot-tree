@@ -151,7 +151,7 @@ export class PlatformPaths {
    *
    * @example
    * // Unix
-   * abbreviate("/home/user/Projects/mux") // => "/h/u/P/mux"
+   * abbreviate("/home/user/Projects/unix") // => "/h/u/P/unix"
    *
    * // Windows
    * abbreviate("C:\\Users\\john\\Documents\\project") // => "C:\\U\\j\\D\\project"
@@ -187,7 +187,7 @@ export class PlatformPaths {
    * @returns Object with dirPath (including trailing separator) and basename
    *
    * @example
-   * splitAbbreviated("/h/u/P/mux") // => { dirPath: "/h/u/P/", basename: "mux" }
+   * splitAbbreviated("/h/u/P/unix") // => { dirPath: "/h/u/P/", basename: "unix" }
    */
   static splitAbbreviated(filePath: string): { dirPath: string; basename: string } {
     if (!filePath || typeof filePath !== "string") {
@@ -218,8 +218,8 @@ export class PlatformPaths {
    * @returns Project name (final directory component)
    *
    * @example
-   * getProjectName("/home/user/projects/mux") // => "mux"
-   * getProjectName("C:\\Users\\john\\projects\\mux") // => "mux"
+   * getProjectName("/home/user/projects/unix") // => "unix"
+   * getProjectName("C:\\Users\\john\\projects\\unix") // => "unix"
    */
   static getProjectName(projectPath: string): string {
     return this.basename(projectPath) || "unknown";

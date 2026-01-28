@@ -67,7 +67,7 @@ export const RetryBarrier: React.FC<RetryBarrierProps> = (props) => {
     );
 
     // Also check RetryState for SendMessageErrors (from resumeStream failures)
-    // Note: isNonRetryableSendError already respects window.__MUX_FORCE_ALL_RETRYABLE
+    // Note: isNonRetryableSendError already respects window.__UNIX_FORCE_ALL_RETRYABLE
     if (lastError && isNonRetryableSendError(lastError)) {
       return false; // Non-retryable SendMessageError
     }

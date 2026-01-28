@@ -179,7 +179,7 @@ describeIntegration("sendMessage image handling tests", () => {
           await collector.waitForEvent("stream-end", 30000);
 
           // The model's semantic interpretation of a tiny 4x4 PNG can be flaky, so this test
-          // focuses on verifying that Mux *persists* image parts and does not lose them across
+          // focuses on verifying that Unix *persists* image parts and does not lose them across
           // messages in the same workspace.
           const historyService = new HistoryService(env.config);
           const historyResult = await historyService.getHistory(workspaceId);

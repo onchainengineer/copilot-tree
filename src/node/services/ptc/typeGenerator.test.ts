@@ -226,7 +226,7 @@ describe("generateMuxTypes", () => {
   test("handles empty tool set", async () => {
     const types = await generateMuxTypes({});
 
-    expect(types).toContain("declare namespace mux {");
+    expect(types).toContain("declare namespace unix {");
     expect(types).toContain("}");
     expect(types).toContain("declare var console");
   });

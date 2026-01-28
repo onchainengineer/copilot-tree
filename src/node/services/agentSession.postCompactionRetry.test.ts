@@ -12,7 +12,7 @@ import type { AIService } from "./aiService";
 import type { InitStateManager } from "./initStateManager";
 import type { BackgroundProcessManager } from "./backgroundProcessManager";
 
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import type { SendMessageOptions } from "@/common/orpc/types";
 
 function createPersistedPostCompactionState(options: {
@@ -31,7 +31,7 @@ function createPersistedPostCompactionState(options: {
 describe("AgentSession post-compaction context retry", () => {
   test("retries once without post-compaction injection on context_exceeded", async () => {
     const workspaceId = "ws";
-    const sessionDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "mux-agentSession-"));
+    const sessionDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "unix-agentSession-"));
     const postCompactionPath = path.join(sessionDir, "post-compaction.json");
 
     await createPersistedPostCompactionState({
@@ -45,7 +45,7 @@ describe("AgentSession post-compaction context retry", () => {
       ],
     });
 
-    const history: MuxMessage[] = [
+    const history: UnixMessage[] = [
       {
         id: "compaction-summary",
         role: "assistant",

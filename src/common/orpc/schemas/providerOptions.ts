@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const MuxProviderOptionsSchema = z.object({
+export const UnixProviderOptionsSchema = z.object({
   anthropic: z
     .object({
       use1MContext: z.boolean().optional().meta({

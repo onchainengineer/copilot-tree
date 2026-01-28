@@ -91,7 +91,7 @@ case "$os-$arch" in
     ;;
 esac
 
-cache_dir="node_modules/.cache/mux-tools/zizmor/v${zizmor_version}/${target}"
+cache_dir="node_modules/.cache/unix-tools/zizmor/v${zizmor_version}/${target}"
 bin_path="${cache_dir}/zizmor"
 
 if [[ ! -x "$bin_path" ]]; then

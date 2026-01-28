@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "mux-mobile",
-    "slug": "mux-mobile",
+    "name": "unix-mobile",
+    "slug": "unix-mobile",
     "version": "0.0.1",
-    "scheme": "mux",
+    "scheme": "unix",
     "orientation": "portrait",
     "platforms": ["ios", "android"],
     "newArchEnabled": true,
@@ -12,7 +12,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "mux": {},
+      "unix": {},
       "router": {},
       "eas": {
         "projectId": "6e2245c1-ec09-44ef-9b08-a6ba165d8496"
@@ -20,11 +20,11 @@
     },
     "plugins": ["expo-router", "expo-secure-store"],
     "ios": {
-      "bundleIdentifier": "com.devos.mux-mobile"
+      "bundleIdentifier": "com.devos.unix-mobile"
     },
     "owner": "devos",
     "android": {
-      "package": "com.devos.muxmobile"
+      "package": "com.devos.unixmobile"
     }
   }
 }

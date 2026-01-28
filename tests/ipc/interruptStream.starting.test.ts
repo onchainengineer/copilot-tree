@@ -23,7 +23,7 @@ import {
   HAIKU_MODEL,
 } from "./helpers";
 import { createStreamCollector } from "./streamCollector";
-import { isInitOutput, isMuxMessage } from "@/common/orpc/types";
+import { isInitOutput, isUnixMessage } from "@/common/orpc/types";
 import * as path from "path";
 import * as fs from "fs/promises";
 // eslint-disable-next-line local/no-unsafe-child-process
@@ -40,10 +40,10 @@ if (shouldRunIntegrationTests()) {
 }
 
 async function addInitHook(repoPath: string, scriptBody: string): Promise<void> {
-  const muxDir = path.join(repoPath, ".mux");
-  await fs.mkdir(muxDir, { recursive: true });
+  const unixDir = path.join(repoPath, ".unix");
+  await fs.mkdir(unixDir, { recursive: true });
 
-  const hookPath = path.join(muxDir, "init");
+  const hookPath = path.join(unixDir, "init");
   await fs.writeFile(hookPath, `#!/bin/bash\n${scriptBody}\n`, { mode: 0o755 });
 
   // eslint-disable-next-line local/no-unsafe-child-process
@@ -113,7 +113,7 @@ describeIntegration("interruptStream during startup", () => {
 
       // Wait until we observe the user message being persisted/emitted.
       const sawUserMessage = await waitFor(() => {
-        return activeCollector.getEvents().some((e) => isMuxMessage(e) && e.role === "user");
+        return activeCollector.getEvents().some((e) => isUnixMessage(e) && e.role === "user");
       }, 5000);
       expect(sawUserMessage).toBe(true);
 

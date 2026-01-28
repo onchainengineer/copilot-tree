@@ -9,7 +9,7 @@ import { BUILTIN_SKILL_FILES } from "./builtInSkillContent.generated";
  *
  * Source of truth is:
  * - src/node/builtinSkills/*.md (SKILL.md content)
- * - docs/ (embedded for mux-docs)
+ * - docs/ (embedded for unix-docs)
  *
  * Content is generated into builtInSkillContent.generated.ts via scripts/gen_builtin_skills.ts.
  */

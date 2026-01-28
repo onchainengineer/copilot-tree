@@ -7,7 +7,7 @@ const ROSETTA_BANNER_DISMISSED_KEY = "rosettaBannerDismissedAt";
 const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 /**
- * Banner shown when Mux is running under Rosetta 2 translation.
+ * Banner shown when Unix is running under Rosetta 2 translation.
  * Users can dismiss it, but it will re-appear after 30 days.
  */
 export const RosettaBanner: React.FC = () => {

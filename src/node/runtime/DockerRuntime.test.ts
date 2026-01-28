@@ -34,7 +34,7 @@ describe("DockerRuntime constructor", () => {
     // When recreating runtime for existing workspace, containerName is passed in config
     const runtime = new DockerRuntime({
       image: "ubuntu:22.04",
-      containerName: "mux-myproject-my-feature",
+      containerName: "unix-myproject-my-feature",
     });
     expect(runtime.getImage()).toBe("ubuntu:22.04");
     // Runtime should be ready for exec operations without calling createWorkspace
@@ -44,13 +44,13 @@ describe("DockerRuntime constructor", () => {
 describe("getContainerName", () => {
   it("should generate container name from project and workspace", () => {
     expect(getContainerName("/home/user/myproject", "feature-branch")).toBe(
-      "mux-myproject-feature-branch-a8d18a"
+      "unix-myproject-feature-branch-a8d18a"
     );
   });
 
   it("should sanitize special characters", () => {
     expect(getContainerName("/home/user/my@project", "feature/branch")).toBe(
-      "mux-my-project-feature-branch-b354b4"
+      "unix-my-project-feature-branch-b354b4"
     );
   });
 

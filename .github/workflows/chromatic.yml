@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0 # Required for Chromatic to track changes
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-mux
+      - uses: ./.github/actions/setup-unix
 
       - name: Generate version file
         run: ./scripts/generate-version.sh

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import type { MuxMessage } from "@/common/types/message";
+import type { UnixMessage } from "@/common/types/message";
 import { hasStartHerePlanSummary, isStartHerePlanSummaryMessage } from "./startHerePlanSummary";
 
-function createTextMessage(overrides: Partial<MuxMessage>): MuxMessage {
+function createTextMessage(overrides: Partial<UnixMessage>): UnixMessage {
   return {
     id: overrides.id ?? `msg-${Math.random().toString(36).slice(2)}`,
     role: overrides.role ?? "assistant",
@@ -20,7 +20,7 @@ describe("isStartHerePlanSummaryMessage", () => {
       parts: [
         {
           type: "text",
-          text: "# My Plan\n\n## Step\n- Do the thing\n\n---\n\n*Plan file preserved at:* `~/.mux/plans/demo.md`",
+          text: "# My Plan\n\n## Step\n- Do the thing\n\n---\n\n*Plan file preserved at:* `~/.unix/plans/demo.md`",
         },
       ],
     });
@@ -79,7 +79,7 @@ describe("isStartHerePlanSummaryMessage", () => {
 
 describe("hasStartHerePlanSummary", () => {
   it("returns true when a Start Here plan summary exists anywhere in history", () => {
-    const messages: MuxMessage[] = [
+    const messages: UnixMessage[] = [
       createTextMessage({
         id: "start-here-123",
         role: "assistant",
@@ -87,7 +87,7 @@ describe("hasStartHerePlanSummary", () => {
         parts: [
           {
             type: "text",
-            text: "# My Plan\n\n## Step\n- Do the thing\n\n---\n\n*Plan file preserved at:* `~/.mux/plans/demo.md`",
+            text: "# My Plan\n\n## Step\n- Do the thing\n\n---\n\n*Plan file preserved at:* `~/.unix/plans/demo.md`",
           },
         ],
       }),

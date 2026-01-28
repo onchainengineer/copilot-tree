@@ -6,7 +6,7 @@ import type {
   WorkspaceForkParams,
   WorkspaceForkResult,
 } from "./Runtime";
-import { checkInitHookExists, getMuxEnv } from "./initHook";
+import { checkInitHookExists, getUnixEnv } from "./initHook";
 import { LocalBaseRuntime } from "./LocalBaseRuntime";
 import { getErrorMessage } from "@/common/utils/errors";
 import { WorktreeManager } from "@/node/worktree/WorktreeManager";
@@ -45,16 +45,16 @@ export class WorktreeRuntime extends LocalBaseRuntime {
 
     try {
       if (skipInitHook) {
-        initLogger.logStep("Skipping .mux/init hook (disabled for this task)");
+        initLogger.logStep("Skipping .unix/init hook (disabled for this task)");
         initLogger.logComplete(0);
         return { success: true };
       }
 
-      // Run .mux/init hook if it exists
+      // Run .unix/init hook if it exists
       // Note: runInitHook calls logComplete() internally if hook exists
       const hookExists = await checkInitHookExists(projectPath);
       if (hookExists) {
-        const muxEnv = { ...env, ...getMuxEnv(projectPath, "worktree", branchName) };
+        const muxEnv = { ...env, ...getUnixEnv(projectPath, "worktree", branchName) };
         await this.runInitHook(workspacePath, muxEnv, initLogger);
       } else {
         // No hook - signal completion immediately

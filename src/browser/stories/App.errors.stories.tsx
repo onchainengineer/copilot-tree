@@ -3,7 +3,7 @@
  */
 
 import { appMeta, AppWithMocks, type AppStory } from "./meta.js";
-import type { WorkspaceChatMessage, ChatMuxMessage } from "@/common/orpc/types";
+import type { WorkspaceChatMessage, ChatUnixMessage } from "@/common/orpc/types";
 import type { DebugLlmRequestSnapshot } from "@/common/types/debugLlmRequest";
 import {
   STABLE_TIMESTAMP,
@@ -116,7 +116,7 @@ const createDebugLlmRequestSnapshot = (workspaceId: string): DebugLlmRequestSnap
   agentId: "exec",
   maxOutputTokens: 2048,
   systemMessage:
-    "You are Mux, a focused coding agent. Follow the user’s instructions and keep answers short.",
+    "You are Unix, a focused coding agent. Follow the user’s instructions and keep answers short.",
   messages: [
     {
       role: "user",
@@ -349,7 +349,7 @@ export const HiddenHistory: AppStory = {
   render: () => (
     <AppWithMocks
       setup={() => {
-        // Hidden message type uses special "hidden" role not in ChatMuxMessage union
+        // Hidden message type uses special "hidden" role not in ChatUnixMessage union
         // Cast is needed since this is a display-only message type
         const hiddenIndicator = {
           type: "message",
@@ -360,9 +360,9 @@ export const HiddenHistory: AppStory = {
             historySequence: 0,
             hiddenCount: 42,
           },
-        } as unknown as ChatMuxMessage;
+        } as unknown as ChatUnixMessage;
 
-        const messages: ChatMuxMessage[] = [
+        const messages: ChatUnixMessage[] = [
           hiddenIndicator,
           createUserMessage("msg-1", "Can you summarize what we discussed?", {
             historySequence: 43,
@@ -390,7 +390,7 @@ export const HiddenHistory: AppStory = {
 /**
  * Incompatible workspace error view.
  *
- * When a user downgrades to an older version of mux that doesn't support
+ * When a user downgrades to an older version of unix that doesn't support
  * a workspace's runtime configuration, the workspace shows an error message
  * instead of crashing. This ensures graceful degradation.
  */

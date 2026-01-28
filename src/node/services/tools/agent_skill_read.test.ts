@@ -5,7 +5,7 @@ import { describe, it, expect } from "bun:test";
 import type { ToolCallOptions } from "ai";
 
 import { AgentSkillReadToolResultSchema } from "@/common/utils/tools/toolDefinitions";
-import { MUX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/muxChat";
+import { UNIX_HELP_CHAT_WORKSPACE_ID } from "@/common/constants/unixChat";
 import { createAgentSkillReadTool } from "./agent_skill_read";
 import { createTestToolConfig, TestTempDir } from "./testHelpers";
 
@@ -15,7 +15,7 @@ const mockToolCallOptions: ToolCallOptions = {
 };
 
 async function writeProjectSkill(workspacePath: string, name: string): Promise<void> {
-  const skillDir = path.join(workspacePath, ".mux", "skills", name);
+  const skillDir = path.join(workspacePath, ".unix", "skills", name);
   await fs.mkdir(skillDir, { recursive: true });
   await fs.writeFile(
     path.join(skillDir, "SKILL.md"),
@@ -24,17 +24,17 @@ async function writeProjectSkill(workspacePath: string, name: string): Promise<v
   );
 }
 
-describe("agent_skill_read (Chat with Mux sandbox)", () => {
+describe("agent_skill_read (Chat with Unix sandbox)", () => {
   it("allows reading built-in skills", async () => {
-    using tempDir = new TestTempDir("test-agent-skill-read-mux-chat");
+    using tempDir = new TestTempDir("test-agent-skill-read-unix-chat");
     const baseConfig = createTestToolConfig(tempDir.path, {
-      workspaceId: MUX_HELP_CHAT_WORKSPACE_ID,
+      workspaceId: UNIX_HELP_CHAT_WORKSPACE_ID,
     });
 
     const tool = createAgentSkillReadTool(baseConfig);
 
     const raw: unknown = await Promise.resolve(
-      tool.execute!({ name: "mux-docs" }, mockToolCallOptions)
+      tool.execute!({ name: "unix-docs" }, mockToolCallOptions)
     );
 
     const parsed = AgentSkillReadToolResultSchema.safeParse(raw);
@@ -47,16 +47,16 @@ describe("agent_skill_read (Chat with Mux sandbox)", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.skill.scope).toBe("built-in");
-      expect(result.skill.frontmatter.name).toBe("mux-docs");
+      expect(result.skill.frontmatter.name).toBe("unix-docs");
     }
   });
 
   it("rejects project/global skills on disk", async () => {
-    using tempDir = new TestTempDir("test-agent-skill-read-mux-chat-reject");
+    using tempDir = new TestTempDir("test-agent-skill-read-unix-chat-reject");
     await writeProjectSkill(tempDir.path, "foo");
 
     const baseConfig = createTestToolConfig(tempDir.path, {
-      workspaceId: MUX_HELP_CHAT_WORKSPACE_ID,
+      workspaceId: UNIX_HELP_CHAT_WORKSPACE_ID,
     });
     const tool = createAgentSkillReadTool(baseConfig);
 

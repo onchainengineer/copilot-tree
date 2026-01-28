@@ -3,11 +3,11 @@ name: Publish to NPM
 # Uses NPM Trusted Publishing with OIDC - no secrets required!
 #
 # SETUP (one-time, on npmjs.com):
-#   1. Go to https://www.npmjs.com/package/mux/access
+#   1. Go to https://www.npmjs.com/package/unix/access
 #   2. Under "Trusted Publisher", click "GitHub Actions"
 #   3. Configure:
 #      - Owner: coder
-#      - Repository: mux
+#      - Repository: unix
 #      - Workflow filename: publish-npm.yml
 #      - Environment: (leave blank)
 #   4. Click "Set up connection"
@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 0 # Required for git describe to find tags
           persist-credentials: false
 
-      - uses: ./.github/actions/setup-mux
+      - uses: ./.github/actions/setup-unix
 
       # Setup Node.js 24+ for npm v11+ required by OIDC trusted publishing.
       # Node 22 ships with npm 10.x which does NOT support OIDC.
@@ -92,7 +92,7 @@ jobs:
         id: find-tarball
         run: |
           # shellcheck disable=SC2012 # ls is fine here - known filename pattern in controlled directory
-          TARBALL=$(ls mux-*.tgz | head -1)
+          TARBALL=$(ls unix-*.tgz | head -1)
           echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
           echo "Found package: $TARBALL"
 
@@ -111,13 +111,13 @@ jobs:
         with:
           name: smoke-test-logs
           path: |
-            /tmp/mux-smoke-test-*/server.log
+            /tmp/unix-smoke-test-*/server.log
           if-no-files-found: warn
           retention-days: 7
 
       - name: Clean up tarball
         if: always()
-        run: rm -f mux-*.tgz
+        run: rm -f unix-*.tgz
 
       - name: Check if version exists
         id: check-exists

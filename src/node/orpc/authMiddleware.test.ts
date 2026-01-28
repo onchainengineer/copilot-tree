@@ -2,9 +2,9 @@ import { describe, expect, it } from "bun:test";
 import { safeEq } from "./authMiddleware";
 
 // Timing microbenchmarks are inherently noisy and can be flaky under parallel
-// test execution. Run these locally with MUX_TEST_TIMING=1 when you want to
+// test execution. Run these locally with UNIX_TEST_TIMING=1 when you want to
 // sanity-check constant-time behavior.
-const describeTiming = process.env.MUX_TEST_TIMING === "1" ? describe : describe.skip;
+const describeTiming = process.env.UNIX_TEST_TIMING === "1" ? describe : describe.skip;
 
 describe("safeEq", () => {
   it("returns true for equal strings", () => {

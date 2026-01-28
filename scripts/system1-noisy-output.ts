@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Emit deliberately noisy stdout designed to trigger Mux "System 1" bash-output filtering.
+ * Emit deliberately noisy stdout designed to trigger Unix "System 1" bash-output filtering.
  *
  * Goal:
  * - Large enough to trigger System 1 filtering (lines > 10 and/or bytes > 4KB)

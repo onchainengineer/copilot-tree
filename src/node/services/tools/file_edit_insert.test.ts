@@ -248,11 +248,11 @@ describe("file_edit_insert plan mode enforcement", () => {
     expect(await fs.readFile(testFilePath, "utf-8")).toBe("// header\nconst x = 1;");
   });
 
-  it("blocks creating .mux/plan.md (wrong path) when real plan file is elsewhere", async () => {
-    // This test simulates the bug where an agent tries to create ".mux/plan.md"
-    // in the workspace instead of using the actual plan file at ~/.mux/plans/project/workspace.md
+  it("blocks creating .unix/plan.md (wrong path) when real plan file is elsewhere", async () => {
+    // This test simulates the bug where an agent tries to create ".unix/plan.md"
+    // in the workspace instead of using the actual plan file at ~/.unix/plans/project/workspace.md
     const workspaceCwd = path.join(testDir, "workspace");
-    const wrongPlanPath = path.join(workspaceCwd, ".mux", "plan.md");
+    const wrongPlanPath = path.join(workspaceCwd, ".unix", "plan.md");
     const realPlanPath = path.join(testDir, "plans", "project", "workspace.md");
 
     // Create workspace directory (simulate a real project workspace)
@@ -269,9 +269,9 @@ describe("file_edit_insert plan mode enforcement", () => {
       planFilePath: realPlanPath, // The REAL plan file path
     });
 
-    // Agent mistakenly tries to create ".mux/plan.md" in workspace
+    // Agent mistakenly tries to create ".unix/plan.md" in workspace
     const args: FileEditInsertToolArgs = {
-      file_path: ".mux/plan.md", // Wrong path - relative to cwd
+      file_path: ".unix/plan.md", // Wrong path - relative to cwd
       content: "# My Plan\n\n- Step 1\n",
     };
 
@@ -282,7 +282,7 @@ describe("file_edit_insert plan mode enforcement", () => {
       expect(result.error).toContain("In the plan agent, only the plan file can be edited");
       expect(result.error).toContain("exact plan file path");
       expect(result.error).toContain(realPlanPath);
-      expect(result.error).toContain(".mux/plan.md");
+      expect(result.error).toContain(".unix/plan.md");
     }
 
     // Ensure the wrong file was NOT created

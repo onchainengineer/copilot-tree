@@ -174,14 +174,14 @@ function AppInner() {
       // Update window title with workspace title (or name for legacy workspaces)
       const metadata = workspaceMetadata.get(selectedWorkspace.workspaceId);
       const workspaceTitle = metadata?.title ?? metadata?.name ?? selectedWorkspace.workspaceId;
-      const title = `${workspaceTitle} - ${selectedWorkspace.projectName} - mux`;
+      const title = `${workspaceTitle} - ${selectedWorkspace.projectName} - unix`;
       // Set document.title locally for browser mode, call backend for Electron
       document.title = title;
       void api?.window.setTitle({ title });
     } else {
       // Set document.title locally for browser mode, call backend for Electron
-      document.title = "mux";
-      void api?.window.setTitle({ title: "mux" });
+      document.title = "unix";
+      void api?.window.setTitle({ title: "unix" });
     }
   }, [selectedWorkspace, workspaceMetadata, api]);
 
@@ -899,7 +899,7 @@ function AppInner() {
                   }}
                 >
                   <h2 style={{ fontSize: "clamp(24px, 5vw, 36px)", letterSpacing: "-1px" }}>
-                    {currentWorkspaceId ? "Opening workspace…" : "Welcome to Mux"}
+                    {currentWorkspaceId ? "Opening workspace…" : "Welcome to Unix"}
                   </h2>
                   <p>
                     {currentWorkspaceId

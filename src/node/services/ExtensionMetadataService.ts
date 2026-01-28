@@ -19,7 +19,7 @@ import { log } from "@/node/services/log";
  * - lastModel: Last model used in this workspace
  * - lastThinkingLevel: Last thinking/reasoning level used in this workspace
  *
- * File location: ~/.mux/extensionMetadata.json
+ * File location: ~/.unix/extensionMetadata.json
  *
  * Design:
  * - Stateless: reads from disk on every operation, no in-memory cache

@@ -3,12 +3,12 @@
  * Start an isolated Electron dev instance (Vite + Electron main process).
  *
  * Why:
- * - Electron uses the mux home directory (MUX_ROOT / ~/.mux-dev) for config,
+ * - Electron uses the unix home directory (UNIX_ROOT / ~/.unix-dev) for config,
  *   sessions, worktrees, etc.
- * - Running multiple Electron instances against the same mux root is noisy and
+ * - Running multiple Electron instances against the same unix root is noisy and
  *   risky during development.
  *
- * This script creates a fresh temporary mux root dir, optionally copies over the
+ * This script creates a fresh temporary unix root dir, optionally copies over the
  * user's providers/config, picks free ports, then launches:
  *   - `make dev`   (Vite + watchers)
  *   - `bunx electron ... .` (desktop app)
@@ -17,8 +17,8 @@
  *   make dev-desktop-sandbox
  *
  * Optional env vars:
- *   - SEED_MUX_ROOT=/path/to/mux/home   # where to copy providers.jsonc/config.json from
- *   - KEEP_SANDBOX=1                   # don't delete temp MUX_ROOT on exit
+ *   - SEED_UNIX_ROOT=/path/to/unix/home   # where to copy providers.jsonc/config.json from
+ *   - KEEP_SANDBOX=1                   # don't delete temp UNIX_ROOT on exit
  *   - VITE_PORT=5174                   # override picked Vite port
  *   - VITE_READY_TIMEOUT_MS=60000      # override Vite readiness timeout
  *   - ELECTRON_DEBUG_PORT=9223         # override picked Electron remote debugging port
@@ -101,7 +101,7 @@ async function main(): Promise<number> {
   const makeCmd = process.env.MAKE ?? "make";
 
   // Do any validation that might throw *before* creating the temp root so we
-  // don't leave behind stale `mux-desktop-*` directories for simple mistakes.
+  // don't leave behind stale `unix-desktop-*` directories for simple mistakes.
   const seedMuxRoot = chooseSeedMuxRoot();
 
   const vitePortOverride = parseOptionalPort(process.env.VITE_PORT);
@@ -129,7 +129,7 @@ async function main(): Promise<number> {
     }
   }
 
-  const muxRoot = fs.mkdtempSync(path.join(os.tmpdir(), "mux-desktop-"));
+  const muxRoot = fs.mkdtempSync(path.join(os.tmpdir(), "unix-desktop-"));
 
   let devProc: ReturnType<typeof spawn> | null = null;
   let electronProc: ReturnType<typeof spawn> | null = null;
@@ -145,8 +145,8 @@ async function main(): Promise<number> {
       ? copyFileIfExists(seedConfigPath, path.join(muxRoot, "config.json"))
       : false;
 
-    console.log("\nStarting mux desktop sandbox...");
-    console.log(`  MUX_ROOT:        ${muxRoot}`);
+    console.log("\nStarting unix desktop sandbox...");
+    console.log(`  UNIX_ROOT:        ${muxRoot}`);
     if (seedMuxRoot) {
       console.log(`  Seeded from:     ${seedMuxRoot}`);
       console.log(`  Copied config:   ${copiedConfig ? "yes" : "no"}`);
@@ -169,8 +169,8 @@ async function main(): Promise<number> {
       env: {
         ...process.env,
         NODE_ENV: "development",
-        MUX_ROOT: muxRoot,
-        MUX_VITE_PORT: String(vitePort),
+        UNIX_ROOT: muxRoot,
+        UNIX_VITE_PORT: String(vitePort),
       },
     });
 
@@ -229,16 +229,16 @@ async function main(): Promise<number> {
       env: {
         ...process.env,
         NODE_ENV: "development",
-        MUX_ROOT: muxRoot,
-        MUX_DEVSERVER_HOST: "127.0.0.1",
-        MUX_DEVSERVER_PORT: String(vitePort),
+        UNIX_ROOT: muxRoot,
+        UNIX_DEVSERVER_HOST: "127.0.0.1",
+        UNIX_DEVSERVER_PORT: String(vitePort),
 
         // If the user's config.json specifies apiServerPort, we can easily hit EADDRINUSE
         // while running multiple sandboxes. Default to port 0 (random) unless overridden.
-        MUX_SERVER_PORT: process.env.MUX_SERVER_PORT ?? "0",
+        UNIX_SERVER_PORT: process.env.UNIX_SERVER_PORT ?? "0",
 
         // Allow multiple dev Electron instances concurrently.
-        CMUX_ALLOW_MULTIPLE_INSTANCES: "1",
+        CUNIX_ALLOW_MULTIPLE_INSTANCES: "1",
       },
     });
 
@@ -280,7 +280,7 @@ async function main(): Promise<number> {
       try {
         fs.rmSync(muxRoot, { recursive: true, force: true });
       } catch (err) {
-        console.error(`Failed to remove sandbox MUX_ROOT at ${muxRoot}:`, err);
+        console.error(`Failed to remove sandbox UNIX_ROOT at ${muxRoot}:`, err);
       }
     }
   }

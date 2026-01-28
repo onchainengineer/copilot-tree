@@ -1,6 +1,6 @@
 import assert from "@/common/utils/assert";
 import { EXPERIMENTS, type ExperimentId } from "@/common/constants/experiments";
-import { getMuxHome } from "@/common/constants/paths";
+import { getUnixHome } from "@/common/constants/paths";
 import type { ExperimentValue } from "@/common/orpc/types";
 import { log } from "@/node/services/log";
 import type { TelemetryService } from "@/node/services/telemetryService";
@@ -43,7 +43,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 export class ExperimentsService {
   private readonly telemetryService: TelemetryService;
-  private readonly muxHome: string;
+  private readonly unixHome: string;
   private readonly cacheFilePath: string;
   private readonly cacheTtlMs: number;
 
@@ -54,12 +54,12 @@ export class ExperimentsService {
 
   constructor(options: {
     telemetryService: TelemetryService;
-    muxHome?: string;
+    unixHome?: string;
     cacheTtlMs?: number;
   }) {
     this.telemetryService = options.telemetryService;
-    this.muxHome = options.muxHome ?? getMuxHome();
-    this.cacheFilePath = path.join(this.muxHome, CACHE_FILE_NAME);
+    this.unixHome = options.unixHome ?? getUnixHome();
+    this.cacheFilePath = path.join(this.unixHome, CACHE_FILE_NAME);
     this.cacheTtlMs = options.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
   }
 
@@ -299,7 +299,7 @@ export class ExperimentsService {
         experiments,
       };
 
-      await fs.mkdir(this.muxHome, { recursive: true });
+      await fs.mkdir(this.unixHome, { recursive: true });
       await writeFileAtomic(this.cacheFilePath, JSON.stringify(payload, null, 2), "utf-8");
     } catch {
       // Ignore cache persistence failures

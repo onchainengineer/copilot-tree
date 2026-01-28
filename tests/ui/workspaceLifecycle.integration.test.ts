@@ -344,7 +344,7 @@ describeIntegration("Workspace Delete from Archive (UI)", () => {
 
   test("clicking delete on archived workspace stays on project page", async () => {
     // Ensure deleting an archived workspace does not navigate away from the project page.
-    // (Mux now boots into mux-chat, so tests must explicitly open ProjectPage.)
+    // (Unix now boots into unix-chat, so tests must explicitly open ProjectPage.)
     const env = getSharedEnv();
     const projectPath = getSharedRepoPath();
     const branchName = generateBranchName("test-delete-default-view");
