@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 
 // Source logo - all other icons are derived from this
-const SOURCE = path.join(ROOT, "docs", "img", "logo.webp");
+const SOURCE = path.join(ROOT, "public", "icon-512.png");
 
 // Build outputs
 const BUILD_DIR = path.join(ROOT, "build");

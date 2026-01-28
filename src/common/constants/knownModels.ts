@@ -4,7 +4,7 @@
 
 import { formatModelDisplayName } from "../utils/ai/modelDisplay";
 
-type ModelProvider = "anthropic" | "openai" | "google" | "xai";
+type ModelProvider = "github-copilot" | "anthropic" | "openai" | "google" | "xai";
 
 interface KnownModelDefinition {
   /** Provider identifier used by SDK factories */
@@ -27,6 +27,20 @@ interface KnownModel extends KnownModelDefinition {
 // Model definitions. Note we avoid listing legacy models here. These represent the focal models
 // of the community.
 const MODEL_DEFINITIONS = {
+  COPILOT_SONNET: {
+    provider: "github-copilot",
+    providerModelId: "claude-sonnet-4.5",
+    aliases: ["copilot", "copilot-sonnet"],
+    warm: true,
+    tokenizerOverride: "anthropic/claude-sonnet-4.5",
+  },
+  COPILOT_GPT: {
+    provider: "github-copilot",
+    providerModelId: "gpt-4o",
+    aliases: ["copilot-gpt"],
+    warm: true,
+    tokenizerOverride: "openai/gpt-5",
+  },
   OPUS: {
     provider: "anthropic",
     providerModelId: "claude-opus-4-5",
@@ -138,7 +152,7 @@ export function getKnownModel(key: KnownModelKey): KnownModel {
 // ------------------------------------------------------------------------------------
 
 /** The default model key - change this single line to update the global default */
-export const DEFAULT_MODEL_KEY: KnownModelKey = "OPUS";
+export const DEFAULT_MODEL_KEY: KnownModelKey = "COPILOT_SONNET";
 
 export const DEFAULT_MODEL = KNOWN_MODELS[DEFAULT_MODEL_KEY].id;
 

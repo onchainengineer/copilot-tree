@@ -37,6 +37,11 @@ interface FieldConfig {
  * Most providers use API Key + Base URL, but some (like Bedrock) have different needs.
  */
 function getProviderFields(provider: ProviderName): FieldConfig[] {
+  // GitHub Copilot uses CLI auth - no fields needed
+  if (provider === "github-copilot") {
+    return [];
+  }
+
   if (provider === "bedrock") {
     return [
       { key: "region", label: "Region", placeholder: "us-east-1", type: "text" },
@@ -277,6 +282,13 @@ export function ProvidersSection() {
                           Configured via environment variables.
                         </div>
                       )}
+                  </div>
+                )}
+
+                {fields.length === 0 && provider === "github-copilot" && (
+                  <div className="text-muted text-xs">
+                    Auto-configured via GitHub Copilot CLI. Run{" "}
+                    <code className="text-accent">gh copilot auth login</code> to authenticate.
                   </div>
                 )}
 

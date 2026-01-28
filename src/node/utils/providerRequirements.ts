@@ -133,6 +133,11 @@ export function resolveProviderCredentials(
       : { isConfigured: false, missingRequirement: "region" };
   }
 
+  // GitHub Copilot: auto-configured via Copilot CLI auth (no API key or explicit config needed)
+  if (provider === "github-copilot") {
+    return { isConfigured: true };
+  }
+
   // Keyless providers (e.g., ollama): require explicit opt-in via baseUrl or models
   const def = PROVIDER_DEFINITIONS[provider];
   if (!def.requiresApiKey) {

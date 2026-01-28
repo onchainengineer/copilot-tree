@@ -84,7 +84,6 @@ export async function createTestEnvironment(): Promise<TestEnvironment> {
     aiService: services.aiService,
     projectService: services.projectService,
     workspaceService: services.workspaceService,
-    muxGatewayOauthService: services.muxGatewayOauthService,
     taskService: services.taskService,
     providerService: services.providerService,
     terminalService: services.terminalService,

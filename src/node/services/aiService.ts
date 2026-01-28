@@ -1013,8 +1013,15 @@ export class AIService extends EventEmitter {
         return Ok(provider(modelId));
       }
 
+      // Handle GitHub Copilot provider
+      if (providerName === "github-copilot") {
+        const { createCopilot } = await PROVIDER_REGISTRY["github-copilot"]();
+        const provider = createCopilot();
+        return Ok(provider(modelId) as LanguageModel);
+      }
+
       // Generic handler for simple providers (standard API key + factory pattern)
-      // Providers with custom logic (anthropic, openai, xai, ollama, openrouter, bedrock)
+      // Providers with custom logic (anthropic, openai, xai, ollama, openrouter, bedrock, github-copilot)
       // are handled explicitly above. New providers using the standard pattern need only be
       // added to PROVIDER_DEFINITIONS - no code changes required here.
       const providerDef = PROVIDER_DEFINITIONS[providerName as ProviderName];
@@ -1151,6 +1158,7 @@ export class AIService extends EventEmitter {
       const [providerName] = parseModelString(modelString);
       const normalizedModelString = normalizeGatewayModel(modelString);
       const [normalizedProviderName, normalizedModelId] = parseModelString(normalizedModelString);
+      const isMuxGatewayModel = providerName === "mux-gateway";
       if (normalizedProviderName === "xai" && normalizedModelId === "grok-4-1-fast") {
         // xAI Grok only supports full reasoning (no medium/low)
         // Map to appropriate variant based on thinking level
@@ -1158,7 +1166,7 @@ export class AIService extends EventEmitter {
           effectiveThinkingLevel !== "off"
             ? "grok-4-1-fast-reasoning"
             : "grok-4-1-fast-non-reasoning";
-        effectiveModelString = `xai:${variant}`;
+        effectiveModelString = isMuxGatewayModel ? `mux-gateway:xai/${variant}` : `xai:${variant}`;
         log.debug("Mapping xAI Grok model to variant", {
           original: modelString,
           effective: effectiveModelString,
