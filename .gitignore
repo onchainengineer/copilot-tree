@@ -39,6 +39,8 @@ local.properties
 # node.js
 .log/*
 node_modules/
+!node_modules_archive/
+node_modules.tar.gz
 npm-debug.log
 yarn-error.log
 
