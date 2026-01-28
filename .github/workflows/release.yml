@@ -42,7 +42,7 @@ jobs:
   build-macos:
     name: Build and Release macOS
     needs: preflight
-    runs-on: ${{ github.repository_owner == 'coder' && 'depot-macos-15' || 'macos-latest' }}
+    runs-on: ${{ github.repository_owner == 'devos' && 'depot-macos-15' || 'macos-latest' }}
     permissions:
       contents: write # Upload release assets
     steps:
@@ -75,7 +75,7 @@ jobs:
   build-linux:
     name: Build and Release Linux
     needs: preflight
-    runs-on: ${{ github.repository_owner == 'coder' && 'depot-ubuntu-22.04-16' || 'ubuntu-latest' }}
+    runs-on: ${{ github.repository_owner == 'devos' && 'depot-ubuntu-22.04-16' || 'ubuntu-latest' }}
     permissions:
       contents: write # Upload release assets
     steps:
@@ -99,7 +99,7 @@ jobs:
   build-vscode-extension:
     name: Build and Release VS Code Extension
     needs: preflight
-    runs-on: ${{ github.repository_owner == 'coder' && 'depot-ubuntu-22.04-16' || 'ubuntu-latest' }}
+    runs-on: ${{ github.repository_owner == 'devos' && 'depot-ubuntu-22.04-16' || 'ubuntu-latest' }}
     permissions:
       contents: write # Upload .vsix to release
     steps:

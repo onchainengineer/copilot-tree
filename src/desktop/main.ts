@@ -358,7 +358,6 @@ async function loadServices(): Promise<void> {
     projectService: services.projectService,
     workspaceService: services.workspaceService,
     taskService: services.taskService,
-    muxGatewayOauthService: services.muxGatewayOauthService,
     providerService: services.providerService,
     terminalService: services.terminalService,
     editorService: services.editorService,
@@ -544,7 +543,7 @@ function createWindow() {
       contextIsolation: true,
       preload: path.join(__dirname, "../preload.js"),
     },
-    title: "mux - coder multiplexer",
+    title: "DEV OS",
     // Hide menu bar on Linux by default (like VS Code)
     // User can press Alt to toggle it
     autoHideMenuBar: process.platform === "linux",

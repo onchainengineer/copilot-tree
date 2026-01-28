@@ -5,12 +5,11 @@ import { normalizeGatewayModel } from "./models";
  * Check if a model supports Anthropic cache control.
  * Matches:
  * - Direct Anthropic provider: "anthropic:claude-opus-4-5"
- * - Gateway providers routing to Anthropic: "mux-gateway:anthropic/claude-opus-4-5"
  * - OpenRouter Anthropic models: "openrouter:anthropic/claude-3.5-sonnet"
  */
 export function supportsAnthropicCache(modelString: string): boolean {
   const normalized = normalizeGatewayModel(modelString);
-  // Direct Anthropic provider (or normalized gateway model)
+  // Direct Anthropic provider
   if (normalized.startsWith("anthropic:")) {
     return true;
   }

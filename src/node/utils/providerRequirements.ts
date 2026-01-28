@@ -88,8 +88,6 @@ export interface ProviderConfigRaw {
   bearerToken?: string;
   accessKeyId?: string;
   secretAccessKey?: string;
-  couponCode?: string;
-  voucher?: string; // legacy mux-gateway field
   organization?: string; // OpenAI org ID
 }
 
@@ -97,12 +95,11 @@ export interface ProviderConfigRaw {
 export interface ResolvedCredentials {
   isConfigured: boolean;
   /** What's missing, if not configured (for error messages) */
-  missingRequirement?: "api_key" | "region" | "coupon_code";
+  missingRequirement?: "api_key" | "region";
 
   // Resolved credential values - aiService uses these directly
   apiKey?: string; // anthropic, openai, etc.
   region?: string; // bedrock
-  couponCode?: string; // mux-gateway
   baseUrl?: string; // from config or env
   organization?: string; // openai
 }
@@ -134,14 +131,6 @@ export function resolveProviderCredentials(
     return region
       ? { isConfigured: true, region }
       : { isConfigured: false, missingRequirement: "region" };
-  }
-
-  // Mux Gateway: coupon code required (no env var support)
-  if (provider === "mux-gateway") {
-    const couponCode = config.couponCode ?? config.voucher;
-    return couponCode
-      ? { isConfigured: true, couponCode }
-      : { isConfigured: false, missingRequirement: "coupon_code" };
   }
 
   // Keyless providers (e.g., ollama): require explicit opt-in via baseUrl or models

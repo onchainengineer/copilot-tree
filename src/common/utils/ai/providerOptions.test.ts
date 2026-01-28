@@ -3,7 +3,6 @@
  */
 
 import type { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
-import { createMuxMessage } from "@/common/types/message";
 import { describe, test, expect, mock } from "bun:test";
 import { buildProviderOptions } from "./providerOptions";
 
@@ -165,37 +164,6 @@ describe("buildProviderOptions - OpenAI", () => {
 
       expect(openai).toBeDefined();
       expect(openai!.truncation).toBe("auto");
-    });
-    test("should derive promptCacheKey for gateway OpenAI model", () => {
-      const result = buildProviderOptions(
-        "mux-gateway:openai/gpt-5.2",
-        "off",
-        undefined,
-        undefined,
-        undefined,
-        "workspace-xyz"
-      );
-      const openai = getOpenAIOptions(result);
-
-      expect(openai).toBeDefined();
-      expect(openai!.promptCacheKey).toBe("mux-v1-workspace-xyz");
-      expect(openai!.truncation).toBe("disabled");
-    });
-  });
-
-  describe("previousResponseId reuse", () => {
-    test("should reuse previousResponseId for gateway OpenAI history", () => {
-      const messages = [
-        createMuxMessage("assistant-1", "assistant", "", {
-          model: "mux-gateway:openai/gpt-5.2",
-          providerMetadata: { openai: { responseId: "resp_123" } },
-        }),
-      ];
-      const result = buildProviderOptions("mux-gateway:openai/gpt-5.2", "medium", messages);
-      const openai = getOpenAIOptions(result);
-
-      expect(openai).toBeDefined();
-      expect(openai!.previousResponseId).toBe("resp_123");
     });
   });
 });

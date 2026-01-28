@@ -178,7 +178,7 @@ export const PRStatusBadges: AppStory = {
             "ws-ready",
             {
               number: 1623,
-              url: "https://github.com/coder/mux/pull/1623",
+              url: "https://github.com/example/project/pull/1623",
               state: "OPEN",
               mergeable: "MERGEABLE",
               mergeStateStatus: "CLEAN",
@@ -192,7 +192,7 @@ export const PRStatusBadges: AppStory = {
             "ws-blocked",
             {
               number: 1624,
-              url: "https://github.com/coder/mux/pull/1624",
+              url: "https://github.com/example/project/pull/1624",
               state: "OPEN",
               mergeable: "MERGEABLE",
               mergeStateStatus: "BLOCKED",
@@ -207,7 +207,7 @@ export const PRStatusBadges: AppStory = {
             "ws-failed-checks",
             {
               number: 1628,
-              url: "https://github.com/coder/mux/pull/1628",
+              url: "https://github.com/example/project/pull/1628",
               state: "OPEN",
               mergeable: "MERGEABLE",
               mergeStateStatus: "BLOCKED",
@@ -222,7 +222,7 @@ export const PRStatusBadges: AppStory = {
             "ws-behind",
             {
               number: 1625,
-              url: "https://github.com/coder/mux/pull/1625",
+              url: "https://github.com/example/project/pull/1625",
               state: "OPEN",
               mergeable: "MERGEABLE",
               mergeStateStatus: "BEHIND",
@@ -236,7 +236,7 @@ export const PRStatusBadges: AppStory = {
             "ws-conflicts",
             {
               number: 1626,
-              url: "https://github.com/coder/mux/pull/1626",
+              url: "https://github.com/example/project/pull/1626",
               state: "OPEN",
               mergeable: "CONFLICTING",
               mergeStateStatus: "DIRTY",
@@ -250,7 +250,7 @@ export const PRStatusBadges: AppStory = {
             "ws-draft",
             {
               number: 1627,
-              url: "https://github.com/coder/mux/pull/1627",
+              url: "https://github.com/example/project/pull/1627",
               state: "OPEN",
               mergeable: "UNKNOWN",
               mergeStateStatus: "UNKNOWN",
@@ -264,7 +264,7 @@ export const PRStatusBadges: AppStory = {
             "ws-merged",
             {
               number: 1620,
-              url: "https://github.com/coder/mux/pull/1620",
+              url: "https://github.com/example/project/pull/1620",
               state: "MERGED",
               mergeable: "UNKNOWN",
               mergeStateStatus: "UNKNOWN",
@@ -278,7 +278,7 @@ export const PRStatusBadges: AppStory = {
             "ws-closed",
             {
               number: 1618,
-              url: "https://github.com/coder/mux/pull/1618",
+              url: "https://github.com/example/project/pull/1618",
               state: "CLOSED",
               mergeable: "UNKNOWN",
               mergeStateStatus: "UNKNOWN",
@@ -344,7 +344,7 @@ export const LinksDropdown: AppStory = {
             "ws-with-links",
             {
               number: 1623,
-              url: "https://github.com/coder/mux/pull/1623",
+              url: "https://github.com/example/project/pull/1623",
               state: "OPEN",
               mergeable: "MERGEABLE",
               mergeStateStatus: "CLEAN",
@@ -371,9 +371,9 @@ export const LinksDropdown: AppStory = {
 
 - Documentation: https://docs.example.com/links
 - API Reference: https://api.example.com/v1/docs
-- Related issue: https://github.com/coder/mux/issues/1500
+- Related issue: https://github.com/example/project/issues/1500
 
-Let me check the implementation at https://github.com/coder/mux/blob/main/src/links.ts`,
+Let me check the implementation at https://github.com/example/project/blob/main/src/links.ts`,
               {
                 historySequence: 2,
                 timestamp: STABLE_TIMESTAMP - 60000,
@@ -385,9 +385,9 @@ Let me check the implementation at https://github.com/coder/mux/blob/main/src/li
             }),
             createAssistantMessage(
               "msg-4",
-              `Found the tests at https://github.com/coder/mux/blob/main/src/links.test.ts
+              `Found the tests at https://github.com/example/project/blob/main/src/links.test.ts
 
-Also see the CI workflow: https://github.com/coder/mux/actions/runs/12345`,
+Also see the CI workflow: https://github.com/example/project/actions/runs/12345`,
               {
                 historySequence: 4,
                 timestamp: STABLE_TIMESTAMP,

@@ -2,7 +2,6 @@ import { useThinkingLevel } from "./useThinkingLevel";
 import { useAgent } from "@/browser/contexts/AgentContext";
 import { usePersistedState } from "./usePersistedState";
 import { getDefaultModel } from "./useModelsFromSettings";
-import { migrateGatewayModel, useGateway, isProviderSupported } from "./useGatewayModels";
 import {
   getModelKey,
   PREFERRED_SYSTEM_1_MODEL_KEY,
@@ -13,27 +12,8 @@ import { coerceThinkingLevel, type ThinkingLevel } from "@/common/types/thinking
 import type { MuxProviderOptions } from "@/common/types/providerOptions";
 import { getSendOptionsFromStorage } from "@/browser/utils/messages/sendOptions";
 import { useProviderOptions } from "./useProviderOptions";
-import type { GatewayState } from "./useGatewayModels";
 import { useExperimentOverrideValue } from "./useExperiments";
 import { EXPERIMENT_IDS } from "@/common/constants/experiments";
-
-/**
- * Transform model to gateway format using reactive gateway state.
- * This ensures the component re-renders when gateway toggles change.
- */
-function applyGatewayTransform(modelId: string, gateway: GatewayState): string {
-  if (!gateway.isActive || !isProviderSupported(modelId) || !gateway.modelUsesGateway(modelId)) {
-    return modelId;
-  }
-
-  // Transform provider:model to mux-gateway:provider/model
-  const colonIndex = modelId.indexOf(":");
-  if (colonIndex === -1) return modelId;
-
-  const provider = modelId.slice(0, colonIndex);
-  const model = modelId.slice(colonIndex + 1);
-  return `mux-gateway:${provider}/${model}`;
-}
 
 interface ExperimentValues {
   programmaticToolCalling: boolean | undefined;
@@ -53,28 +33,16 @@ function constructSendMessageOptions(
   preferredModel: string | null | undefined,
   providerOptions: MuxProviderOptions,
   fallbackModel: string,
-  gateway: GatewayState,
   experimentValues: ExperimentValues,
   system1Model: string | undefined,
   system1ThinkingLevel: ThinkingLevel | undefined
 ): SendMessageOptions {
   // Ensure model is always a valid string (defensive against corrupted localStorage)
-  const rawModel =
+  const model =
     typeof preferredModel === "string" && preferredModel ? preferredModel : fallbackModel;
-
-  // Migrate any legacy mux-gateway:provider/model format to canonical form
-  const baseModel = migrateGatewayModel(rawModel);
 
   // Preserve the user's preferred thinking level; backend enforces per-model policy.
   const uiThinking = thinkingLevel;
-
-  // Transform to gateway format if gateway is enabled for this model (reactive)
-  const model = applyGatewayTransform(baseModel, gateway);
-
-  const system1ModelForBackend =
-    system1Model !== undefined
-      ? applyGatewayTransform(migrateGatewayModel(system1Model), gateway)
-      : undefined;
 
   const system1ThinkingLevelForBackend =
     system1ThinkingLevel !== undefined && system1ThinkingLevel !== "off"
@@ -84,7 +52,7 @@ function constructSendMessageOptions(
   return {
     thinkingLevel: uiThinking,
     model,
-    ...(system1ModelForBackend ? { system1Model: system1ModelForBackend } : {}),
+    ...(system1Model ? { system1Model } : {}),
     ...(system1ThinkingLevelForBackend
       ? { system1ThinkingLevel: system1ThinkingLevelForBackend }
       : {}),
@@ -100,8 +68,8 @@ function constructSendMessageOptions(
 }
 
 /**
- * Extended send options that includes both the gateway-transformed model
- * and the base model (for UI components that need canonical model names).
+ * Extended send options that includes the base model for UI components
+ * that need canonical model names.
  */
 export interface SendMessageOptionsWithBase extends SendMessageOptions {
   /** Base model in canonical format (e.g., "openai:gpt-5.1-codex-max") for UI/policy checks */
@@ -118,8 +86,8 @@ export interface SendMessageOptionsWithBase extends SendMessageOptions {
  * Uses usePersistedState which has listener mode, so changes to preferences
  * propagate automatically to all components using this hook.
  *
- * Returns both `model` (possibly gateway-transformed for API calls) and
- * `baseModel` (canonical format for UI display and policy checks).
+ * Returns both `model` and `baseModel` (same value now that gateway is removed,
+ * kept for API compatibility).
  */
 export function useSendMessageOptions(workspaceId: string): SendMessageOptionsWithBase {
   const [thinkingLevel] = useThinkingLevel();
@@ -131,9 +99,6 @@ export function useSendMessageOptions(workspaceId: string): SendMessageOptionsWi
     defaultModel, // Default to the Settings default model
     { listener: true } // Listen for changes from ModelSelector and other sources
   );
-
-  // Subscribe to gateway state so we re-render when user toggles gateway
-  const gateway = useGateway();
 
   // Subscribe to local override state so toggles apply immediately.
   // If undefined, the backend will apply the PostHog assignment.
@@ -165,7 +130,7 @@ export function useSendMessageOptions(workspaceId: string): SendMessageOptionsWi
   // Compute base model (canonical format) for UI components
   const rawModel =
     typeof preferredModel === "string" && preferredModel ? preferredModel : defaultModel;
-  const baseModel = migrateGatewayModel(rawModel);
+  const baseModel = rawModel;
 
   const options = constructSendMessageOptions(
     agentId,
@@ -173,7 +138,6 @@ export function useSendMessageOptions(workspaceId: string): SendMessageOptionsWi
     preferredModel,
     providerOptions,
     defaultModel,
-    gateway,
     { programmaticToolCalling, programmaticToolCallingExclusive, system1 },
     system1Model,
     system1ThinkingLevel

@@ -45,7 +45,6 @@ import {
   WORDS_TO_TOKENS_RATIO,
   buildCompactionPrompt,
 } from "@/common/constants/ui";
-import { migrateGatewayModel } from "@/browser/hooks/useGatewayModels";
 import { openInEditor } from "@/browser/utils/openInEditor";
 
 // ============================================================================
@@ -242,7 +241,7 @@ export async function processSlashCommand(
       return { clearInput: false, toastShown: true };
     }
 
-    const canonicalModel = migrateGatewayModel(modelString).trim();
+    const canonicalModel = modelString.trim();
     const canonicalSeparatorIndex = canonicalModel.indexOf(":");
     if (canonicalSeparatorIndex <= 0 || canonicalSeparatorIndex === canonicalModel.length - 1) {
       setToast({
@@ -277,8 +276,8 @@ export async function processSlashCommand(
         return { clearInput: false, toastShown: true };
       }
 
-      // Align with settings behavior: only persist non-built-in, non-gateway models.
-      if (activeClient && !BUILT_IN_MODEL_SET.has(canonicalModel) && provider !== "mux-gateway") {
+      // Align with settings behavior: only persist non-built-in models.
+      if (activeClient && !BUILT_IN_MODEL_SET.has(canonicalModel)) {
         try {
           const config = await activeClient.providers.getConfig();
           const existingModels = config[provider]?.models ?? [];

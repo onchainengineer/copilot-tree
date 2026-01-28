@@ -57,17 +57,8 @@ export function WindowsToolchainBanner() {
       <div className="flex items-center gap-2">
         <AlertTriangle className="text-warning size-4 shrink-0" />
         <span>
-          Your default shell appears to be WSL. Mux requires Git for Windows (Git Bash) on Windows
-          for reliable git + path handling.
-          <a
-            href="https://mux.coder.com/install#windows"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:no-underline"
-          >
-            Install Git for Windows
-          </a>{" "}
-          and restart Mux.
+          Your default shell appears to be WSL. DEV OS requires Git for Windows (Git Bash) on
+          Windows for reliable git + path handling. Install Git for Windows and restart DEV OS.
         </span>
       </div>
       <button

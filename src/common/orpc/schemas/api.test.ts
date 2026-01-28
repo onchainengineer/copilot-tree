@@ -133,12 +133,6 @@ describe("ProviderConfigInfoSchema conformance", () => {
           secretAccessKeySet: true,
         },
       },
-      "mux-gateway": {
-        apiKeySet: false,
-        isConfigured: false,
-        couponCodeSet: true,
-        models: ["anthropic/claude-sonnet-4-5"],
-      },
     };
 
     const parsed = ProvidersConfigMapSchema.parse(full);

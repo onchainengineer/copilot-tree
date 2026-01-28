@@ -1,7 +1,6 @@
 import React from "react";
 import { Check, Eye, Info, Pencil, Star, Trash2, X } from "lucide-react";
 import { createEditKeyHandler } from "@/browser/utils/ui/keybinds";
-import { GatewayIcon } from "@/browser/components/icons/GatewayIcon";
 import { cn } from "@/common/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/browser/components/ui/tooltip";
 import { ProviderWithIcon } from "@/browser/components/ProviderIcon";
@@ -116,8 +115,6 @@ export interface ModelRowProps {
   editError?: string | null;
   saving?: boolean;
   hasActiveEdit?: boolean;
-  /** Whether gateway mode is enabled for this model */
-  isGatewayEnabled?: boolean;
   /** Whether this model is hidden from the selector */
   isHiddenFromSelector?: boolean;
   onSetDefault: () => void;
@@ -126,8 +123,6 @@ export interface ModelRowProps {
   onCancelEdit?: () => void;
   onEditChange?: (value: string) => void;
   onRemove?: () => void;
-  /** Toggle gateway mode for this model */
-  onToggleGateway?: () => void;
   /** Toggle visibility in model selector */
   onToggleVisibility?: () => void;
 }
@@ -262,23 +257,6 @@ export function ModelRow(props: ModelRowProps) {
               {props.isHiddenFromSelector && (
                 <span className="bg-muted-light absolute inset-0 m-auto h-px w-4 rotate-45" />
               )}
-            </button>
-          )}
-          {/* Gateway toggle button */}
-          {props.onToggleGateway && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                props.onToggleGateway?.();
-              }}
-              className={cn(
-                "p-0.5 transition-colors",
-                props.isGatewayEnabled ? "text-accent" : "text-muted hover:text-accent"
-              )}
-              aria-label={props.isGatewayEnabled ? "Disable Mux Gateway" : "Enable Mux Gateway"}
-            >
-              <GatewayIcon className="h-3.5 w-3.5" active={props.isGatewayEnabled} />
             </button>
           )}
           {/* Favorite/default button */}

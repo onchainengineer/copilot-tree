@@ -307,8 +307,6 @@ export const router = (authToken?: string) => {
           const config = context.config.loadConfigOrDefault();
           return {
             taskSettings: config.taskSettings ?? DEFAULT_TASK_SETTINGS,
-            muxGatewayEnabled: config.muxGatewayEnabled,
-            muxGatewayModels: config.muxGatewayModels,
             agentAiDefaults: config.agentAiDefaults ?? {},
             // Legacy fields (downgrade compatibility)
             subagentAiDefaults: config.subagentAiDefaults ?? {},
@@ -337,21 +335,6 @@ export const router = (authToken?: string) => {
               // Legacy fields (downgrade compatibility)
               subagentAiDefaults:
                 Object.keys(legacySubagentDefaults).length > 0 ? legacySubagentDefaults : undefined,
-            };
-          });
-        }),
-      updateMuxGatewayPrefs: t
-        .input(schemas.config.updateMuxGatewayPrefs.input)
-        .output(schemas.config.updateMuxGatewayPrefs.output)
-        .handler(async ({ context, input }) => {
-          await context.config.editConfig((config) => {
-            const nextModels = Array.from(new Set(input.muxGatewayModels));
-            nextModels.sort();
-
-            return {
-              ...config,
-              muxGatewayEnabled: input.muxGatewayEnabled ? undefined : false,
-              muxGatewayModels: nextModels.length > 0 ? nextModels : undefined,
             };
           });
         }),
@@ -588,28 +571,6 @@ export const router = (authToken?: string) => {
             ended = true;
             unsubscribe();
           }
-        }),
-    },
-    muxGatewayOauth: {
-      startDesktopFlow: t
-        .input(schemas.muxGatewayOauth.startDesktopFlow.input)
-        .output(schemas.muxGatewayOauth.startDesktopFlow.output)
-        .handler(({ context }) => {
-          return context.muxGatewayOauthService.startDesktopFlow();
-        }),
-      waitForDesktopFlow: t
-        .input(schemas.muxGatewayOauth.waitForDesktopFlow.input)
-        .output(schemas.muxGatewayOauth.waitForDesktopFlow.output)
-        .handler(({ context, input }) => {
-          return context.muxGatewayOauthService.waitForDesktopFlow(input.flowId, {
-            timeoutMs: input.timeoutMs,
-          });
-        }),
-      cancelDesktopFlow: t
-        .input(schemas.muxGatewayOauth.cancelDesktopFlow.input)
-        .output(schemas.muxGatewayOauth.cancelDesktopFlow.output)
-        .handler(async ({ context, input }) => {
-          await context.muxGatewayOauthService.cancelDesktopFlow(input.flowId);
         }),
     },
     general: {

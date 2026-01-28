@@ -13,7 +13,7 @@ import {
 import { execBuffered } from "@/node/utils/runtime/helpers";
 import { parseMuxMdUrl, downloadFromMuxMd, MUX_MD_BASE_URL, MUX_MD_HOST } from "@/common/lib/muxMd";
 
-const USER_AGENT = "Mux/1.0 (https://github.com/coder/mux; web-fetch tool)";
+const USER_AGENT = "DEV-OS/1.0 (web-fetch tool)";
 
 /** Parse curl -i output into headers and body */
 function parseResponse(output: string): { headers: string; body: string; statusCode: string } {

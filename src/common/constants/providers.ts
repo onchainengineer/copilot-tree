@@ -19,19 +19,10 @@ interface ProviderDefinition {
   factoryName: string;
   /** Whether provider requires an API key (false for local services like Ollama) */
   requiresApiKey: boolean;
-  /** Whether this provider uses stroke-based icon styling instead of fill */
-  strokeBasedIcon?: boolean;
 }
 
 // Order determines display order in UI (Settings, model selectors, etc.)
 export const PROVIDER_DEFINITIONS = {
-  "mux-gateway": {
-    displayName: "Mux Gateway",
-    import: () => import("ai"),
-    factoryName: "createGateway",
-    requiresApiKey: true, // Uses couponCode
-    strokeBasedIcon: true,
-  },
   anthropic: {
     displayName: "Anthropic",
     import: () => import("@ai-sdk/anthropic"),

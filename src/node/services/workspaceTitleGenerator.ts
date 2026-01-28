@@ -38,7 +38,7 @@ export interface WorkspaceIdentity {
 /**
  * Find the first model from the list that the AIService can create.
  * Frontend is responsible for providing models in the correct format
- * (direct or gateway) based on user configuration.
+ * based on user configuration.
  */
 export async function findAvailableModel(
   aiService: AIService,
@@ -54,13 +54,13 @@ export async function findAvailableModel(
 }
 
 /**
- * Convert a model ID to a gateway variant (mux-gateway or openrouter).
- * e.g., toGatewayVariant("anthropic:claude-haiku-4-5", "mux-gateway") -> "mux-gateway:anthropic/claude-haiku-4-5"
+ * Convert a model ID to an OpenRouter variant.
+ * e.g., toOpenRouterVariant("anthropic:claude-haiku-4-5") -> "openrouter:anthropic/claude-haiku-4-5"
  */
-function toGatewayVariant(modelId: string, gateway: "mux-gateway" | "openrouter"): string {
+function toOpenRouterVariant(modelId: string): string {
   const [provider, model] = modelId.split(":");
   if (!provider || !model) return modelId;
-  return `${gateway}:${provider}/${model}`;
+  return `openrouter:${provider}/${model}`;
 }
 
 /**
@@ -68,13 +68,12 @@ function toGatewayVariant(modelId: string, gateway: "mux-gateway" | "openrouter"
  *
  * Priority order:
  * 1. Try preferred models (Haiku, GPT-Mini) directly
- * 2. Try Mux Gateway variants of preferred models
- * 3. Try OpenRouter variants of preferred models
- * 4. Try user's selected model (for Ollama/Bedrock/custom providers)
- * 5. Fallback to any available model from the known models list
+ * 2. Try OpenRouter variants of preferred models
+ * 3. Try user's selected model (for Ollama/Bedrock/custom providers)
+ * 4. Fallback to any available model from the known models list
  *
  * This ensures name generation works with any provider setup:
- * direct API keys, Mux Gateway (coupon), OpenRouter, or custom providers.
+ * direct API keys, OpenRouter, or custom providers.
  *
  * Note: createModel() validates provider configuration internally,
  * returning Err({ type: "api_key_not_found" }) for unconfigured providers.
@@ -93,25 +92,16 @@ export async function selectModelForNameGeneration(
     }
   }
 
-  // 2. Try Mux Gateway variants of preferred models
+  // 2. Try OpenRouter variants of preferred models
   for (const modelId of preferredModels) {
-    const gatewayVariant = toGatewayVariant(modelId, "mux-gateway");
-    const result = await aiService.createModel(gatewayVariant);
-    if (result.success) {
-      return gatewayVariant;
-    }
-  }
-
-  // 3. Try OpenRouter variants of preferred models
-  for (const modelId of preferredModels) {
-    const openRouterVariant = toGatewayVariant(modelId, "openrouter");
+    const openRouterVariant = toOpenRouterVariant(modelId);
     const result = await aiService.createModel(openRouterVariant);
     if (result.success) {
       return openRouterVariant;
     }
   }
 
-  // 4. Try user's selected model (supports Ollama, Bedrock, custom providers)
+  // 3. Try user's selected model (supports Ollama, Bedrock, custom providers)
   if (userModel) {
     const result = await aiService.createModel(userModel);
     if (result.success) {
@@ -119,8 +109,8 @@ export async function selectModelForNameGeneration(
     }
   }
 
-  // 5. Fallback to any available model from known models
-  // Try each known model directly, then via gateway/OpenRouter
+  // 4. Fallback to any available model from known models
+  // Try each known model directly, then via OpenRouter
   const knownModelIds = Object.values(KNOWN_MODELS).map((m) => m.id);
   for (const modelId of knownModelIds) {
     // Try direct first
@@ -129,15 +119,8 @@ export async function selectModelForNameGeneration(
       return modelId;
     }
 
-    // Try Mux Gateway variant
-    const gatewayVariant = toGatewayVariant(modelId, "mux-gateway");
-    const gatewayResult = await aiService.createModel(gatewayVariant);
-    if (gatewayResult.success) {
-      return gatewayVariant;
-    }
-
     // Try OpenRouter variant
-    const openRouterVariant = toGatewayVariant(modelId, "openrouter");
+    const openRouterVariant = toOpenRouterVariant(modelId);
     const openRouterResult = await aiService.createModel(openRouterVariant);
     if (openRouterResult.success) {
       return openRouterVariant;

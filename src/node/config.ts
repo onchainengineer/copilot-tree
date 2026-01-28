@@ -129,8 +129,6 @@ export class Config {
           featureFlagOverrides?: Record<string, "default" | "on" | "off">;
           layoutPresets?: unknown;
           taskSettings?: unknown;
-          muxGatewayEnabled?: unknown;
-          muxGatewayModels?: unknown;
           agentAiDefaults?: unknown;
           subagentAiDefaults?: unknown;
           useSSH2Transport?: unknown;
@@ -157,8 +155,6 @@ export class Config {
 
           const taskSettings = normalizeTaskSettings(parsed.taskSettings);
 
-          const muxGatewayEnabled = parseOptionalBoolean(parsed.muxGatewayEnabled);
-          const muxGatewayModels = parseOptionalStringArray(parsed.muxGatewayModels);
           const legacySubagentAiDefaults = normalizeSubagentAiDefaults(parsed.subagentAiDefaults);
 
           const agentAiDefaults =
@@ -184,8 +180,6 @@ export class Config {
             viewedSplashScreens: parsed.viewedSplashScreens,
             layoutPresets,
             taskSettings,
-            muxGatewayEnabled,
-            muxGatewayModels,
             agentAiDefaults,
             // Legacy fields are still parsed and returned for downgrade compatibility.
             subagentAiDefaults: legacySubagentAiDefaults,
@@ -225,8 +219,6 @@ export class Config {
         layoutPresets?: ProjectsConfig["layoutPresets"];
         featureFlagOverrides?: ProjectsConfig["featureFlagOverrides"];
         taskSettings?: ProjectsConfig["taskSettings"];
-        muxGatewayEnabled?: ProjectsConfig["muxGatewayEnabled"];
-        muxGatewayModels?: ProjectsConfig["muxGatewayModels"];
         agentAiDefaults?: ProjectsConfig["agentAiDefaults"];
         subagentAiDefaults?: ProjectsConfig["subagentAiDefaults"];
         useSSH2Transport?: boolean;
@@ -235,15 +227,6 @@ export class Config {
         taskSettings: config.taskSettings ?? DEFAULT_TASK_SETTINGS,
       };
 
-      const muxGatewayEnabled = parseOptionalBoolean(config.muxGatewayEnabled);
-      if (muxGatewayEnabled !== undefined) {
-        data.muxGatewayEnabled = muxGatewayEnabled;
-      }
-
-      const muxGatewayModels = parseOptionalStringArray(config.muxGatewayModels);
-      if (muxGatewayModels !== undefined) {
-        data.muxGatewayModels = muxGatewayModels;
-      }
       const apiServerBindHost = parseOptionalNonEmptyString(config.apiServerBindHost);
       if (apiServerBindHost) {
         data.apiServerBindHost = apiServerBindHost;

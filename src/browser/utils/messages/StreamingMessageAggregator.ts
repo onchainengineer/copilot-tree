@@ -984,7 +984,7 @@ export class StreamingMessageAggregator {
 
     for (const [key, stats] of modelEntries) {
       // Parse composite key: "model" or "model:mode"
-      // Model names can contain colons (e.g., "mux-gateway:provider/model")
+      // Model names can contain colons (e.g., "provider:model-name")
       // so we look for ":plan" or ":exec" suffix specifically
       let mode: string | undefined;
       if (key.endsWith(":plan")) {

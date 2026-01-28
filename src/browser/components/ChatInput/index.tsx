@@ -25,7 +25,6 @@ import { ThinkingSliderComponent } from "../ThinkingSlider";
 import { ModelSettings } from "../ModelSettings";
 import { useAPI } from "@/browser/contexts/API";
 import { useThinkingLevel } from "@/browser/hooks/useThinkingLevel";
-import { migrateGatewayModel } from "@/browser/hooks/useGatewayModels";
 import { useSendMessageOptions } from "@/browser/hooks/useSendMessageOptions";
 import {
   getModelKey,
@@ -392,8 +391,6 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
     variant === "workspace" ? props.workspaceId : getProjectScopeId(props.projectPath)
   );
   // Extract models for convenience (don't create separate state - use hook as single source of truth)
-  // - preferredModel: gateway-transformed model for API calls
-  // - baseModel: canonical format for UI display and policy checks (e.g., ThinkingSlider)
   const preferredModel = sendMessageOptions.model;
   const baseModel = sendMessageOptions.baseModel;
 
@@ -434,9 +431,8 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
         Record<string, { model: string; thinkingLevel: ThinkingLevel }>
       >;
 
-      const canonicalModel = migrateGatewayModel(model);
-      ensureModelInSettings(canonicalModel); // Ensure model exists in Settings
-      updatePersistedState(storageKeys.modelKey, canonicalModel); // Update workspace or project-specific
+      ensureModelInSettings(model); // Ensure model exists in Settings
+      updatePersistedState(storageKeys.modelKey, model); // Update workspace or project-specific
 
       if (variant !== "workspace" || !workspaceId) {
         return;
@@ -454,7 +450,7 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
             prev && typeof prev === "object" ? prev : {};
           return {
             ...record,
-            [normalizedAgentId]: { model: canonicalModel, thinkingLevel },
+            [normalizedAgentId]: { model: model, thinkingLevel },
           };
         },
         {}
@@ -469,7 +465,7 @@ const ChatInputInner: React.FC<ChatInputProps> = (props) => {
         .updateAgentAISettings({
           workspaceId,
           agentId: normalizedAgentId,
-          aiSettings: { model: canonicalModel, thinkingLevel },
+          aiSettings: { model, thinkingLevel },
         })
         .catch(() => {
           // Best-effort only. If offline or backend is old, sendMessage will persist.

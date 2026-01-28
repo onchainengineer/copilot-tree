@@ -282,7 +282,8 @@ function generate(): GenerateResult {
     };
 
     // mux-docs: embed docs site content as progressive-disclosure reference files.
-    if (skillName === "mux-docs") {
+    // Skipped - docs directory removed
+    if (skillName === "mux-docs" && fs.existsSync(DOCS_DIR)) {
       const docsConfigPath = path.join(DOCS_DIR, "docs.json");
       const docsConfigRaw = fs.readFileSync(docsConfigPath, "utf-8");
       files["references/docs/docs.json"] = readFileLines(docsConfigPath);

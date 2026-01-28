@@ -42,7 +42,6 @@ import {
   getThinkingLevelKey,
   getWorkspaceAISettingsByAgentKey,
 } from "@/common/constants/storage";
-import { migrateGatewayModel } from "@/browser/hooks/useGatewayModels";
 import { getDefaultModel } from "@/browser/hooks/useModelsFromSettings";
 import type { BranchListResult } from "@/common/orpc/types";
 import { useTelemetry } from "./hooks/useTelemetry";
@@ -286,7 +285,7 @@ function AppInner() {
   const getModelForWorkspace = useCallback((workspaceId: string): string => {
     const defaultModel = getDefaultModel();
     const rawModel = readPersistedState<string>(getModelKey(workspaceId), defaultModel);
-    return migrateGatewayModel(rawModel || defaultModel);
+    return rawModel || defaultModel;
   }, []);
 
   const getThinkingLevelForWorkspace = useCallback(

@@ -10,7 +10,6 @@ import {
 } from "@/browser/components/ui/select";
 import { useAPI } from "@/browser/contexts/API";
 import { getSuggestedModels, useModelsFromSettings } from "@/browser/hooks/useModelsFromSettings";
-import { useGateway } from "@/browser/hooks/useGatewayModels";
 import { usePersistedState } from "@/browser/hooks/usePersistedState";
 import { useProvidersConfig } from "@/browser/hooks/useProvidersConfig";
 import { SearchableModelSelect } from "../components/SearchableModelSelect";
@@ -21,9 +20,6 @@ import {
   PREFERRED_COMPACTION_MODEL_KEY,
 } from "@/common/constants/storage";
 import { ModelRow } from "./ModelRow";
-
-// Providers to exclude from the custom models UI (handled specially or internal)
-const HIDDEN_PROVIDERS = new Set(["mux-gateway"]);
 
 // Shared header cell styles
 const headerCellBase = "py-1.5 pr-2 text-xs font-medium text-muted";
@@ -56,12 +52,9 @@ export function ModelsSection() {
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const selectableProviders = SUPPORTED_PROVIDERS.filter(
-    (provider) => !HIDDEN_PROVIDERS.has(provider)
-  );
+  const selectableProviders = SUPPORTED_PROVIDERS;
   const { defaultModel, setDefaultModel, hiddenModels, hideModel, unhideModel } =
     useModelsFromSettings();
-  const gateway = useGateway();
 
   // Compaction model preference
   const [compactionModel, setCompactionModel] = usePersistedState<string>(
@@ -86,11 +79,6 @@ export function ModelsSection() {
   const handleAddModel = useCallback(() => {
     if (!config || !lastProvider || !newModelId.trim()) return;
 
-    // mux-gateway is a routing layer, not a provider users should add models under.
-    if (HIDDEN_PROVIDERS.has(lastProvider)) {
-      setError("Mux Gateway models can't be added directly. Enable Gateway per-model instead.");
-      return;
-    }
     const trimmedModelId = newModelId.trim();
 
     // Check for duplicates
@@ -177,12 +165,10 @@ export function ModelsSection() {
     );
   }
 
-  // Get all custom models across providers (excluding hidden providers like mux-gateway)
+  // Get all custom models across providers
   const getCustomModels = (): Array<{ provider: string; modelId: string; fullId: string }> => {
     const models: Array<{ provider: string; modelId: string; fullId: string }> = [];
     for (const [provider, providerConfig] of Object.entries(config)) {
-      // Skip hidden providers (mux-gateway models are accessed via the cloud toggle, not listed separately)
-      if (HIDDEN_PROVIDERS.has(provider)) continue;
       if (providerConfig.models) {
         for (const modelId of providerConfig.models) {
           models.push({ provider, modelId, fullId: `${provider}:${modelId}` });
@@ -313,7 +299,6 @@ export function ModelsSection() {
                       editError={isModelEditing ? error : undefined}
                       saving={false}
                       hasActiveEdit={editing !== null}
-                      isGatewayEnabled={gateway.modelUsesGateway(model.fullId)}
                       onSetDefault={() => setDefaultModel(model.fullId)}
                       onStartEdit={() => handleStartEdit(model.provider, model.modelId)}
                       onSaveEdit={handleSaveEdit}
@@ -327,11 +312,6 @@ export function ModelsSection() {
                         hiddenModels.includes(model.fullId)
                           ? unhideModel(model.fullId)
                           : hideModel(model.fullId)
-                      }
-                      onToggleGateway={
-                        gateway.canToggleModel(model.fullId)
-                          ? () => gateway.toggleModelGateway(model.fullId)
-                          : undefined
                       }
                     />
                   );
@@ -361,18 +341,12 @@ export function ModelsSection() {
                   isCustom={false}
                   isDefault={defaultModel === model.fullId}
                   isEditing={false}
-                  isGatewayEnabled={gateway.modelUsesGateway(model.fullId)}
                   onSetDefault={() => setDefaultModel(model.fullId)}
                   isHiddenFromSelector={hiddenModels.includes(model.fullId)}
                   onToggleVisibility={() =>
                     hiddenModels.includes(model.fullId)
                       ? unhideModel(model.fullId)
                       : hideModel(model.fullId)
-                  }
-                  onToggleGateway={
-                    gateway.canToggleModel(model.fullId)
-                      ? () => gateway.toggleModelGateway(model.fullId)
-                      : undefined
                   }
                 />
               ))}

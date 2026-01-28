@@ -49,13 +49,5 @@ describe("workspaceTitleGenerator", () => {
       expect(model).toBe("model-a");
     });
 
-    it("works with gateway-format models", async () => {
-      const aiService = createMockAIService(["mux-gateway:anthropic/claude-haiku-4-5"]);
-      const model = await findAvailableModel(aiService, [
-        "anthropic:claude-haiku-4-5", // direct - unavailable
-        "mux-gateway:anthropic/claude-haiku-4-5", // gateway - available
-      ]);
-      expect(model).toBe("mux-gateway:anthropic/claude-haiku-4-5");
-    });
-  });
+});
 });

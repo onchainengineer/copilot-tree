@@ -20,11 +20,11 @@
     },
     "plugins": ["expo-router", "expo-secure-store"],
     "ios": {
-      "bundleIdentifier": "com.coder.mux-mobile"
+      "bundleIdentifier": "com.devos.mux-mobile"
     },
-    "owner": "coder-technologies",
+    "owner": "devos",
     "android": {
-      "package": "com.coder.muxmobile"
+      "package": "com.devos.muxmobile"
     }
   }
 }

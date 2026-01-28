@@ -43,14 +43,6 @@ function parseMultilineCommand(rawInput: string): {
 // Re-export MODEL_ABBREVIATIONS from constants for backwards compatibility
 export { MODEL_ABBREVIATIONS };
 
-const PROVIDER_SLASH_COMMAND_BLOCKLIST = new Set(["mux-gateway"]);
-
-function isProviderSlashCommandBlocked(provider: string | undefined): boolean {
-  // Mux Gateway settings are configured in the Settings UI; don't allow slash command updates.
-  if (!provider) return false;
-  return PROVIDER_SLASH_COMMAND_BLOCKLIST.has(provider.trim().toLowerCase());
-}
-
 // Provider configuration data
 const DEFAULT_PROVIDER_NAMES: SuggestionDefinition[] = [
   {
@@ -323,15 +315,6 @@ const providersSetCommandDefinition: SlashCommandDefinition = {
 
     const [provider, key, ...valueParts] = cleanRemainingTokens;
 
-    if (isProviderSlashCommandBlocked(provider)) {
-      return {
-        type: "command-invalid-args",
-        command: "providers set",
-        input: provider,
-        usage: PROVIDERS_SET_USAGE,
-      };
-    }
-
     const value = valueParts.join(" ");
     const keyPath = key.split(".");
 
@@ -346,15 +329,12 @@ const providersSetCommandDefinition: SlashCommandDefinition = {
     // Stage 2: /providers set [provider]
     if (stage === 2) {
       const dynamicDefinitions = (context.providerNames ?? [])
-        .filter((name) => !isProviderSlashCommandBlocked(name))
         .map((name) => ({
           key: name,
           description: `${name} provider configuration`,
         }));
 
-      const combined = dedupeDefinitions([...dynamicDefinitions, ...DEFAULT_PROVIDER_NAMES]).filter(
-        (definition) => !isProviderSlashCommandBlocked(definition.key)
-      );
+      const combined = dedupeDefinitions([...dynamicDefinitions, ...DEFAULT_PROVIDER_NAMES]);
 
       return filterAndMapSuggestions(combined, partialToken, (definition) => ({
         id: `command:providers:set:${definition.key}`,
@@ -367,10 +347,6 @@ const providersSetCommandDefinition: SlashCommandDefinition = {
     // Stage 3: /providers set <provider> [key]
     if (stage === 3) {
       const providerName = completedTokens[2];
-
-      if (isProviderSlashCommandBlocked(providerName)) {
-        return [];
-      }
 
       // Use provider-specific keys if defined, otherwise fall back to defaults
       const definitions =

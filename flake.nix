@@ -1,5 +1,5 @@
 {
-  description = "mux - coder multiplexer";
+  description = "DEV OS - parallel agentic workspace";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -127,8 +127,8 @@
           '';
 
           meta = with pkgs.lib; {
-            description = "mux - coder multiplexer";
-            homepage = "https://github.com/coder/mux";
+            description = "DEV OS - parallel agentic workspace";
+            homepage = "";
             license = licenses.agpl3Only;
             platforms = platforms.linux ++ platforms.darwin;
             mainProgram = "mux";

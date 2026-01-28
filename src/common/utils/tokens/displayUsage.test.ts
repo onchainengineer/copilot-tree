@@ -22,16 +22,6 @@ describe("createDisplayUsage", () => {
       expect(result!.input.tokens).toBe(36600);
     });
 
-    test("subtracts cached tokens for gateway OpenAI model", () => {
-      // Gateway format: mux-gateway:openai/model-name
-      const result = createDisplayUsage(openAIUsage, "mux-gateway:openai/gpt-5.2");
-
-      expect(result).toBeDefined();
-      expect(result!.cached.tokens).toBe(71600);
-      // Should also subtract: 108200 - 71600 = 36600
-      expect(result!.input.tokens).toBe(36600);
-    });
-
     test("does NOT subtract cached tokens for Anthropic model", () => {
       // Anthropic reports inputTokens EXCLUDING cachedInputTokens
       const anthropicUsage: LanguageModelV2Usage = {
@@ -46,22 +36,6 @@ describe("createDisplayUsage", () => {
       expect(result).toBeDefined();
       expect(result!.cached.tokens).toBe(71600);
       // Input stays as-is for Anthropic
-      expect(result!.input.tokens).toBe(36600);
-    });
-
-    test("does NOT subtract cached tokens for gateway Anthropic model", () => {
-      const anthropicUsage: LanguageModelV2Usage = {
-        inputTokens: 36600,
-        outputTokens: 227,
-        totalTokens: 108427,
-        cachedInputTokens: 71600,
-      };
-
-      const result = createDisplayUsage(anthropicUsage, "mux-gateway:anthropic/claude-sonnet-4-5");
-
-      expect(result).toBeDefined();
-      expect(result!.cached.tokens).toBe(71600);
-      // Input stays as-is for gateway Anthropic
       expect(result!.input.tokens).toBe(36600);
     });
 
@@ -82,21 +56,6 @@ describe("createDisplayUsage", () => {
       expect(result!.input.tokens).toBe(31700);
     });
 
-    test("subtracts cached tokens for gateway Google model", () => {
-      const googleUsage: LanguageModelV2Usage = {
-        inputTokens: 74300,
-        outputTokens: 1600,
-        totalTokens: 75900,
-        cachedInputTokens: 42600,
-      };
-
-      const result = createDisplayUsage(googleUsage, "mux-gateway:google/gemini-3-pro-preview");
-
-      expect(result).toBeDefined();
-      expect(result!.cached.tokens).toBe(42600);
-      // Should also subtract: 74300 - 42600 = 31700
-      expect(result!.input.tokens).toBe(31700);
-    });
   });
 
   test("returns undefined for undefined usage", () => {
@@ -180,19 +139,5 @@ describe("createDisplayUsage", () => {
       expect(result!.cacheCreate.tokens).toBe(0);
     });
 
-    test("handles gateway Anthropic model with cache creation", () => {
-      const usage: LanguageModelV2Usage = {
-        inputTokens: 2000,
-        outputTokens: 100,
-        totalTokens: 2100,
-      };
-
-      const result = createDisplayUsage(usage, "mux-gateway:anthropic/claude-sonnet-4-5", {
-        anthropic: { cacheCreationInputTokens: 1500 },
-      });
-
-      expect(result).toBeDefined();
-      expect(result!.cacheCreate.tokens).toBe(1500);
-    });
   });
 });

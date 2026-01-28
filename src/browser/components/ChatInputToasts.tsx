@@ -21,7 +21,7 @@ export function createInvalidCompactModelToast(model: string): Toast {
         <br />
         <br />
         <SolutionLabel>Supported models:</SolutionLabel>
-        <DocsLink path="/config/models">mux.coder.com/models</DocsLink>
+        <span className="text-muted">See settings for supported models</span>
       </>
     ),
   };

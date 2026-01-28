@@ -16,7 +16,6 @@ import {
   GLOBAL_SCOPE_ID,
 } from "@/common/constants/storage";
 import { getDefaultModel } from "@/browser/hooks/useModelsFromSettings";
-import { migrateGatewayModel } from "@/browser/hooks/useGatewayModels";
 import { enforceThinkingPolicy, getThinkingPolicyForModel } from "@/common/utils/thinking/policy";
 import { useAPI } from "@/browser/contexts/API";
 import { KEYBINDS, matchesKeybind } from "@/browser/utils/ui/keybinds";
@@ -40,7 +39,7 @@ function getScopeId(workspaceId: string | undefined, projectPath: string | undef
 
 function getCanonicalModelForScope(scopeId: string, fallbackModel: string): string {
   const rawModel = readPersistedState<string>(getModelKey(scopeId), fallbackModel);
-  return migrateGatewayModel(rawModel || fallbackModel);
+  return rawModel || fallbackModel;
 }
 
 export const ThinkingProvider: React.FC<ThinkingProviderProps> = (props) => {

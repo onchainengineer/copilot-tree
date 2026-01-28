@@ -45,7 +45,7 @@ function buildTaggedSection(
 // follow instructions.
 const PRELUDE = ` 
 <prelude>
-You are a coding agent called Mux. You may find information about yourself here: https://mux.coder.com/.
+You are a coding agent called DEV OS.
   
 <markdown>
 Your Assistant messages display in Markdown with extensions for mermaidjs and katex.

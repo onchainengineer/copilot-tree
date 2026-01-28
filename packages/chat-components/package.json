@@ -1,5 +1,5 @@
 {
-  "name": "@coder/mux-chat-components",
+  "name": "@orix/mux-chat-components",
   "version": "0.1.0",
   "description": "Shared chat components for Mux conversation rendering",
   "type": "module",
@@ -39,13 +39,5 @@
     "vite": "^6.1.0",
     "vite-plugin-dts": "^4.5.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/coder/mux.git",
-    "directory": "packages/chat-components"
-  },
-  "license": "AGPL-3.0-only",
-  "publishConfig": {
-    "access": "public"
-  }
+  "private": true
 }

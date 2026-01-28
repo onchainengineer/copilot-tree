@@ -193,16 +193,7 @@ const SigningBadge = ({
         </p>
       )}
 
-      {/* Docs link - always visible */}
-      <a
-        href="https://mux.coder.com/workspaces/sharing"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-muted-foreground hover:text-foreground block text-[10px] underline"
-        onClick={(e) => e.stopPropagation()}
-      >
-        Learn more
-      </a>
+      {/* Docs link removed - internal use */}
     </div>
   );
 

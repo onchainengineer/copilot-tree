@@ -8,11 +8,9 @@ import React, {
 } from "react";
 import { cn } from "@/common/lib/utils";
 import { Eye, Settings, Star } from "lucide-react";
-import { GatewayIcon } from "./icons/GatewayIcon";
 import { ProviderIcon } from "./ProviderIcon";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
 import { useSettings } from "@/browser/contexts/SettingsContext";
-import { useGateway } from "@/browser/hooks/useGatewayModels";
 import { formatModelDisplayName } from "@/common/utils/ai/modelDisplay";
 
 interface ModelSelectorProps {
@@ -53,7 +51,6 @@ export const ModelSelector = forwardRef<ModelSelectorRef, ModelSelectorProps>(
     ref
   ) => {
     useSettings(); // Context must be available for nested components
-    const gateway = useGateway();
     const [isEditing, setIsEditing] = useState(false);
     const [inputValue, setInputValue] = useState(value);
     const [error, setError] = useState<string | null>(null);
@@ -246,41 +243,18 @@ export const ModelSelector = forwardRef<ModelSelectorRef, ModelSelectorProps>(
         );
       }
 
-      const gatewayActive = gateway.isModelRoutingThroughGateway(value);
-
       // Parse provider and model name from value (format: "provider:model-name")
       const [provider, modelName] = value.includes(":") ? value.split(":", 2) : ["", value];
-      // For mux-gateway format, extract inner provider
-      const innerProvider =
-        provider === "mux-gateway" && modelName.includes("/") ? modelName.split("/")[0] : provider;
 
       return (
         <div ref={containerRef} className="relative flex items-center gap-1">
-          {gatewayActive && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    gateway.toggleModelGateway(value);
-                  }}
-                  className="cursor-pointer transition-opacity hover:opacity-70"
-                  aria-label="Using Mux Gateway"
-                >
-                  <GatewayIcon className="text-accent h-3 w-3 shrink-0" active />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent align="center">Using Mux Gateway</TooltipContent>
-            </Tooltip>
-          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <div
                 className="text-muted-light hover:bg-hover flex cursor-pointer items-center gap-1 rounded-sm px-1 py-0.5 text-[11px] transition-colors duration-200"
                 onClick={handleClick}
               >
-                <ProviderIcon provider={innerProvider} className="h-3 w-3 shrink-0 opacity-70" />
+                <ProviderIcon provider={provider} className="h-3 w-3 shrink-0 opacity-70" />
                 <span>{formatModelDisplayName(modelName)}</span>
               </div>
             </TooltipTrigger>
@@ -326,48 +300,9 @@ export const ModelSelector = forwardRef<ModelSelectorRef, ModelSelectorProps>(
                   )}
                   onClick={() => handleSelectModel(model)}
                 >
-                  {/* Grid: model name | gateway | visibility | default */}
-                  <div className="grid w-full grid-cols-[1fr_20px_20px_20px] items-center gap-1">
+                  {/* Grid: model name | visibility | default */}
+                  <div className="grid w-full grid-cols-[1fr_20px_20px] items-center gap-1">
                     <span className="min-w-0 truncate">{model}</span>
-                    {/* Gateway toggle */}
-                    {gateway.canToggleModel(model) ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              gateway.toggleModelGateway(model);
-                            }}
-                            className={cn(
-                              "flex h-5 w-5 items-center justify-center rounded-sm border transition-colors duration-150",
-                              gateway.modelUsesGateway(model)
-                                ? "text-accent border-accent/40"
-                                : "text-muted-light border-border-light/40 hover:border-foreground/60 hover:text-foreground"
-                            )}
-                            aria-label={
-                              gateway.modelUsesGateway(model)
-                                ? "Disable Mux Gateway"
-                                : "Enable Mux Gateway"
-                            }
-                          >
-                            <GatewayIcon
-                              className="h-3 w-3"
-                              active={gateway.modelUsesGateway(model)}
-                            />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent align="center">
-                          {gateway.modelUsesGateway(model)
-                            ? "Using Mux Gateway"
-                            : "Use Mux Gateway"}
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <span /> // Empty cell for alignment
-                    )}
                     {/* Visibility toggle - Eye with line-through when hidden */}
                     {(onHideModel ?? onUnhideModel) ? (
                       <Tooltip>

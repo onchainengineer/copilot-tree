@@ -67,16 +67,8 @@ export const RosettaBanner: React.FC = () => {
       <div className="flex items-center gap-2">
         <AlertTriangle className="text-warning size-4 shrink-0" />
         <span>
-          Mux is running under Rosetta. For better performance,{" "}
-          <a
-            href="https://mux.coder.com/install#downloads"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:no-underline"
-          >
-            download the native Apple Silicon version
-          </a>
-          .
+          DEV OS is running under Rosetta. For better performance, download the native Apple
+          Silicon version.
         </span>
       </div>
       <button

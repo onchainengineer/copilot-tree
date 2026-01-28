@@ -1013,37 +1013,8 @@ export class AIService extends EventEmitter {
         return Ok(provider(modelId));
       }
 
-      // Handle Mux Gateway provider
-      if (providerName === "mux-gateway") {
-        // Resolve couponCode from config (single source of truth)
-        const creds = resolveProviderCredentials("mux-gateway", providerConfig);
-        if (!creds.isConfigured || !creds.couponCode) {
-          return Err({ type: "api_key_not_found", provider: providerName });
-        }
-        const { couponCode } = creds;
-
-        const { createGateway } = await PROVIDER_REGISTRY["mux-gateway"]();
-        // For Anthropic models via gateway, wrap fetch to inject cache_control on tools
-        // (gateway provider doesn't process providerOptions.anthropic.cacheControl)
-        // Use getProviderFetch to preserve any user-configured custom fetch (e.g., proxies)
-        const baseFetch = getProviderFetch(providerConfig);
-        const isAnthropicModel = modelId.startsWith("anthropic/");
-        const fetchWithCacheControl = isAnthropicModel
-          ? wrapFetchWithAnthropicCacheControl(baseFetch)
-          : baseFetch;
-        // Use configured baseURL or fall back to default gateway URL
-        const gatewayBaseURL =
-          providerConfig.baseURL ?? "https://gateway.mux.coder.com/api/v1/ai-gateway/v1/ai";
-        const gateway = createGateway({
-          apiKey: couponCode,
-          baseURL: gatewayBaseURL,
-          fetch: fetchWithCacheControl,
-        });
-        return Ok(gateway(modelId));
-      }
-
       // Generic handler for simple providers (standard API key + factory pattern)
-      // Providers with custom logic (anthropic, openai, xai, ollama, openrouter, bedrock, mux-gateway)
+      // Providers with custom logic (anthropic, openai, xai, ollama, openrouter, bedrock)
       // are handled explicitly above. New providers using the standard pattern need only be
       // added to PROVIDER_DEFINITIONS - no code changes required here.
       const providerDef = PROVIDER_DEFINITIONS[providerName as ProviderName];
@@ -1180,7 +1151,6 @@ export class AIService extends EventEmitter {
       const [providerName] = parseModelString(modelString);
       const normalizedModelString = normalizeGatewayModel(modelString);
       const [normalizedProviderName, normalizedModelId] = parseModelString(normalizedModelString);
-      const isMuxGatewayModel = providerName === "mux-gateway";
       if (normalizedProviderName === "xai" && normalizedModelId === "grok-4-1-fast") {
         // xAI Grok only supports full reasoning (no medium/low)
         // Map to appropriate variant based on thinking level
@@ -1188,7 +1158,7 @@ export class AIService extends EventEmitter {
           effectiveThinkingLevel !== "off"
             ? "grok-4-1-fast-reasoning"
             : "grok-4-1-fast-non-reasoning";
-        effectiveModelString = isMuxGatewayModel ? `mux-gateway:xai/${variant}` : `xai:${variant}`;
+        effectiveModelString = `xai:${variant}`;
         log.debug("Mapping xAI Grok model to variant", {
           original: modelString,
           effective: effectiveModelString,

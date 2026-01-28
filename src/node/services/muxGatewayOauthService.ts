@@ -280,7 +280,7 @@ export class MuxGatewayOauthService {
     <meta name="color-scheme" content="dark light" />
     <meta name="theme-color" content="#0e0e0e" />
     <title>${title}</title>
-    <link rel="stylesheet" href="https://gateway.mux.coder.com/static/css/site.css" />
+    <!-- gateway CSS removed for internal builds -->
   </head>
   <body>
     <div class="page">

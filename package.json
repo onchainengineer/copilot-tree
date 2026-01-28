@@ -1,20 +1,14 @@
 {
   "name": "mux",
   "version": "0.14.1",
-  "description": "mux - coder multiplexer",
-  "author": "Coder",
+  "description": "DEV OS - parallel agentic workspace",
+  "author": "DEV OS",
   "main": "dist/cli/index.js",
   "bin": {
     "mux": "dist/cli/index.js"
   },
   "license": "AGPL-3.0-only",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/coder/mux.git"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": true,
   "scripts": {
     "dev": "make dev",
     "prebuild:main": "./scripts/generate-version.sh",

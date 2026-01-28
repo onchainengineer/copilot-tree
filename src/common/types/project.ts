@@ -60,13 +60,6 @@ export interface ProjectsConfig {
   taskSettings?: TaskSettings;
   /** UI layout presets + hotkeys (shared via ~/.mux/config.json). */
   layoutPresets?: LayoutPresetsConfig;
-  /**
-   * Mux Gateway routing preferences (shared via ~/.mux/config.json).
-   * Mirrors browser localStorage so switching server ports doesn't reset the UI.
-   */
-  muxGatewayEnabled?: boolean;
-  muxGatewayModels?: string[];
-
   /** Default model + thinking overrides per agentId (applies to UI agents and subagents). */
   agentAiDefaults?: AgentAiDefaults;
   /** @deprecated Legacy per-subagent default model + thinking overrides. */

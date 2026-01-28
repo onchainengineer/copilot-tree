@@ -24,24 +24,12 @@ export function isValidModelFormat(model: string): boolean {
   return colonIndex > 0 && colonIndex < model.length - 1;
 }
 
-const MUX_GATEWAY_PREFIX = "mux-gateway:";
-
 /**
- * Normalize gateway-prefixed model strings to standard format.
- * Converts "mux-gateway:provider/model" to "provider:model".
- * Returns non-gateway strings unchanged.
+ * Passthrough for backward compatibility.
+ * Previously normalized gateway-prefixed model strings; now returns input unchanged.
  */
 export function normalizeGatewayModel(modelString: string): string {
-  if (!modelString.startsWith(MUX_GATEWAY_PREFIX)) {
-    return modelString;
-  }
-  // mux-gateway:anthropic/claude-opus-4-5 → anthropic:claude-opus-4-5
-  const inner = modelString.slice(MUX_GATEWAY_PREFIX.length);
-  const slashIndex = inner.indexOf("/");
-  if (slashIndex === -1) {
-    return modelString; // Malformed, return as-is
-  }
-  return `${inner.slice(0, slashIndex)}:${inner.slice(slashIndex + 1)}`;
+  return modelString;
 }
 
 /**

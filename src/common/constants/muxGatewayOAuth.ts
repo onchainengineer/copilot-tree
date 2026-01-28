@@ -1,4 +1,4 @@
-export const MUX_GATEWAY_ORIGIN = "https://gateway.mux.coder.com";
+export const MUX_GATEWAY_ORIGIN = "";
 
 export const MUX_GATEWAY_CLIENT_ID = "mux-client";
 export const MUX_GATEWAY_CLIENT_SECRET = "mux-client";

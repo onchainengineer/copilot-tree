@@ -16,9 +16,7 @@ describe("cacheStrategy", () => {
       expect(supportsAnthropicCache("anthropic:claude-3-5-haiku-20241022")).toBe(true);
     });
 
-    it("should return true for gateway providers routing to Anthropic", () => {
-      expect(supportsAnthropicCache("mux-gateway:anthropic/claude-opus-4-5")).toBe(true);
-      expect(supportsAnthropicCache("mux-gateway:anthropic/claude-sonnet-4-5-20250514")).toBe(true);
+    it("should return true for OpenRouter Anthropic models", () => {
       expect(supportsAnthropicCache("openrouter:anthropic/claude-3.5-sonnet")).toBe(true);
     });
 
@@ -26,7 +24,6 @@ describe("cacheStrategy", () => {
       expect(supportsAnthropicCache("openai:gpt-4")).toBe(false);
       expect(supportsAnthropicCache("google:gemini-2.0")).toBe(false);
       expect(supportsAnthropicCache("openrouter:meta-llama/llama-3.1")).toBe(false);
-      expect(supportsAnthropicCache("mux-gateway:openai/gpt-5.2")).toBe(false);
     });
   });
 

@@ -4,10 +4,8 @@
  * Used by RetryBarrier to offer "Compact & retry" when we hit context limits.
  */
 
-import { isGatewayFormat, toGatewayModel } from "@/browser/hooks/useGatewayModels";
 import { KNOWN_MODELS } from "@/common/constants/knownModels";
 import type { ProvidersConfigMap } from "@/common/orpc/types";
-import { normalizeGatewayModel } from "@/common/utils/ai/models";
 import { formatModelDisplayName } from "@/common/utils/ai/modelDisplay";
 import { getModelStats } from "@/common/utils/tokens/modelStats";
 
@@ -35,27 +33,23 @@ export function getExplicitCompactionSuggestion(options: {
     return null;
   }
 
-  const normalized = normalizeGatewayModel(modelId);
-  const colonIndex = normalized.indexOf(":");
-  const provider = colonIndex === -1 ? null : normalized.slice(0, colonIndex);
+  const colonIndex = modelId.indexOf(":");
+  const provider = colonIndex === -1 ? null : modelId.slice(0, colonIndex);
   const isProviderConfigured = provider
     ? options.providersConfig?.[provider]?.isConfigured === true
     : false;
 
-  // "Configured" is intentionally fuzzy: we require either provider credentials,
-  // or gateway routing enabled for that model (avoids suggesting unusable models).
-  const routesThroughGateway = isGatewayFormat(toGatewayModel(modelId));
-  if (!isProviderConfigured && !routesThroughGateway) {
+  if (!isProviderConfigured) {
     return null;
   }
 
-  const stats = getModelStats(normalized);
+  const stats = getModelStats(modelId);
 
   // Prefer a stable alias for built-in known models.
-  const known = Object.values(KNOWN_MODELS).find((m) => m.id === normalized);
+  const known = Object.values(KNOWN_MODELS).find((m) => m.id === modelId);
   const modelArg = known?.aliases?.[0] ?? modelId;
 
-  const providerModelId = colonIndex === -1 ? normalized : normalized.slice(colonIndex + 1);
+  const providerModelId = colonIndex === -1 ? modelId : modelId.slice(colonIndex + 1);
   const displayName = formatModelDisplayName(known?.providerModelId ?? providerModelId);
 
   return {
@@ -84,11 +78,8 @@ export function getHigherContextCompactionSuggestion(options: {
   let best: CompactionSuggestion | null = null;
 
   for (const known of Object.values(KNOWN_MODELS)) {
-    // "Configured" is intentionally fuzzy: we require either provider credentials,
-    // or gateway routing enabled for that model (avoids suggesting unusable models).
     const isProviderConfigured = options.providersConfig?.[known.provider]?.isConfigured === true;
-    const routesThroughGateway = isGatewayFormat(toGatewayModel(known.id));
-    if (!isProviderConfigured && !routesThroughGateway) {
+    if (!isProviderConfigured) {
       continue;
     }
 

@@ -694,7 +694,7 @@ describe("StreamManager - previousResponseId recovery", () => {
       messageId: "msg-1",
       token: "token",
       startTime: Date.now(),
-      model: "mux-gateway:openai/gpt-5.2-codex",
+      model: "openai:gpt-5.2-codex",
       historySequence: 1,
       stepTracker: { latestMessages: stepMessages },
       didRetryPreviousResponseIdAtStep: false,

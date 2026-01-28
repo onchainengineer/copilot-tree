@@ -4,7 +4,6 @@ import { KNOWN_MODELS } from "@/common/constants/knownModels";
 import { WORKSPACE_DEFAULTS } from "@/constants/workspaceDefaults";
 import { useProvidersConfig } from "./useProvidersConfig";
 import { useAPI } from "@/browser/contexts/API";
-import { migrateGatewayModel } from "./useGatewayModels";
 import { isValidProvider } from "@/common/constants/providers";
 import type { ProvidersConfigMap } from "@/common/orpc/types";
 
@@ -18,8 +17,6 @@ function getCustomModels(config: ProvidersConfigMap | null): string[] {
   if (!config) return [];
   const models: string[] = [];
   for (const [provider, info] of Object.entries(config)) {
-    // Skip mux-gateway - those models are accessed via the cloud toggle, not listed separately
-    if (provider === "mux-gateway") continue;
     if (!info.models) continue;
     for (const modelId of info.models) {
       models.push(`${provider}:${modelId}`);
@@ -56,8 +53,7 @@ export function getDefaultModel(): string {
   const fallback = WORKSPACE_DEFAULTS.model;
   const persisted = readPersistedState<string | null>(DEFAULT_MODEL_KEY, null);
   if (!persisted) return fallback;
-  // Migrate legacy mux-gateway format to canonical form
-  return migrateGatewayModel(persisted);
+  return persisted;
 }
 
 /**
@@ -97,7 +93,7 @@ export function useModelsFromSettings() {
     (modelString: string) => {
       if (!api) return;
 
-      const canonical = migrateGatewayModel(modelString).trim();
+      const canonical = modelString.trim();
       if (!canonical) return;
       if (BUILT_IN_MODEL_SET.has(canonical)) return;
 
@@ -107,7 +103,6 @@ export function useModelsFromSettings() {
       const provider = canonical.slice(0, colonIndex);
       const modelId = canonical.slice(colonIndex + 1);
       if (!provider || !modelId) return;
-      if (provider === "mux-gateway") return;
       if (!isValidProvider(provider)) return;
 
       const run = async () => {
@@ -128,7 +123,7 @@ export function useModelsFromSettings() {
 
   const hideModel = useCallback(
     (modelString: string) => {
-      const canonical = migrateGatewayModel(modelString).trim();
+      const canonical = modelString.trim();
       if (!canonical) {
         return;
       }
@@ -139,7 +134,7 @@ export function useModelsFromSettings() {
 
   const unhideModel = useCallback(
     (modelString: string) => {
-      const canonical = migrateGatewayModel(modelString).trim();
+      const canonical = modelString.trim();
       if (!canonical) {
         return;
       }

@@ -1,79 +1,35 @@
 /**
- * Tests for useGateway hook
+ * Tests for useGateway stub hook.
  *
- * Key invariant: clicking a gateway toggle should flip the persisted value exactly once.
- *
- * Regression being tested:
- * - The hook previously double-wrote to localStorage (usePersistedState + updatePersistedState),
- *   causing the value to toggle twice and effectively become a no-op.
+ * The gateway feature has been removed. These tests verify the stub returns
+ * the expected inert values.
  */
 
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
-import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
-import { GlobalWindow } from "happy-dom";
-import { useGateway } from "./useGatewayModels";
+import { describe, expect, test } from "bun:test";
+import { useGateway, migrateGatewayModel, isGatewayFormat, isProviderSupported } from "./useGatewayModels";
 
-const useProvidersConfigMock = mock(() => ({
-  config: {
-    "mux-gateway": {
-      couponCodeSet: true,
-    },
-  },
-}));
+describe("useGateway stub", () => {
+  test("returns inert gateway state", () => {
+    const state = useGateway();
+    expect(state.isActive).toBe(false);
+    expect(state.isConfigured).toBe(false);
+    expect(state.isEnabled).toBe(false);
+    expect(state.modelUsesGateway("anthropic:claude-sonnet-4-5")).toBe(false);
+    expect(state.canToggleModel("anthropic:claude-sonnet-4-5")).toBe(false);
+    expect(state.isModelRoutingThroughGateway("anthropic:claude-sonnet-4-5")).toBe(false);
+  });
+});
 
-void mock.module("@/browser/hooks/useProvidersConfig", () => ({
-  useProvidersConfig: useProvidersConfigMock,
-}));
-
-describe("useGateway", () => {
-  beforeEach(() => {
-    globalThis.window = new GlobalWindow() as unknown as Window & typeof globalThis;
-    globalThis.document = globalThis.window.document;
-    globalThis.window.localStorage.clear();
+describe("stub utility functions", () => {
+  test("migrateGatewayModel returns input unchanged", () => {
+    expect(migrateGatewayModel("anthropic:claude-sonnet-4-5")).toBe("anthropic:claude-sonnet-4-5");
   });
 
-  afterEach(() => {
-    cleanup();
-    globalThis.window = undefined as unknown as Window & typeof globalThis;
-    globalThis.document = undefined as unknown as Document;
+  test("isGatewayFormat always returns false", () => {
+    expect(isGatewayFormat("mux-gateway:anthropic/claude-sonnet-4-5")).toBe(false);
   });
 
-  test("toggleEnabled flips gateway-enabled once per call", async () => {
-    const { result } = renderHook(() => useGateway());
-
-    await waitFor(() => expect(result.current.isConfigured).toBe(true));
-    expect(result.current.isEnabled).toBe(true);
-
-    act(() => result.current.toggleEnabled());
-
-    expect(result.current.isEnabled).toBe(false);
-    expect(globalThis.window.localStorage.getItem("gateway-enabled")).toBe("false");
-
-    act(() => result.current.toggleEnabled());
-
-    expect(result.current.isEnabled).toBe(true);
-    expect(globalThis.window.localStorage.getItem("gateway-enabled")).toBe("true");
-  });
-
-  test("toggleModelGateway flips gateway-models membership once per call", async () => {
-    const { result } = renderHook(() => useGateway());
-
-    await waitFor(() => expect(result.current.isConfigured).toBe(true));
-
-    const modelId = "openai:gpt-5.2";
-
-    act(() => result.current.toggleModelGateway(modelId));
-
-    expect(result.current.modelUsesGateway(modelId)).toBe(true);
-    expect(JSON.parse(globalThis.window.localStorage.getItem("gateway-models") ?? "[]")).toContain(
-      modelId
-    );
-
-    act(() => result.current.toggleModelGateway(modelId));
-
-    expect(result.current.modelUsesGateway(modelId)).toBe(false);
-    expect(
-      JSON.parse(globalThis.window.localStorage.getItem("gateway-models") ?? "[]")
-    ).not.toContain(modelId);
+  test("isProviderSupported always returns false", () => {
+    expect(isProviderSupported("anthropic:claude-sonnet-4-5")).toBe(false);
   });
 });

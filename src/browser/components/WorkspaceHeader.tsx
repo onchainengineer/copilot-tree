@@ -280,15 +280,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
                   </span>
                 </label>
                 <p className="text-muted-foreground border-separator-light border-t pt-2">
-                  Agents can also notify on specific events.{" "}
-                  <a
-                    href="https://mux.coder.com/config/notifications"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-accent hover:underline"
-                  >
-                    Learn more
-                  </a>
+                  Agents can also notify on specific events.
                 </p>
               </div>
             </TooltipContent>
@@ -322,15 +314,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
                 </span>
               </label>
               <p className="text-muted-foreground border-separator-light border-t pt-2">
-                Agents can also notify on specific events.{" "}
-                <a
-                  href="https://mux.coder.com/config/notifications"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-accent hover:underline"
-                >
-                  Learn more
-                </a>
+                Agents can also notify on specific events.
               </p>
             </div>
           </PopoverContent>

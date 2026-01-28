@@ -27,14 +27,9 @@ agent_skill_read_file({
 });
 ```
 
-### Fallback: fetch the live docs (for newer features)
+### Fallback: bundled docs
 
-If the bundled docs don’t mention something (or you suspect the docs site has newer info), use `web_fetch`:
-
-```ts
-web_fetch({ url: "https://mux.coder.com/config/models" });
-web_fetch({ url: "https://mux.coder.com/agents" });
-```
+If the bundled docs don't mention something, refer to the local documentation in the `docs/` directory.
 
 #### Docs tree (auto-generated)
 
@@ -130,7 +125,6 @@ Notes:
 
 Use this skill when the user asks how mux works (workspaces, runtimes, agents, models, hooks, keybinds, etc.).
 
-## Links
+## About
 
-- **GitHub**: https://github.com/coder/mux
-- **Documentation**: https://mux.coder.com
+DEV OS - parallel agentic workspace for internal use.

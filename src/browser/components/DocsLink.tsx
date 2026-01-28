@@ -2,7 +2,7 @@ import React from "react";
 import { ExternalLink } from "lucide-react";
 import { cn } from "@/common/lib/utils";
 
-const DOCS_BASE_URL = "https://mux.coder.com";
+const DOCS_BASE_URL = "";
 
 interface DocsLinkProps {
   /** Path relative to docs root (e.g., "/runtime/local") */

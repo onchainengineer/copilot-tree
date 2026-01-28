@@ -36,12 +36,11 @@ export type ThinkingPolicy = readonly ThinkingLevel[];
  * Does NOT match gpt-5-pro-mini (uses negative lookahead).
  */
 export function getThinkingPolicyForModel(modelString: string): ThinkingPolicy {
-  // Normalize to be robust to provider prefixes, whitespace, gateway wrappers, and version suffixes
+  // Normalize to be robust to provider prefixes, whitespace, and version suffixes
   const normalized = modelString.trim().toLowerCase();
   const withoutPrefix = normalized.replace(/^[a-z0-9_-]+:\s*/, "");
 
-  // Many providers/proxies encode the upstream provider as a path segment:
-  //   mux-gateway:openai/gpt-5.2-pro -> openai/gpt-5.2-pro -> gpt-5.2-pro
+  // Some providers encode the upstream provider as a path segment (e.g., "openrouter:openai/gpt-5.2-pro")
   const withoutProviderNamespace = withoutPrefix.replace(/^[a-z0-9_-]+\//, "");
 
   // GPT-5.1-Codex-Max supports 5 reasoning levels including xhigh (Extra High)

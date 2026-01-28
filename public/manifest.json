@@ -1,7 +1,7 @@
 {
-  "name": "mux - coder multiplexer",
-  "short_name": "mux",
-  "description": "Parallel agentic development with Electron + React",
+  "name": "DEV OS",
+  "short_name": "DEV OS",
+  "description": "Parallel agentic workspace",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e1e1e",

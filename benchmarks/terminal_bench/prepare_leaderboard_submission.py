@@ -69,7 +69,7 @@ LEADERBOARD_REPO = "alexgshaw/terminal-bench-2-leaderboard"
 
 # Agent metadata for Mux
 MUX_METADATA = {
-    "agent_url": "https://github.com/coder/mux",
+    "agent_url": "https://github.com/example/project",
     "agent_display_name": "Mux",
     "agent_org_display_name": "Coder",
 }

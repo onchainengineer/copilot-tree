@@ -250,7 +250,7 @@ export interface CompactionCompletedPayload {
  * Note: Only tracks that a key was set, never the actual value
  */
 export interface ProviderConfiguredPayload {
-  /** Provider name (e.g., 'anthropic', 'openai', 'mux-gateway') */
+  /** Provider name (e.g., 'anthropic', 'openai') */
   provider: string;
   /** Key type that was configured (e.g., 'apiKey', 'couponCode', 'baseUrl') */
   keyType: string;

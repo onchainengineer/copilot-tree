@@ -178,12 +178,7 @@ export function TitleBar() {
       }
     }
 
-    // Always add releases link as defense-in-depth
-    lines.push(
-      <a href="https://github.com/coder/mux/releases" target="_blank" rel="noopener noreferrer">
-        View all releases
-      </a>
-    );
+    // No external releases link for internal builds
 
     return (
       <>

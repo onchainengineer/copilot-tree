@@ -2,7 +2,7 @@
 # Validates that code references to docs (URLs and DocsLink paths) resolve to existing doc files.
 set -euo pipefail
 
-DOCS_BASE="https://mux.coder.com"
+DOCS_BASE=""
 DOCS_DIR="docs"
 EXIT_CODE=0
 

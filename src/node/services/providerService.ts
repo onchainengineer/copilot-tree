@@ -92,12 +92,6 @@ export class ProviderService {
         };
       }
 
-      // Mux Gateway-specific fields (check couponCode first, fallback to legacy voucher)
-      if (provider === "mux-gateway") {
-        const muxConfig = config as { couponCode?: string; voucher?: string };
-        providerInfo.couponCodeSet = !!(muxConfig.couponCode ?? muxConfig.voucher);
-      }
-
       // Compute isConfigured using shared utility (checks config + env vars)
       providerInfo.isConfigured = checkProviderConfigured(provider, config).isConfigured;
 
@@ -134,14 +128,6 @@ export class ProviderService {
       // Load current providers config or create empty
       const providersConfig = this.config.loadProvidersConfig() ?? {};
 
-      // Track if this is first time setting couponCode for mux-gateway
-      const isFirstMuxGatewayCoupon =
-        provider === "mux-gateway" &&
-        keyPath.length === 1 &&
-        keyPath[0] === "couponCode" &&
-        value !== "" &&
-        !providersConfig[provider]?.couponCode;
-
       // Ensure provider exists
       if (!providersConfig[provider]) {
         providersConfig[provider] = {};
@@ -164,19 +150,6 @@ export class ProviderService {
           delete current[lastKey];
         } else {
           current[lastKey] = value;
-        }
-      }
-
-      // Add default models when setting up mux-gateway for the first time
-      if (isFirstMuxGatewayCoupon) {
-        const providerConfig = providersConfig[provider] as Record<string, unknown>;
-        if (!providerConfig.models || (providerConfig.models as string[]).length === 0) {
-          providerConfig.models = [
-            "anthropic/claude-sonnet-4-5",
-            "anthropic/claude-opus-4-5",
-            "openai/gpt-5.2",
-            "openai/gpt-5.1-codex",
-          ];
         }
       }
 

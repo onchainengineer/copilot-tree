@@ -22,12 +22,6 @@ describe("getSuggestedModels", () => {
     const config: ProvidersConfigMap = {
       openai: { apiKeySet: true, isConfigured: true, models: ["my-team-model"] },
       [builtInProvider]: { apiKeySet: true, isConfigured: true, models: [builtInModelId] },
-      "mux-gateway": {
-        apiKeySet: true,
-        isConfigured: true,
-        couponCodeSet: true,
-        models: ["ignored"],
-      },
     };
 
     const suggested = getSuggestedModels(config);
@@ -35,9 +29,6 @@ describe("getSuggestedModels", () => {
     // Custom models are listed first (in config order)
     expect(suggested[0]).toBe("openai:my-team-model");
     expect(suggested[1]).toBe(`${builtInProvider}:${builtInModelId}`);
-
-    // mux-gateway models should never appear as selectable entries
-    expect(suggested.some((m) => m.startsWith("mux-gateway:"))).toBe(false);
 
     // Built-ins should be present, but deduped against any custom entry
     expect(countOccurrences(suggested, builtIn)).toBe(1);

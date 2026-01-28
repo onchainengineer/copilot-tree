@@ -56,14 +56,6 @@ describe("getThinkingPolicyForModel", () => {
     expect(getThinkingPolicyForModel("openai:gpt-5.2-pro")).toEqual(["medium", "high", "xhigh"]);
   });
 
-  test("returns medium/high/xhigh for gpt-5.2-pro behind mux-gateway", () => {
-    expect(getThinkingPolicyForModel("mux-gateway:openai/gpt-5.2-pro")).toEqual([
-      "medium",
-      "high",
-      "xhigh",
-    ]);
-  });
-
   test("returns 5 levels including xhigh for gpt-5.2-codex", () => {
     expect(getThinkingPolicyForModel("openai:gpt-5.2-codex")).toEqual([
       "off",
@@ -84,16 +76,6 @@ describe("getThinkingPolicyForModel", () => {
     ]);
   });
 
-  test("returns 5 levels including xhigh for gpt-5.2 behind mux-gateway", () => {
-    expect(getThinkingPolicyForModel("mux-gateway:openai/gpt-5.2")).toEqual([
-      "off",
-      "low",
-      "medium",
-      "high",
-      "xhigh",
-    ]);
-  });
-
   test("returns 5 levels including xhigh for gpt-5.2 with version suffix", () => {
     expect(getThinkingPolicyForModel("openai:gpt-5.2-2025-12-11")).toEqual([
       "off",
@@ -104,15 +86,6 @@ describe("getThinkingPolicyForModel", () => {
     ]);
   });
 
-  test("returns 5 levels including xhigh for gpt-5.1-codex-max behind mux-gateway", () => {
-    expect(getThinkingPolicyForModel("mux-gateway:openai/gpt-5.1-codex-max")).toEqual([
-      "off",
-      "low",
-      "medium",
-      "high",
-      "xhigh",
-    ]);
-  });
   test("returns medium/high/xhigh for gpt-5.2-pro with version suffix", () => {
     expect(getThinkingPolicyForModel("openai:gpt-5.2-pro-2025-12-11")).toEqual([
       "medium",
@@ -257,10 +230,6 @@ describe("enforceThinkingPolicy", () => {
   describe("GPT-5.2 (5 levels including xhigh)", () => {
     test("allows xhigh for base model", () => {
       expect(enforceThinkingPolicy("openai:gpt-5.2", "xhigh")).toBe("xhigh");
-    });
-
-    test("allows xhigh behind mux-gateway", () => {
-      expect(enforceThinkingPolicy("mux-gateway:openai/gpt-5.2", "xhigh")).toBe("xhigh");
     });
 
     test("allows xhigh for versioned model", () => {

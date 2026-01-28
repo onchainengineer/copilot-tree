@@ -2285,9 +2285,6 @@ export class StreamManager extends EventEmitter {
     const errorCode = this.extractErrorCode(error);
     const statusCode = this.extractStatusCode(error);
     // Record if: we have the specific error code, OR a likely status code.
-    // mux-gateway currently surfaces OpenAI's "previous_response_not_found" as a 400
-    // (and omits the structured error code), so we treat 400 as eligible once the
-    // responseId regex matched the error payload/message.
     const shouldRecord =
       errorCode === "previous_response_not_found" ||
       statusCode === 404 ||
