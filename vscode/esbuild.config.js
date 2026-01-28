@@ -43,12 +43,12 @@ function resolveMuxImport(subpath) {
   return null;
 }
 
-// Plugin to resolve mux/* imports from parent directory.
+// Plugin to resolve unix/* imports from parent directory.
 const muxResolverPlugin = {
-  name: "mux-resolver",
+  name: "unix-resolver",
   setup(build) {
-    build.onResolve({ filter: /^mux\// }, (args) => {
-      const subpath = args.path.replace(/^mux\//, "");
+    build.onResolve({ filter: /^unix\// }, (args) => {
+      const subpath = args.path.replace(/^unix\//, "");
       const resolved = resolveMuxImport(subpath);
       if (!resolved) {
         return null;

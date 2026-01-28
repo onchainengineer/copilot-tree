@@ -827,10 +827,18 @@ class AIService extends events_1.EventEmitter {
                 });
                 return (0, result_1.Ok)(provider(modelId));
             }
-            // Handle GitHub Copilot provider
+            // Handle GitHub Copilot provider (via VS Code LM Proxy)
+            // Routes through a local OpenAI-compatible proxy that bridges to VS Code's
+            // Language Model API, allowing use of Copilot models in airgapped environments.
             if (providerName === "github-copilot") {
-                const { createCopilot } = await providers_1.PROVIDER_REGISTRY["github-copilot"]();
-                const provider = createCopilot();
+                const { createOpenAI } = await providers_1.PROVIDER_REGISTRY["github-copilot"]();
+                const proxyPort = providerConfig.proxyPort ?? 3941;
+                const baseURL = providerConfig.baseURL ?? `http://127.0.0.1:${proxyPort}/v1`;
+                const provider = createOpenAI({
+                    apiKey: "copilot-lm-proxy", // Dummy key — proxy doesn't require auth
+                    baseURL,
+                    fetch: getProviderFetch(providerConfig),
+                });
                 return (0, result_1.Ok)(provider(modelId));
             }
             // Generic handler for simple providers (standard API key + factory pattern)
