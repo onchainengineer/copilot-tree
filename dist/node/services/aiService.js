@@ -839,7 +839,9 @@ class AIService extends events_1.EventEmitter {
                     baseURL,
                     fetch: getProviderFetch(providerConfig),
                 });
-                return (0, result_1.Ok)(provider(modelId));
+                // Use .chat() to force Chat Completions API — the proxy only implements
+                // /v1/chat/completions, not the newer /v1/responses endpoint.
+                return (0, result_1.Ok)(provider.chat(modelId));
             }
             // Generic handler for simple providers (standard API key + factory pattern)
             // Providers with custom logic (anthropic, openai, xai, ollama, openrouter, bedrock, github-copilot)

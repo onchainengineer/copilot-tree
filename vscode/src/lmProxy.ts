@@ -9,6 +9,7 @@
  * Endpoints:
  *   GET  /v1/models              — List available Copilot models
  *   POST /v1/chat/completions    — Chat completion (streaming + non-streaming)
+ *   POST /v1/responses           — Responses API (converted to chat completions internally)
  *   GET  /health                 — Health check
  */
 
@@ -170,6 +171,11 @@ export class CopilotLmProxy {
             req.method === "POST"
           ) {
             await this.handleChatCompletion(req, res);
+          } else if (
+            req.url === "/v1/responses" &&
+            req.method === "POST"
+          ) {
+            await this.handleResponses(req, res);
           } else {
             res.writeHead(404, { "Content-Type": "application/json" });
             res.end(
@@ -350,6 +356,261 @@ export class CopilotLmProxy {
       }
 
       this.outputChannel.info(`Chat completion finished: ${completionId}`);
+    } catch (err) {
+      if (err instanceof vscode.LanguageModelError) {
+        this.outputChannel.error(`LM API error: ${err.message} (code: ${err.code})`);
+        const statusCode = err.code === "NotFound" ? 404 : err.code === "NoPermissions" ? 403 : 500;
+        if (!res.headersSent) {
+          res.writeHead(statusCode, { "Content-Type": "application/json" });
+        }
+        res.end(
+          JSON.stringify({
+            error: {
+              message: err.message,
+              type: "language_model_error",
+              code: err.code,
+            },
+          })
+        );
+      } else {
+        throw err;
+      }
+    } finally {
+      cts.dispose();
+    }
+  }
+
+  /**
+   * POST /v1/responses — OpenAI Responses API
+   * Converts the Responses API format to chat completions internally.
+   * The Responses API uses "input" instead of "messages" and has a different
+   * response format. We translate between the two formats.
+   */
+  private async handleResponses(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
+    const body = await readBody(req);
+    let request: {
+      model: string;
+      input: Array<{ role: string; content: string }> | string;
+      stream?: boolean;
+      max_output_tokens?: number;
+      temperature?: number;
+      instructions?: string;
+    };
+    try {
+      request = JSON.parse(body);
+    } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: { message: "Invalid JSON body", type: "invalid_request" },
+        })
+      );
+      return;
+    }
+
+    const { model, input, stream } = request;
+
+    this.outputChannel.info(
+      `Responses API: model=${model}, stream=${!!stream}`
+    );
+
+    // Convert Responses API input to ChatMessage format
+    const messages: ChatMessage[] = [];
+
+    // Add instructions as system message if provided
+    if (request.instructions) {
+      messages.push({ role: "system", content: request.instructions });
+    }
+
+    // Convert input to messages
+    if (typeof input === "string") {
+      messages.push({ role: "user", content: input });
+    } else if (Array.isArray(input)) {
+      for (const item of input) {
+        const role = (item.role === "developer" || item.role === "system")
+          ? "system"
+          : item.role === "assistant"
+          ? "assistant"
+          : "user";
+        // Handle content that might be an array of content parts
+        const content =
+          typeof item.content === "string"
+            ? item.content
+            : Array.isArray(item.content)
+            ? (item.content as Array<{ type: string; text?: string }>)
+                .filter((p) => p.type === "input_text" || p.type === "output_text" || p.type === "text")
+                .map((p) => p.text ?? "")
+                .join("")
+            : String(item.content);
+        messages.push({ role: role as ChatMessage["role"], content });
+      }
+    }
+
+    // Select model
+    const selectedModel = await this.selectModel(model);
+    if (!selectedModel) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: {
+            message: `Model "${model}" not available. Use GET /v1/models to list available models.`,
+            type: "model_not_found",
+          },
+        })
+      );
+      return;
+    }
+
+    const vsMessages = messages.map(convertMessage);
+    const responseId = `resp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const cts = new vscode.CancellationTokenSource();
+
+    req.on("close", () => cts.cancel());
+
+    try {
+      const response = await selectedModel.sendRequest(
+        vsMessages,
+        {
+          modelOptions: {
+            ...(request.max_output_tokens != null && { maxOutputTokens: request.max_output_tokens }),
+            ...(request.temperature != null && { temperature: request.temperature }),
+          },
+        },
+        cts.token
+      );
+
+      if (stream) {
+        // SSE streaming in Responses API format
+        res.writeHead(200, {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        });
+
+        // Send response.created event
+        res.write(
+          `data: ${JSON.stringify({
+            type: "response.created",
+            response: {
+              id: responseId,
+              object: "response",
+              status: "in_progress",
+              model,
+              output: [],
+            },
+          })}\n\n`
+        );
+
+        // Send output_item.added event
+        const itemId = `item-${Date.now().toString(36)}`;
+        res.write(
+          `data: ${JSON.stringify({
+            type: "response.output_item.added",
+            output_index: 0,
+            item: {
+              id: itemId,
+              type: "message",
+              role: "assistant",
+              content: [],
+            },
+          })}\n\n`
+        );
+
+        // Send content_part.added event
+        res.write(
+          `data: ${JSON.stringify({
+            type: "response.content_part.added",
+            output_index: 0,
+            content_index: 0,
+            part: { type: "output_text", text: "" },
+          })}\n\n`
+        );
+
+        // Stream text deltas
+        for await (const chunk of response.text) {
+          if (cts.token.isCancellationRequested) break;
+          res.write(
+            `data: ${JSON.stringify({
+              type: "response.output_text.delta",
+              output_index: 0,
+              content_index: 0,
+              delta: chunk,
+            })}\n\n`
+          );
+        }
+
+        // Send done events
+        res.write(
+          `data: ${JSON.stringify({
+            type: "response.output_text.done",
+            output_index: 0,
+            content_index: 0,
+          })}\n\n`
+        );
+        res.write(
+          `data: ${JSON.stringify({
+            type: "response.content_part.done",
+            output_index: 0,
+            content_index: 0,
+          })}\n\n`
+        );
+        res.write(
+          `data: ${JSON.stringify({
+            type: "response.output_item.done",
+            output_index: 0,
+          })}\n\n`
+        );
+        res.write(
+          `data: ${JSON.stringify({
+            type: "response.completed",
+            response: {
+              id: responseId,
+              object: "response",
+              status: "completed",
+              model,
+            },
+          })}\n\n`
+        );
+        res.end();
+      } else {
+        // Non-streaming Responses API format
+        let fullText = "";
+        for await (const chunk of response.text) {
+          fullText += chunk;
+        }
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            id: responseId,
+            object: "response",
+            created_at: Math.floor(Date.now() / 1000),
+            status: "completed",
+            model,
+            output: [
+              {
+                type: "message",
+                role: "assistant",
+                content: [
+                  {
+                    type: "output_text",
+                    text: fullText,
+                  },
+                ],
+              },
+            ],
+            usage: {
+              input_tokens: 0,
+              output_tokens: 0,
+              total_tokens: 0,
+            },
+          })
+        );
+      }
+
+      this.outputChannel.info(`Responses API finished: ${responseId}`);
     } catch (err) {
       if (err instanceof vscode.LanguageModelError) {
         this.outputChannel.error(`LM API error: ${err.message} (code: ${err.code})`);

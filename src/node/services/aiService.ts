@@ -1025,7 +1025,9 @@ export class AIService extends EventEmitter {
           baseURL,
           fetch: getProviderFetch(providerConfig),
         });
-        return Ok(provider(modelId) as LanguageModel);
+        // Use .chat() to force Chat Completions API — the proxy only implements
+        // /v1/chat/completions, not the newer /v1/responses endpoint.
+        return Ok(provider.chat(modelId) as LanguageModel);
       }
 
       // Generic handler for simple providers (standard API key + factory pattern)
