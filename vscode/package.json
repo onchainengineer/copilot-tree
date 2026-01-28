@@ -42,6 +42,10 @@
       {
         "command": "unix.debugConnection",
         "title": "unix: Debug Connection"
+      },
+      {
+        "command": "unix.toggleLmProxy",
+        "title": "unix: Toggle Copilot LM Proxy"
       }
     ],
     "viewsContainers": {
@@ -81,6 +85,12 @@
           "default": "",
           "scope": "machine",
           "description": "Override the unix server URL (leave empty to auto-discover). Example: http://127.0.0.1:3000"
+        },
+        "unix.lmProxyPort": {
+          "type": "number",
+          "default": 3941,
+          "scope": "machine",
+          "description": "Port for the Copilot LM Proxy (OpenAI-compatible endpoint bridging VS Code Language Model API). Configure backend with baseURL: http://127.0.0.1:<port>/v1"
         }
       }
     }

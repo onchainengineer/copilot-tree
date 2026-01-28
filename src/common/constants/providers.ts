@@ -24,10 +24,10 @@ interface ProviderDefinition {
 // Order determines display order in UI (Settings, model selectors, etc.)
 export const PROVIDER_DEFINITIONS = {
   "github-copilot": {
-    displayName: "GitHub Copilot",
-    import: () => import("ai-sdk-provider-github"),
-    factoryName: "createCopilot",
-    requiresApiKey: false, // Uses GitHub Copilot CLI auth (~/.config/github-copilot/apps.json)
+    displayName: "GitHub Copilot (via VS Code)",
+    import: () => import("@ai-sdk/openai"),
+    factoryName: "createOpenAI",
+    requiresApiKey: false, // Routes through VS Code LM Proxy — no API key needed
   },
   anthropic: {
     displayName: "Anthropic",

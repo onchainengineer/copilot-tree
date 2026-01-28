@@ -26,9 +26,11 @@ import type {
 import { isAllowedOrpcPath } from "./orpcAllowlist";
 import { parseWebviewToExtensionMessage } from "./parseWebviewToExtensionMessage";
 import { openWorkspace } from "./workspaceOpener";
+import { CopilotLmProxy } from "./lmProxy";
 
 let sessionPreferredMode: "api" | "file" | null = null;
 let didShowFallbackPrompt = false;
+let lmProxy: CopilotLmProxy | null = null;
 
 const ACTION_FIX_CONNECTION_CONFIG = "Fix connection config";
 const ACTION_USE_LOCAL_FILES = "Use local file access";
@@ -1832,10 +1834,55 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.commands.registerCommand("unix.debugConnection", () => debugConnectionCommand(context))
   );
 
+  // Start the Copilot LM Proxy (OpenAI-compatible bridge to VS Code Language Model API)
+  const proxyPort = vscode.workspace.getConfiguration("unix").get<number>("lmProxyPort") ?? 3941;
+  lmProxy = new CopilotLmProxy(proxyPort, getMuxLogChannel());
+  try {
+    const actualPort = await lmProxy.start();
+    muxLogInfo("unix: Copilot LM Proxy started", { port: actualPort });
+
+    // Show status bar item with proxy info
+    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+    statusBarItem.text = `$(plug) LM Proxy :${actualPort}`;
+    statusBarItem.tooltip = `DEV OS LM Proxy running on http://127.0.0.1:${actualPort}\nConfigure providers.jsonc with baseURL: "http://127.0.0.1:${actualPort}/v1"`;
+    statusBarItem.command = "unix.toggleLmProxy";
+    statusBarItem.show();
+    context.subscriptions.push(statusBarItem);
+  } catch (err) {
+    muxLogError("unix: Failed to start Copilot LM Proxy", { error: formatError(err) });
+  }
+
+  // Register LM Proxy toggle command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("unix.toggleLmProxy", async () => {
+      if (lmProxy?.isRunning()) {
+        lmProxy.stop();
+        vscode.window.showInformationMessage("DEV OS LM Proxy stopped.");
+      } else {
+        if (!lmProxy) {
+          lmProxy = new CopilotLmProxy(proxyPort, getMuxLogChannel());
+        }
+        try {
+          const port = await lmProxy.start();
+          vscode.window.showInformationMessage(
+            `DEV OS LM Proxy started on http://127.0.0.1:${port}`
+          );
+        } catch (err) {
+          vscode.window.showErrorMessage(`Failed to start LM Proxy: ${formatError(err)}`);
+        }
+      }
+    })
+  );
+
   await maybeAutoRevealChatViewFromPendingSelection(context, chatViewProvider);
 }
 
 /**
  * Deactivate the extension
  */
-export function deactivate() {}
+export function deactivate() {
+  if (lmProxy) {
+    lmProxy.stop();
+    lmProxy = null;
+  }
+}

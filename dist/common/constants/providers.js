@@ -49,10 +49,10 @@ exports.isValidProvider = isValidProvider;
 // Order determines display order in UI (Settings, model selectors, etc.)
 exports.PROVIDER_DEFINITIONS = {
     "github-copilot": {
-        displayName: "GitHub Copilot",
-        import: () => Promise.resolve().then(() => __importStar(require("ai-sdk-provider-github"))),
-        factoryName: "createCopilot",
-        requiresApiKey: false, // Uses GitHub Copilot CLI auth (~/.config/github-copilot/apps.json)
+        displayName: "GitHub Copilot (via VS Code)",
+        import: () => Promise.resolve().then(() => __importStar(require("@ai-sdk/openai"))),
+        factoryName: "createOpenAI",
+        requiresApiKey: false, // Routes through VS Code LM Proxy — no API key needed
     },
     anthropic: {
         displayName: "Anthropic",
